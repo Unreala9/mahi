@@ -43,7 +43,8 @@ class DiamondWebSocketService {
   };
 
   // Track which matches we're actively polling for odds
-  private activeOddsPolling: Set<number> = new Set();
+  private activeOddsPolling: Map<number, { gmid: number; sid: number }> =
+    new Map();
 
   constructor(config?: WebSocketConfig) {
     if (config) {
@@ -112,14 +113,14 @@ class DiamondWebSocketService {
       setInterval(() => this.fetchSports(), 5 * 60 * 1000),
     );
 
-    // Matches: every 15 seconds for live updates
+    // Matches: every 10 seconds for live updates
     this.pollingIntervals.push(
-      setInterval(() => this.fetchMatches(), 15 * 1000),
+      setInterval(() => this.fetchMatches(), 10 * 1000),
     );
 
-    // Live matches odds: every 5 seconds (if any live matches)
+    // Live matches odds: every 3 seconds (if any live matches)
     this.pollingIntervals.push(
-      setInterval(() => this.fetchLiveMatchUpdates(), 5 * 1000),
+      setInterval(() => this.fetchLiveMatchUpdates(), 3 * 1000),
     );
 
     console.log(
@@ -233,45 +234,45 @@ class DiamondWebSocketService {
   }
 
   /**
-   * Fetch updates for live matches (including odds)
+   * Fetch updates for actively requested matches (including odds)
    */
   private async fetchLiveMatchUpdates(): Promise<void> {
-    const liveMatches = this.cache.matches.filter((m) => m.is_live);
-
-    if (liveMatches.length === 0) {
-      // Clear odds polling if no live matches
-      this.activeOddsPolling.clear();
+    // Fetch odds for all actively tracked matches (requested by components)
+    if (this.activeOddsPolling.size === 0) {
       return;
     }
 
-    // Fetch odds for each live match
-    const oddsPromises = liveMatches.slice(0, 10).map(async (match) => {
+    // Get all tracked matches for polling
+    const trackedMatches = Array.from(this.activeOddsPolling.values());
+
+    // Fetch odds for each tracked match
+    const oddsPromises = trackedMatches.slice(0, 30).map(async (match) => {
       try {
-        this.activeOddsPolling.add(match.gmid);
         const apiHost =
           import.meta.env.VITE_DIAMOND_API_HOST || "130.250.191.174:3009";
         const protocol = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "http";
         const apiKey =
           import.meta.env.VITE_DIAMOND_API_KEY || "mahi4449839dbabkadbakwq1qqd";
         const response = await fetch(
-          `${protocol}://${apiHost}/Getmatchdatawithidhop?gmid=${match.gmid}&sid=${match.sid}&key=${apiKey}`,
+          `${protocol}://${apiHost}/getPriveteData?gmid=${match.gmid}&sid=${match.sid}&key=${apiKey}`,
         );
         const data = await response.json();
 
         if (data && data.data) {
-          const oddsData = data.data;
+          // Parse odds data using the same format as diamondApi
+          const parsedOdds = this.parseOddsData(data.data);
           const previousOdds = this.cache.odds.get(match.gmid);
 
           // Only emit if odds have changed
-          const oddsHash = JSON.stringify(oddsData);
+          const oddsHash = JSON.stringify(parsedOdds);
           const prevHash = previousOdds ? JSON.stringify(previousOdds) : null;
 
           if (oddsHash !== prevHash) {
-            this.cache.odds.set(match.gmid, oddsData);
+            this.cache.odds.set(match.gmid, parsedOdds);
             this.emit("odds:update", {
               gmid: match.gmid,
               sid: match.sid,
-              odds: oddsData,
+              odds: parsedOdds,
               timestamp: Date.now(),
             });
           }
@@ -286,9 +287,9 @@ class DiamondWebSocketService {
 
     await Promise.allSettled(oddsPromises);
 
-    // Emit live match update event
+    // Emit update event
     this.emit("matches:live:tick", {
-      count: liveMatches.length,
+      count: trackedMatches.length,
       timestamp: Date.now(),
     });
   }
@@ -415,6 +416,65 @@ class DiamondWebSocketService {
   }
 
   /**
+   * Parse odds data from Diamond API format
+   */
+  private parseOddsData(markets: any[]): any {
+    if (!Array.isArray(markets)) return null;
+
+    const getMarket = (name: string) =>
+      markets.find(
+        (m) => (m?.mname || "").toUpperCase() === name.toUpperCase(),
+      );
+
+    const normalizeSection = (sec: any) => {
+      const odds: any[] = Array.isArray(sec?.odds) ? sec.odds : [];
+      const bestBack = odds
+        .filter((o) => o.otype === "back")
+        .sort((a, b) => b.odds - a.odds)[0];
+      const bestLay = odds
+        .filter((o) => o.otype === "lay")
+        .sort((a, b) => a.odds - b.odds)[0];
+      return {
+        runner_name: sec.nat || sec.runner_name || sec.name || "Runner",
+        odds: odds,
+        back: bestBack
+          ? { price: Number(bestBack.odds), size: bestBack.size }
+          : null,
+        lay: bestLay
+          ? { price: Number(bestLay.odds), size: bestLay.size }
+          : null,
+      };
+    };
+
+    const toArray = (market: any | undefined) => {
+      if (!market?.section) return [];
+      return Array.isArray(market.section)
+        ? market.section.map(normalizeSection)
+        : [];
+    };
+
+    const matchMarket = getMarket("MATCH_ODDS");
+    const bookmakerMarket = getMarket("BOOKMAKER");
+    const fancyMarket = getMarket("NORMAL");
+
+    const normalizeFancy = (sec: any) => {
+      const base = normalizeSection(sec);
+      return {
+        ...base,
+        runs: typeof sec.runs === "number" ? sec.runs : undefined,
+      };
+    };
+
+    return {
+      match_odds: toArray(matchMarket),
+      bookmaker: toArray(bookmakerMarket),
+      fancy: Array.isArray(fancyMarket?.section)
+        ? fancyMarket.section.map(normalizeFancy)
+        : [],
+    };
+  }
+
+  /**
    * Clear all timers
    */
   private clearTimers(): void {
@@ -454,20 +514,18 @@ class DiamondWebSocketService {
    * Request odds for a specific match (adds to active polling)
    */
   requestMatchOdds(gmid: number, sid: number): void {
-    const match = this.cache.matches.find((m) => m.gmid === gmid);
-    if (!match) {
-      // Add a temporary match entry to poll odds
-      this.cache.matches.push({
-        gmid,
-        sid,
-        sname: "",
-        name: "",
-        is_live: true,
-      });
-    }
+    // Add to active polling map
+    this.activeOddsPolling.set(gmid, { gmid, sid });
 
     // Trigger immediate fetch
     this.fetchMatchOdds(gmid, sid);
+  }
+
+  /**
+   * Stop requesting odds for a specific match
+   */
+  stopRequestingOdds(gmid: number): void {
+    this.activeOddsPolling.delete(gmid);
   }
 
   /**
@@ -475,23 +533,25 @@ class DiamondWebSocketService {
    */
   private async fetchMatchOdds(gmid: number, sid: number): Promise<void> {
     try {
-      const apiHost =
-        import.meta.env.VITE_DIAMOND_API_HOST || "130.250.191.174:3009";
+      const apiHost = import.meta.env.VITE_DIAMOND_API_HOST || "/api/diamond";
       const protocol = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "http";
       const apiKey =
         import.meta.env.VITE_DIAMOND_API_KEY || "mahi4449839dbabkadbakwq1qqd";
+      const base = apiHost.startsWith("/")
+        ? apiHost
+        : `${protocol}://${apiHost}`;
       const response = await fetch(
-        `${protocol}://${apiHost}/Getmatchdatawithidhop?gmid=${gmid}&sid=${sid}&key=${apiKey}`,
+        `${base}/getPriveteData?gmid=${gmid}&sid=${sid}&key=${apiKey}`,
       );
       const data = await response.json();
 
       if (data && data.data) {
-        const oddsData = data.data;
-        this.cache.odds.set(gmid, oddsData);
+        const parsedOdds = this.parseOddsData(data.data);
+        this.cache.odds.set(gmid, parsedOdds);
         this.emit("odds:update", {
           gmid,
           sid,
-          odds: oddsData,
+          odds: parsedOdds,
           timestamp: Date.now(),
         });
       }

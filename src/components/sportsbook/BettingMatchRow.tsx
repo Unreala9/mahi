@@ -28,7 +28,7 @@ export function BettingMatchRow({
     data: liveOdds,
     isLoading,
     lastUpdate,
-  } = useLiveMatchOdds(match.gmid, match.sid);
+  } = useLiveMatchOdds(match.gmid, match.sid, true);
 
   // Use prefetched data first, then live data
   const oddsData = prefetchedOdds ?? liveOdds;
@@ -79,7 +79,9 @@ export function BettingMatchRow({
               <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-green-500 animate-pulse" />
             )}
             <div className="flex-1 min-w-0">
-              <div className="text-xs md:text-sm text-white mb-0.5 truncate">{match.name}</div>
+              <div className="text-xs md:text-sm text-white mb-0.5 truncate">
+                {match.name}
+              </div>
               <div className="text-[10px] md:text-xs text-gray-400 truncate">
                 {match.cname} /{" "}
                 {match.start_date

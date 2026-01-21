@@ -48,8 +48,10 @@ export function useMatchDetails(gmid: number | null, sid: number | null) {
         ? diamondApi.getMatchDetails(gmid, sid)
         : Promise.resolve(null),
     enabled: gmid !== null && sid !== null,
-    staleTime: 20 * 1000,
-    refetchInterval: 20 * 1000,
+    staleTime: 30 * 1000, // Match details don't change as often
+    refetchInterval: 30 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -66,8 +68,10 @@ export function useMatchOdds(
         ? diamondApi.getMatchOdds(gmid, sid)
         : Promise.resolve(null),
     enabled: enabled && gmid !== null && sid !== null,
-    staleTime: 10 * 1000, // 10 seconds for live odds
-    refetchInterval: 10 * 1000, // Faster refresh for odds
+    staleTime: 12 * 1000, // 12 seconds - use cached data within this window
+    refetchInterval: 15 * 1000, // Optimized refresh interval
+    refetchOnMount: false, // Don't refetch if data is still fresh
+    refetchOnWindowFocus: false, // Reduce unnecessary refetches
   });
 }
 

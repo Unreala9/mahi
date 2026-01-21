@@ -309,14 +309,18 @@ export function useWebSocketStatus() {
  * Hook to get live match odds via polling WebSocket service
  * This uses the intelligent polling service that automatically fetches odds for live matches
  */
-export function useLiveMatchOdds(gmid: number | null, sid: number | null) {
+export function useLiveMatchOdds(
+  gmid: number | null,
+  sid: number | null,
+  enabled: boolean = true,
+) {
   const [data, setData] = useState<OddsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [lastUpdate, setLastUpdate] = useState<number>(0);
 
   useEffect(() => {
-    if (!gmid || !sid) {
+    if (!enabled || !gmid || !sid) {
       setIsLoading(false);
       return;
     }
@@ -373,8 +377,12 @@ export function useLiveMatchOdds(gmid: number | null, sid: number | null) {
       mounted = false;
       unsubscribe();
       clearTimeout(fallbackTimer);
+      // Stop polling for this match when component unmounts
+      if (gmid) {
+        diamondWS.stopRequestingOdds(gmid);
+      }
     };
-  }, [gmid, sid]);
+  }, [gmid, sid, enabled]);
 
   return {
     data,

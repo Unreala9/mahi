@@ -1,94 +1,256 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { fetchCasinoGames } from "@/services/casino";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { fetchCasinoGames, inferCategory } from "@/services/casino";
-import { getImageCandidates } from "@/services/casino";
-import { useMemo, useState } from "react";
 import type { CasinoGame } from "@/types/casino";
+
+// Import game type components
+import { MogamboGame } from "./game-types/MogamboGame";
+import { TeenpattiGame } from "./game-types/TeenpattiGame";
+import { DragonTigerGame } from "./game-types/DragonTigerGame";
+import { AndarBaharGame } from "./game-types/AndarBaharGame";
+import { RouletteGame } from "./game-types/RouletteGame";
+import { PokerGame } from "./game-types/PokerGame";
+import { BaccaratGame } from "./game-types/BaccaratGame";
+import { MatkaGame } from "./game-types/MatkaGame";
+import { Card32Game } from "./game-types/Card32Game";
+import { Lucky7Game } from "./game-types/Lucky7Game";
+import { CricketGame } from "./game-types/CricketGame";
+import { GenericCardGame } from "./game-types/GenericCardGame";
+import { CrashGame } from "./game-types/CrashGame";
+import { PlinkoGame } from "./game-types/PlinkoGame";
+import { MinesGame } from "./game-types/MinesGame";
+import { SlotGame } from "./game-types/SlotGame";
+import { KenoGame } from "./game-types/KenoGame";
+
+// Determine game type from game name and ID
+function getGameType(game: CasinoGame): string {
+  const name = game.gname.toLowerCase();
+  const gmid = game.gmid.toLowerCase();
+
+  console.log(
+    `[Game Type Detection] Game: "${game.gname}", gmid: "${game.gmid}"`,
+  );
+
+  // Crash games (Airplane, Cricket, Football, Tower, Helicopter, etc.)
+  if (
+    name.includes("crash") ||
+    name.includes("aviator") ||
+    name.includes("jbex") ||
+    name.includes("cricket x") ||
+    name.includes("football x") ||
+    name.includes("tower x") ||
+    name.includes("helicopter") ||
+    name.includes("smash") ||
+    name.includes("aviastar") ||
+    name.includes("aviabet") ||
+    name.includes("fury flight") ||
+    name.includes("dedy") ||
+    name.includes("orizon") ||
+    name.includes("mayan fly") ||
+    name.includes("skydot") ||
+    name.includes("avionix") ||
+    name.includes("capparossa")
+  ) {
+    console.log(`  -> Detected as: crash`);
+    return "crash";
+  }
+
+  // Plinko games
+  if (name.includes("plinko") || name.includes("balloon")) {
+    return "plinko";
+  }
+
+  // Mining games (Mines)
+  if (name.includes("mines") || name.includes("mine")) {
+    return "mines";
+  }
+
+  // Slot games
+  if (
+    name.includes("slot") ||
+    name.includes("hollx") ||
+    name.includes("foxy") ||
+    name.includes("bonanza") ||
+    name.includes("futurian") ||
+    name.includes("wilds") ||
+    (name.includes("aviastar") && name.includes("slot"))
+  ) {
+    return "slot";
+  }
+
+  // Keno/Lottery games
+  if (name.includes("keno")) {
+    return "keno";
+  }
+
+  // Mogambo type games
+  if (name.includes("mogambo") || gmid.includes("mogambo")) {
+    return "mogambo";
+  }
+
+  // Teenpatti variants (including Joker games)
+  if (
+    name.includes("teenpatti") ||
+    name.includes("teen patti") ||
+    gmid.includes("teen") ||
+    name.includes("3 card") ||
+    name.includes("joker") ||
+    name.includes("poison") ||
+    (name.includes("20-20") &&
+      !name.includes("dragon") &&
+      !name.includes("poker") &&
+      !name.includes("dtl"))
+  ) {
+    console.log(`  -> Detected as: teenpatti`);
+    return "teenpatti";
+  }
+
+  // Dragon Tiger
+  if (
+    (name.includes("dragon") && name.includes("tiger")) ||
+    gmid.includes("dt") ||
+    name.includes("d t l") ||
+    name.includes("dtl")
+  ) {
+    return "dragon-tiger";
+  }
+
+  // Andar Bahar
+  if (
+    (name.includes("andar") && name.includes("bahar")) ||
+    name.includes("andar bahar") ||
+    gmid.includes("ab")
+  ) {
+    return "andar-bahar";
+  }
+
+  // Roulette
+  if (name.includes("roulette")) {
+    return "roulette";
+  }
+
+  // Poker
+  if (name.includes("poker")) {
+    return "poker";
+  }
+
+  // Baccarat
+  if (name.includes("baccarat")) {
+    return "baccarat";
+  }
+
+  // Matka/Worli
+  if (name.includes("matka") || name.includes("worli")) {
+    return "matka";
+  }
+
+  // 32 Cards
+  if (name.includes("32 card")) {
+    return "card32";
+  }
+
+  // Lucky 7 and Lucky games
+  if (
+    name.includes("lucky 7") ||
+    name.includes("lucky7") ||
+    name.includes("lucky 15") ||
+    name.includes("lucky 6")
+  ) {
+    return "lucky7";
+  }
+
+  // Cricket/Sports themed (Super Over, Ball by Ball, Goal, Mini Superover)
+  if (
+    name.includes("cricket") ||
+    name.includes("super over") ||
+    name.includes("ball by ball") ||
+    name.includes("superover") ||
+    name.includes("goal") ||
+    name.includes("mini superover") ||
+    gmid.includes("cricket")
+  ) {
+    return "cricket";
+  }
+
+  // Default generic card game
+  console.log(`  -> Detected as: generic (fallback)`);
+  return "generic";
+}
 
 export default function CasinoGame() {
   const { gmid } = useParams<{ gmid: string }>();
+
   const { data, isLoading, isError } = useQuery({
     queryKey: ["casino-games"],
     queryFn: fetchCasinoGames,
   });
 
-  const game: CasinoGame | undefined = (data ?? []).find((g) => g.gmid === gmid);
+  const game: CasinoGame | undefined = (data ?? []).find(
+    (g) => g.gmid === gmid,
+  );
 
-  return (
-    <MainLayout>
-      <div className="flex items-center justify-between mb-6 border-b border-border pb-2">
-        <h2 className="text-lg font-black uppercase tracking-wider">Game Details</h2>
-        <Link to="/casino">
-          <Button variant="outline" className="rounded-none text-xs uppercase">Back to Casino</Button>
-        </Link>
-      </div>
-
-      {isLoading && (
-        <Card className="p-6 rounded-none">
-          <p className="text-sm text-muted-foreground">Loading game…</p>
-        </Card>
-      )}
-      {isError && (
-        <Card className="p-6 rounded-none">
-          <p className="text-sm text-destructive">Failed to load game.</p>
-        </Card>
-      )}
-
-      {!isLoading && !isError && !game && (
-        <Card className="p-6 rounded-none">
-          <p className="text-sm">Game not found.</p>
-        </Card>
-      )}
-
-      {!isLoading && !isError && game && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="p-6 rounded-none md:col-span-2">
-            <h3 className="text-xl font-black uppercase tracking-tight mb-2">{game.gname}</h3>
-            <div className="flex items-center gap-2 mb-4">
-              <Badge className="rounded-none">{inferCategory(game)}</Badge>
-              <Badge variant="outline" className="rounded-none">{game.gmid}</Badge>
-            </div>
-            <p className="text-sm text-muted-foreground uppercase tracking-wider">CID: {game.cid} • GID: {game.gid} • SRNO: {game.srno}</p>
-            <p className="text-[11px] text-muted-foreground uppercase tracking-widest">Tab: {game.tabno} • Frame: {game.isframe} • TID: {game.tid}</p>
-
-            <div className="mt-6 border border-border p-0 bg-black">
-              <ImageBanner imgpath={game.imgpath} alt={game.gname} />
-            </div>
-          </Card>
-
-          <Card className="p-6 rounded-none">
-            <div className="aspect-video bg-card border border-border flex items-center justify-center">
-              <p className="text-xs text-muted-foreground uppercase">Table ID: {game.gmid}</p>
-            </div>
-            <Button className="w-full mt-4 rounded-none text-xs uppercase">Play</Button>
-          </Card>
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
         </div>
-      )}
-    </MainLayout>
-  );
-}
+      </MainLayout>
+    );
+  }
 
-function ImageBanner({ imgpath, alt }: { imgpath: string; alt: string }) {
-  const sources = useMemo(() => getImageCandidates(imgpath), [imgpath]);
-  const [idx, setIdx] = useState(0);
-  const src = sources[idx] || "";
-  return (
-    <img
-      src={src}
-      alt={alt}
-      className="w-full h-[280px] object-cover"
-      onError={(e) => {
-        const next = idx + 1;
-        if (next < sources.length) {
-          setIdx(next);
-        } else {
-          (e.target as HTMLImageElement).style.display = "none";
-        }
-      }}
-    />
-  );
+  if (isError || !game) {
+    return (
+      <MainLayout>
+        <Card className="p-8">
+          <p className="text-center text-destructive">
+            Failed to load game or game not found.
+          </p>
+        </Card>
+      </MainLayout>
+    );
+  }
+
+  // Determine game type and render appropriate component
+  const gameType = getGameType(game);
+
+  // Render the appropriate game component
+  switch (gameType) {
+    case "crash":
+      return <CrashGame game={game} />;
+    case "plinko":
+      return <PlinkoGame game={game} />;
+    case "mines":
+      return <MinesGame game={game} />;
+    case "slot":
+      return <SlotGame game={game} />;
+    case "keno":
+      return <KenoGame game={game} />;
+    case "mogambo":
+      return <MogamboGame game={game} />;
+    case "teenpatti":
+      return <TeenpattiGame game={game} />;
+    case "dragon-tiger":
+      return <DragonTigerGame game={game} />;
+    case "andar-bahar":
+      return <AndarBaharGame game={game} />;
+    case "roulette":
+      return <RouletteGame game={game} />;
+    case "poker":
+      return <PokerGame game={game} />;
+    case "baccarat":
+      return <BaccaratGame game={game} />;
+    case "matka":
+      return <MatkaGame game={game} />;
+    case "card32":
+      return <Card32Game game={game} />;
+    case "lucky7":
+      return <Lucky7Game game={game} />;
+    case "cricket":
+      return <CricketGame game={game} />;
+    default:
+      return <GenericCardGame game={game} />;
+  }
 }
