@@ -8,6 +8,42 @@ const BASE_URL = API_HOST.startsWith("/")
 export const CASINO_IMG_BASE_URL = "/game-image";
 const API_KEY =
   import.meta.env.VITE_DIAMOND_API_KEY || "mahi4449839dbabkadbakwq1qqd";
+// Tunables for performance
+const CONCURRENCY = Number(import.meta.env.VITE_DIAMOND_CONCURRENCY ?? 8);
+const CACHE_TTL_MS = Number(import.meta.env.VITE_DIAMOND_CACHE_TTL ?? 5000);
+
+// Lightweight in-memory caches (per-session)
+const oddsCache: Map<number, { value: OddsData; expires: number }> = new Map();
+const detailsCache: Map<
+  number,
+  { value: MatchEvent & Partial<MatchDetails>; expires: number }
+> = new Map();
+
+// Concurrency helper: process tasks with a fixed parallelism
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  mapper: (item: T, index: number) => Promise<R>,
+  limit: number,
+): Promise<(R | null)[]> {
+  const results: (R | null)[] = new Array(items.length).fill(null);
+  let nextIndex = 0;
+
+  async function worker() {
+    while (nextIndex < items.length) {
+      const i = nextIndex++;
+      try {
+        results[i] = await mapper(items[i], i);
+      } catch (e) {
+        console.warn("[Diamond API] Concurrency task failed", e);
+        results[i] = null;
+      }
+    }
+  }
+
+  const workers = Array.from({ length: Math.max(1, limit) }, worker);
+  await Promise.all(workers.map((w) => w()));
+  return results;
+}
 
 export interface SportId {
   sid: number;
@@ -252,6 +288,14 @@ export const diamondApi = {
     gmid: number,
     sid: number,
   ): Promise<MatchDetails | null> => {
+    // Validate parameters
+    if (!gmid || !sid || gmid <= 0 || sid <= 0) {
+      console.warn(
+        `[Diamond API] Invalid parameters for getMatchDetails: gmid=${gmid}, sid=${sid}`,
+      );
+      return null;
+    }
+
     const data = await diamondApi._fetch(
       `/getDetailsData?gmid=${gmid}&sid=${sid}`,
     );
@@ -290,6 +334,22 @@ export const diamondApi = {
 
   // Get match odds, bookmaker and fancy (parse array markets)
   getMatchOdds: async (gmid: number, sid: number): Promise<OddsData | null> => {
+    // Validate parameters before making API call
+    if (!gmid || !sid || gmid <= 0 || sid <= 0) {
+      console.warn(
+        `[Diamond API] Invalid parameters for getMatchOdds: gmid=${gmid}, sid=${sid}`,
+      );
+      return null;
+    }
+
+    // Check cache first
+    const cacheKey = gmid;
+    const cached = oddsCache.get(cacheKey);
+    if (cached && Date.now() < cached.expires) {
+      console.log(`[Diamond API] Returning cached odds for match ${gmid}`);
+      return cached.value;
+    }
+
     const data = await diamondApi._fetch(
       `/getPriveteData?gmid=${gmid}&sid=${sid}`,
     );
@@ -369,6 +429,13 @@ export const diamondApi = {
     };
 
     console.log(`[Diamond API] Parsed odds result:`, result);
+
+    // Cache the result
+    oddsCache.set(cacheKey, {
+      value: result,
+      expires: Date.now() + CACHE_TTL_MS,
+    });
+
     return result;
   },
 
@@ -478,14 +545,27 @@ export const diamondApi = {
     const slice = matches.slice(0, Math.max(0, max));
     const out: Record<number, OddsData> = {};
 
-    for (const m of slice) {
-      try {
+    const now = Date.now();
+    const results = await mapWithConcurrency(
+      slice,
+      async (m) => {
+        const cached = oddsCache.get(m.gmid);
+        if (cached && cached.expires > now) {
+          return cached.value;
+        }
         const odds = await diamondApi.getMatchOdds(m.gmid, m.sid);
-        if (odds) out[m.gmid] = odds;
-      } catch (e) {
-        console.warn("[Diamond API] Bulk odds failed for", m.gmid, e);
-      }
-    }
+        if (odds) {
+          oddsCache.set(m.gmid, { value: odds, expires: now + CACHE_TTL_MS });
+        }
+        return odds ?? null;
+      },
+      CONCURRENCY,
+    );
+
+    results.forEach((odds, i) => {
+      const m = slice[i];
+      if (odds) out[m.gmid] = odds;
+    });
 
     return out;
   },
@@ -499,26 +579,39 @@ export const diamondApi = {
     if (!matches || matches.length === 0) return [];
 
     const slice = matches.slice(0, Math.max(0, max));
-    const results: Array<MatchEvent & Partial<MatchDetails>> = [];
+    const now = Date.now();
 
-    for (const m of slice) {
-      try {
-        const details = await diamondApi.getMatchDetails(m.gmid, m.sid);
-        results.push({
-          ...m,
-          gtv: details?.gtv,
-          teams: details?.teams,
-          start_date: details?.start_date || m.start_date,
-          is_live: details?.is_live ?? m.is_live,
-          name: details?.name || m.name,
-        });
-      } catch (e) {
-        console.warn("[Diamond API] Bulk details failed for", m.gmid, e);
-        results.push(m);
-      }
-    }
+    const results = await mapWithConcurrency(
+      slice,
+      async (m) => {
+        const cached = detailsCache.get(m.gmid);
+        if (cached && cached.expires > now) {
+          return cached.value;
+        }
+        try {
+          const details = await diamondApi.getMatchDetails(m.gmid, m.sid);
+          const combined = {
+            ...m,
+            gtv: details?.gtv,
+            teams: details?.teams,
+            start_date: details?.start_date || m.start_date,
+            is_live: details?.is_live ?? m.is_live,
+            name: details?.name || m.name,
+          };
+          detailsCache.set(m.gmid, {
+            value: combined,
+            expires: now + CACHE_TTL_MS,
+          });
+          return combined;
+        } catch (e) {
+          console.warn("[Diamond API] Bulk details failed for", m.gmid, e);
+          return m;
+        }
+      },
+      CONCURRENCY,
+    );
 
-    return results;
+    return results.filter(Boolean) as Array<MatchEvent & Partial<MatchDetails>>;
   },
 
   // Aggregate: sports list, matches by sport, bulk details, bulk odds

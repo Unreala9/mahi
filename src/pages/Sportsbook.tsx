@@ -65,6 +65,7 @@ const Sportsbook = () => {
   }, [rawMatches, competitionParam]);
 
   const isLoading = loadingSports || loadingMatches;
+  const [visibleCount, setVisibleCount] = useState(30);
 
   // Sport names mapping
   const sportNames = [
@@ -205,12 +206,25 @@ const Sportsbook = () => {
             </div>
           ) : (
             <div>
-              {matches.map((match: MatchEvent, index: number) => (
-                <BettingMatchRow
-                  key={`${match.gmid}-${match.sid}-${index}`}
-                  match={match}
-                />
-              ))}
+              {matches
+                .slice(0, visibleCount)
+                .map((match: MatchEvent, index: number) => (
+                  <BettingMatchRow
+                    key={`${match.gmid}-${match.sid}-${index}`}
+                    match={match}
+                  />
+                ))}
+              {matches.length > visibleCount && (
+                <div className="flex justify-center py-4 bg-black">
+                  <Button
+                    variant="outline"
+                    onClick={() => setVisibleCount((c) => c + 30)}
+                    className="text-xs"
+                  >
+                    Load more ({matches.length - visibleCount} remaining)
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </div>
