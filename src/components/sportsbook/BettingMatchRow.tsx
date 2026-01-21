@@ -6,6 +6,7 @@ import {
   Bookmark,
   ChevronDown,
   ChevronUp,
+  Lock,
 } from "lucide-react";
 import { useMatchDetails } from "@/hooks/api/useDiamond";
 import { useLiveMatchOdds } from "@/hooks/api/useWebSocket";
@@ -376,11 +377,41 @@ export function BettingMatchRow({
             })()}
           </>
         ) : (
-          <div className="col-span-6 flex justify-center items-center py-3">
-            <span className="text-xs text-gray-400">
-              No odds available for this event
-            </span>
-          </div>
+          <>
+            {/* Column 1 - Locked */}
+            <div className="md:col-span-2 px-1 py-1.5 md:py-2 text-center md:border-r border-gray-700">
+              <div className="flex gap-0.5 md:gap-1 justify-center items-stretch">
+                <div className="flex-1 px-1 md:px-2 py-1 md:py-1.5 text-[10px] md:text-xs font-bold bg-[#2a2a2a] text-gray-500 rounded flex items-center justify-center">
+                  <Lock className="h-3 w-3 md:h-4 md:w-4" />
+                </div>
+                <div className="flex-1 px-1 md:px-2 py-1 md:py-1.5 text-[10px] md:text-xs font-bold bg-[#2a2a2a] text-gray-500 rounded flex items-center justify-center">
+                  <Lock className="h-3 w-3 md:h-4 md:w-4" />
+                </div>
+              </div>
+            </div>
+            {/* Column X - Locked */}
+            <div className="md:col-span-2 px-1 py-1.5 md:py-2 text-center md:border-r border-gray-700">
+              <div className="flex gap-0.5 md:gap-1 justify-center items-stretch">
+                <div className="flex-1 px-1 md:px-2 py-1 md:py-1.5 text-[10px] md:text-xs font-bold bg-[#2a2a2a] text-gray-500 rounded flex items-center justify-center">
+                  <Lock className="h-3 w-3 md:h-4 md:w-4" />
+                </div>
+                <div className="flex-1 px-1 md:px-2 py-1 md:py-1.5 text-[10px] md:text-xs font-bold bg-[#2a2a2a] text-gray-500 rounded flex items-center justify-center">
+                  <Lock className="h-3 w-3 md:h-4 md:w-4" />
+                </div>
+              </div>
+            </div>
+            {/* Column 2 - Locked */}
+            <div className="md:col-span-2 px-1 py-1.5 md:py-2 text-center">
+              <div className="flex gap-0.5 md:gap-1 justify-center items-stretch">
+                <div className="flex-1 px-1 md:px-2 py-1 md:py-1.5 text-[10px] md:text-xs font-bold bg-[#2a2a2a] text-gray-500 rounded flex items-center justify-center">
+                  <Lock className="h-3 w-3 md:h-4 md:w-4" />
+                </div>
+                <div className="flex-1 px-1 md:px-2 py-1 md:py-1.5 text-[10px] md:text-xs font-bold bg-[#2a2a2a] text-gray-500 rounded flex items-center justify-center">
+                  <Lock className="h-3 w-3 md:h-4 md:w-4" />
+                </div>
+              </div>
+            </div>
+          </>
         )}
       </div>
 
