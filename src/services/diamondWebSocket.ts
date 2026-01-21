@@ -28,8 +28,10 @@ class DiamondWebSocketService {
   private connectionTimeout: NodeJS.Timeout | null = null;
 
   constructor() {
-    // Auto-connect on instantiation
-    this.connect();
+    // DO NOT auto-connect - Diamond API does not support WebSockets
+    // Only HTTP polling is supported (see services/websocket.ts)
+    // this.connect();
+    console.warn("[Diamond WS] WebSocket not supported by Diamond API - using HTTP polling instead");
   }
 
   connect() {
