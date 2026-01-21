@@ -62,10 +62,12 @@ export default function DiamondMatch() {
     gmidNum,
     sidForQueries,
   );
+  // Only fetch odds once we have both gmidNum and sidForQueries
+  const shouldFetchOdds = Boolean(gmidNum && sidForQueries);
   const { data: oddsData, isLoading: loadingOdds } = useMatchOdds(
     gmidNum,
     sidForQueries,
-    true,
+    shouldFetchOdds,
   );
 
   const teams = useMemo(

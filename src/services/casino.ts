@@ -51,12 +51,20 @@ export function getImageCandidates(imgpath: string): string[] {
   // Build complete URL using API host
   const cleanPath = imgpath.startsWith("/") ? imgpath.substring(1) : imgpath;
 
-  // Construct full image URL from API host
-  const fullUrl = `${IMAGE_BASE}/casino/images/${cleanPath}`;
+  // Try multiple paths where casino images might be stored
+  const urls = [
+    `${IMAGE_BASE}/${cleanPath}`,
+    `${IMAGE_BASE}/images/${cleanPath}`,
+    `${IMAGE_BASE}/casino/images/${cleanPath}`,
+    `${IMAGE_BASE}/game-image/${cleanPath}`,
+    `${IMAGE_BASE}/static/images/${cleanPath}`,
+    // Try without extension as fallback
+    `${IMAGE_BASE}/${cleanPath.replace(/\.(gif|jpg|jpeg|png)$/i, "")}.png`,
+  ];
 
-  console.log(`[Casino] Image URL for ${imgpath}:`, fullUrl);
+  console.log(`[Casino] Trying image URLs for ${imgpath}:`, urls);
 
-  return [fullUrl];
+  return urls;
 }
 
 export function inferCategory(game: CasinoGame): string {
