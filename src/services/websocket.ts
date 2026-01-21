@@ -266,13 +266,9 @@ class DiamondWebSocketService {
       return;
     }
 
-<<<<<<< Updated upstream
     // Get all tracked matches for polling
     const trackedMatches = Array.from(this.activeOddsPolling.values());
 
-    // Fetch odds for each tracked match
-    const oddsPromises = trackedMatches.slice(0, 30).map(async (match) => {
-=======
     // Clean up expired blacklist entries
     const now = Date.now();
     for (const [gmid, timestamp] of this.oddsBlacklist.entries()) {
@@ -282,13 +278,12 @@ class DiamondWebSocketService {
     }
 
     // Filter out blacklisted matches
-    const availableMatches = liveMatches.filter(
+    const availableMatches = trackedMatches.filter(
       (m) => !this.oddsBlacklist.has(m.gmid)
     );
 
-    // Fetch odds for up to 20 live matches concurrently (increased from 10)
-    const oddsPromises = availableMatches.slice(0, 20).map(async (match) => {
->>>>>>> Stashed changes
+    // Fetch odds for each tracked match (up to 30)
+    const oddsPromises = availableMatches.slice(0, 30).map(async (match) => {
       try {
         const apiHost =
           import.meta.env.VITE_DIAMOND_API_HOST || "130.250.191.174:3009";
@@ -298,18 +293,14 @@ class DiamondWebSocketService {
 
         // Add timeout for faster failure and retry
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout (increased from 2s)
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
 
         const response = await fetch(
-<<<<<<< Updated upstream
           `${protocol}://${apiHost}/getPriveteData?gmid=${match.gmid}&sid=${match.sid}&key=${apiKey}`,
-=======
-          `${protocol}://${apiHost}/Getmatchdatawithidhop?gmid=${match.gmid}&sid=${match.sid}&key=${apiKey}`,
           {
             signal: controller.signal,
             keepalive: true, // Reuse connections
           }
->>>>>>> Stashed changes
         );
 
         clearTimeout(timeoutId);
