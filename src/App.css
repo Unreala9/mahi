@@ -1,0 +1,5 @@
+/* App specific styles, kept minimal to rely on Tailwind */
+.app-container {
+  min-height: 100vh;
+  width: 100%;
+}

@@ -1,0 +1,30 @@
+{
+  "success": true,
+  "msg": "Success",
+  "status": 200,
+  "data": [
+    {
+      "gmid": 564799805,
+      "etid": 4,
+      "m": 0,
+      "gtv": 0,
+      "ename": "Paarl Royals v Joburg Super Kings",
+      "cid": 7207483,
+      "cname": "SA20",
+      "iplay": true,
+      "gtype": "match",
+      "f1": true,
+      "f": true,
+      "bm": true,
+      "tv": true,
+      "scard": 1,
+      "iscc": 0,
+      "stime": "1/19/2026 9:00:00 PM",
+      "mod": 0,
+      "mname": null,
+      "oldgmid": "35162420",
+      "port": 0
+    }
+  ],
+  "lastUpdatedaAt": "2026-01-20T00:37:38.639Z"
+}

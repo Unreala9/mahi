@@ -1,0 +1,208 @@
+@import url("https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* CSK Theme (Yellow #FFFF3C & Blue #0081E9) - Light Theme */
+    --background: 210 40% 96.1%; /* Off-white (Slate-100) #f1f5f9 */
+    --foreground: 222 47% 11%; /* Dark Slate #0f172a */
+
+    --card: 0 0% 100%; /* Pure White */
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 60 100% 45%; /* Darker Yellow/Gold */
+    --primary-foreground: 222 47% 11%;
+
+    --secondary: 207 100% 46%; /* CSK Blue #0081E9 */
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 60 100% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 207 100% 46%;
+
+    --radius: 0rem;
+
+    /* Extended Color Palette aliases */
+    --yellow-bright: 60 100% 45%;
+    --yellow-light: 60 100% 75%;
+    --yellow-dark: 55 100% 45%;
+
+    --blue-electric: 207 100% 46%;
+    --blue-light: 207 100% 60%;
+    --blue-dark: 207 90% 35%;
+  }
+
+  * {
+    @apply border-border;
+    border-radius: 0px !important; /* Enforce sharp edges globally */
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: "Rajdhani", sans-serif !important;
+    background-color: #f1f5f9; /* Explicit Off-White */
+    background-image:
+      linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-attachment: fixed;
+  }
+
+  ::selection {
+    background-color: hsla(var(--primary), 0.5);
+    color: black;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-display tracking-tight text-foreground uppercase;
+    font-family: "Rajdhani", sans-serif !important;
+    font-weight: 700;
+  }
+
+  .dark {
+    /* Dark Blue Theme - Richer Navy */
+    --background: 222 47% 11%; /* #0f172a Slate 900 (Rich Navy) */
+    --foreground: 210 40% 98%; /* Off-white #f8fafc */
+
+    --card: 220 40% 16%; /* #1e293b Slate 800 (Lighter Navy for Cards) */
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 60 100% 50%; /* Bright Yellow */
+    --primary-foreground: 222 47% 11%;
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 215 25% 27%; /* Slate 700 */
+    --muted-foreground: 215 20% 65%; /* Slate 400 */
+
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 33% 20%;
+    --input: 217 33% 20%;
+    --ring: 224 76% 48%;
+
+    /* Body Background Override for Dark Mode */
+    body {
+      background-color: #0f172a !important; /* Visible Dark Navy Blue */
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px) !important;
+    }
+  }
+}
+
+@layer utilities {
+  /* Premium Sharp Glassmorphism */
+  .premium-glass {
+    @apply bg-background/90 backdrop-blur-xl border border-white/10 shadow-none;
+  }
+
+  .premium-glass-yellow {
+    @apply bg-primary/5 backdrop-blur-xl border border-primary/20;
+  }
+
+  .premium-glass-blue {
+    @apply bg-secondary/5 backdrop-blur-xl border border-secondary/20;
+  }
+
+  /* Glow Effects - Toned down for professional look */
+  .yellow-glow {
+    box-shadow: 0 0 10px -2px hsla(60, 100%, 62%, 0.3);
+  }
+
+  .blue-glow {
+    box-shadow: 0 0 10px -2px hsla(207, 100%, 46%, 0.3);
+  }
+
+  /* Text Gradients */
+  .text-gradient-yellow {
+    @apply text-primary; /* Solid color for readability */
+  }
+
+  .text-gradient-blue {
+    @apply text-secondary;
+  }
+
+  /* Professional Data Cards */
+  /* Professional Data Cards */
+  .card-premium {
+    @apply bg-card border border-border transition-all duration-200;
+  }
+
+  .card-premium:hover {
+    @apply border-primary;
+  }
+
+  /* Buttons - Sharp & Industrial */
+  .btn-primary-glow {
+    @apply bg-primary text-white hover:bg-primary/90 transition-all duration-200 font-bold uppercase tracking-wide border-none;
+  }
+
+  .btn-primary-glow:hover {
+    @apply bg-foreground text-background;
+  }
+
+  .btn-secondary-glow {
+    @apply bg-secondary text-white hover:bg-secondary/90 transition-all duration-200 font-bold uppercase tracking-wide border-none;
+  }
+
+  .btn-secondary-glow:hover {
+    @apply bg-foreground text-background;
+  }
+
+  /* Sidebar Items - Minimalist */
+  .sidebar-active-item {
+    @apply bg-primary text-black font-bold;
+  }
+
+  /* Animations */
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+
+/* Custom Scrollbar for Premium Feel - Light Theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: hsla(220, 14%, 96%, 1); /* Light gray track */
+  border-left: 1px solid hsla(220, 13%, 91%, 1);
+}
+::-webkit-scrollbar-thumb {
+  background: hsla(220, 10%, 80%, 1); /* Darker gray thumb */
+  border-radius: 10px;
+  border: 1px solid hsla(220, 10%, 90%, 0.5);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsla(207, 100%, 46%, 0.6); /* Blueish tint on hover */
+  box-shadow: 0 0 10px hsla(207, 100%, 46%, 0.2);
+}
