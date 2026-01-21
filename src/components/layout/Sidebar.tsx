@@ -183,23 +183,26 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     }));
   };
 
-  // Sport names mapping
-  const sportNames: Record<number, string> = {
-    4: "Cricket",
-    1: "Football",
-    2: "Tennis",
-    3: "Table Tennis",
-    5: "Esoccer",
-    7: "Horse Racing",
-    4339: "Greyhound Racing",
-    6: "Basketball",
-    8: "Wrestling",
-    9: "Volleyball",
-    10: "Badminton",
-    11: "Snooker",
-    12: "Darts",
-    13: "Boxing",
-  };
+  // Static sport list - always available, no API needed
+  const staticSports = [
+    { sid: 4, name: "Cricket", icon: "🏏" },
+    { sid: 1, name: "Football", icon: "⚽" },
+    { sid: 2, name: "Tennis", icon: "🎾" },
+    { sid: 3, name: "Table Tennis", icon: "🏓" },
+    { sid: 5, name: "Esoccer", icon: "⚽" },
+    { sid: 7, name: "Horse Racing", icon: "🏇" },
+    { sid: 4339, name: "Greyhound Racing", icon: "🐕" },
+    { sid: 6, name: "Basketball", icon: "🏀" },
+    { sid: 8, name: "Wrestling", icon: "🤼" },
+    { sid: 9, name: "Volleyball", icon: "🏐" },
+    { sid: 10, name: "Badminton", icon: "🏸" },
+    { sid: 11, name: "Snooker", icon: "🎱" },
+    { sid: 12, name: "Darts", icon: "🎯" },
+    { sid: 13, name: "Boxing", icon: "🥊" },
+  ];
+
+  // Use static sports list for display, API data only for match counts
+  const displaySports = staticSports;
 
   return (
     <>
@@ -279,150 +282,115 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                 </button>
               </div>
 
-              {loading && sports.length === 0 ? (
-                <div className="px-4 py-6 text-center space-y-2">
-                  <RefreshCw className="w-6 h-6 animate-spin text-primary mx-auto" />
-                  <div className="text-xs text-muted-foreground">
-                    Loading sports...
-                  </div>
-                </div>
-              ) : error ? (
-                <div className="px-4 py-3 text-xs space-y-2">
-                  <div className="text-red-400 flex items-center gap-2">
-                    <WifiOff className="w-4 h-4" />
-                    <span>{error}</span>
-                  </div>
-                  <button
-                    onClick={refresh}
-                    className="w-full px-3 py-2 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-medium rounded transition-colors"
-                  >
-                    Retry Connection
-                  </button>
-                </div>
-              ) : sports.length === 0 ? (
-                <div className="px-4 py-3 text-xs text-muted-foreground text-center">
-                  No sports available
-                </div>
-              ) : (
-                sports.map((sport) => {
-                  const isSportExpanded = expandedSports.includes(sport.sid);
-                  const competitions = getCompetitionsBySport(sport.sid);
-                  const sportName = sportNames[sport.sid] || sport.name;
-                  const sportLiveCount = liveMatches.filter(
-                    (m) => m.sid === sport.sid,
-                  ).length;
+              {/* Always show sports list - no loading state needed */}
+              {displaySports.map((sport) => {
+                const isSportExpanded = expandedSports.includes(sport.sid);
+                const competitions = getCompetitionsBySport(sport.sid);
+                const sportLiveCount = liveMatches.filter(
+                  (m) => m.sid === sport.sid,
+                ).length;
 
-                  return (
-                    <div key={sport.sid} className="border-b border-border/30">
-                      {/* Sport Header */}
-                      <div className="w-full flex items-center justify-between px-6 py-2.5 text-xs font-bold transition-colors hover:bg-muted/30">
-                        <button
-                          onClick={() => toggleSport(sport.sid)}
-                          className="flex-1 flex items-center gap-2 text-left"
-                        >
-                          {isSportExpanded ? (
-                            <ChevronDown className="w-3 h-3" />
-                          ) : (
-                            <ChevronRight className="w-3 h-3" />
-                          )}
-                          <span className="text-sm">{sport.icon || "🏆"}</span>
-                          <span>{sportName}</span>
-                        </button>
-                        <div className="flex items-center gap-2">
-                          {sportLiveCount > 0 && (
-                            <span className="bg-green-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
-                              {sportLiveCount} LIVE
-                            </span>
-                          )}
-                          <button
-                            onClick={() =>
-                              handleNavigate(`/sports?sport=${sport.sid}`)
-                            }
-                            className="text-[10px] bg-muted/50 px-1.5 py-0.5 rounded hover:bg-muted transition-colors"
-                          >
-                            {getMatchesBySport(sport.sid).length}
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Competitions */}
-                      {isSportExpanded && (
-                        <div className="bg-background/30">
-                          {competitions.length === 0 ? (
-                            <div className="px-8 py-2 text-xs text-muted-foreground">
-                              No matches available
-                            </div>
-                          ) : (
-                            competitions.map((comp) => {
-                              const isCompExpanded =
-                                expandedCompetitions.includes(comp.name);
-
-                              return (
-                                <div key={comp.name}>
-                                  {/* Competition Header */}
-                                  <div className="w-full flex items-center justify-between px-8 py-2 text-xs font-medium transition-colors hover:bg-muted/20">
-                                    <button
-                                      onClick={() =>
-                                        toggleCompetition(comp.name)
-                                      }
-                                      className="flex-1 flex items-center gap-2 text-left"
-                                    >
-                                      {isCompExpanded ? (
-                                        <ChevronDown className="w-3 h-3" />
-                                      ) : (
-                                        <ChevronRight className="w-3 h-3" />
-                                      )}
-                                      <span className="truncate">
-                                        {comp.name}
-                                      </span>
-                                    </button>
-                                    <button
-                                      onClick={() =>
-                                        handleNavigate(
-                                          `/sports?sport=${sport.sid}&competition=${encodeURIComponent(comp.name)}`,
-                                        )
-                                      }
-                                      className="text-[10px] bg-muted px-1.5 py-0.5 rounded ml-2 hover:bg-muted/70 transition-colors"
-                                    >
-                                      {comp.matches.length}
-                                    </button>
-                                  </div>
-
-                                  {/* Matches */}
-                                  {isCompExpanded && (
-                                    <div className="bg-background/50">
-                                      {comp.matches.map((match) => (
-                                        <button
-                                          key={match.gmid}
-                                          onClick={() =>
-                                            handleNavigate(
-                                              `/match/${match.gmid}/${sport.sid}`,
-                                            )
-                                          }
-                                          className="w-full px-10 py-1.5 text-xs text-left transition-colors hover:bg-muted/20 border-b border-border/20"
-                                        >
-                                          <div className="flex items-center gap-2">
-                                            {match.is_live && (
-                                              <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse flex-shrink-0" />
-                                            )}
-                                            <span className="truncate text-muted-foreground hover:text-foreground">
-                                              {match.name}
-                                            </span>
-                                          </div>
-                                        </button>
-                                      ))}
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })
-                          )}
-                        </div>
+                return (
+                  <div key={sport.sid} className="border-b border-border/30">
+                    {/* Sport Header */}
+                    <div className="w-full flex items-center justify-between px-6 py-2.5 text-xs font-bold transition-colors hover:bg-muted/30">
+                      <button
+                        onClick={() => toggleSport(sport.sid)}
+                        className="flex-1 flex items-center gap-2 text-left"
+                      >
+                        {isSportExpanded ? (
+                          <ChevronDown className="w-3 h-3" />
+                        ) : (
+                          <ChevronRight className="w-3 h-3" />
+                        )}
+                        <span className="text-sm">{sport.icon}</span>
+                        <span>{sport.name}</span>
+                      </button>
+                      {/* Only show LIVE indicator - no match counts (matches D247 UX) */}
+                      {sportLiveCount > 0 && (
+                        <span className="bg-green-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+                          {sportLiveCount} LIVE
+                        </span>
                       )}
                     </div>
-                  );
-                })
-              )}
+
+                    {/* Competitions */}
+                    {isSportExpanded && (
+                      <div className="bg-background/30">
+                        {competitions.length === 0 ? (
+                          <div className="px-8 py-2 text-xs text-muted-foreground">
+                            {loading ? "Loading matches..." : "No matches available"}
+                          </div>
+                        ) : (
+                          competitions.map((comp) => {
+                            const isCompExpanded =
+                              expandedCompetitions.includes(comp.name);
+
+                            return (
+                              <div key={comp.name}>
+                                {/* Competition Header */}
+                                <div className="w-full flex items-center justify-between px-8 py-2 text-xs font-medium transition-colors hover:bg-muted/20">
+                                  <button
+                                    onClick={() =>
+                                      toggleCompetition(comp.name)
+                                    }
+                                    className="flex-1 flex items-center gap-2 text-left"
+                                  >
+                                    {isCompExpanded ? (
+                                      <ChevronDown className="w-3 h-3" />
+                                    ) : (
+                                      <ChevronRight className="w-3 h-3" />
+                                    )}
+                                    <span className="truncate">
+                                      {comp.name}
+                                    </span>
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      handleNavigate(
+                                        `/sports?sport=${sport.sid}&competition=${encodeURIComponent(comp.name)}`,
+                                      )
+                                    }
+                                    className="text-[10px] bg-muted px-1.5 py-0.5 rounded ml-2 hover:bg-muted/70 transition-colors"
+                                  >
+                                    {comp.matches.length}
+                                  </button>
+                                </div>
+
+                                {/* Matches */}
+                                {isCompExpanded && (
+                                  <div className="bg-background/50">
+                                    {comp.matches.map((match) => (
+                                      <button
+                                        key={match.gmid}
+                                        onClick={() =>
+                                          handleNavigate(
+                                            `/match/${match.gmid}/${sport.sid}`,
+                                          )
+                                        }
+                                        className="w-full px-10 py-1.5 text-xs text-left transition-colors hover:bg-muted/20 border-b border-border/20"
+                                      >
+                                        <div className="flex items-center gap-2">
+                                          {match.is_live && (
+                                            <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse flex-shrink-0" />
+                                          )}
+                                          <span className="truncate text-muted-foreground hover:text-foreground">
+                                            {match.name}
+                                          </span>
+                                        </div>
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </nav>
         </div>

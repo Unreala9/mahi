@@ -36,15 +36,19 @@ class DiamondWebSocketService {
     odds: Map<number, any>; // gmid -> odds data
     lastUpdate: number;
   } = {
-    sports: [],
-    matches: [],
-    odds: new Map(),
-    lastUpdate: 0,
-  };
+      sports: [],
+      matches: [],
+      odds: new Map(),
+      lastUpdate: 0,
+    };
 
   // Track which matches we're actively polling for odds
   private activeOddsPolling: Map<number, { gmid: number; sid: number }> =
     new Map();
+
+  // Blacklist matches that return 404 (no odds available)
+  private oddsBlacklist: Map<number, number> = new Map(); // gmid -> timestamp
+  private blacklistDuration = 5 * 60 * 1000; // 5 minutes
 
   constructor(config?: WebSocketConfig) {
     if (config) {
@@ -56,7 +60,7 @@ class DiamondWebSocketService {
    * Connect to service (uses HTTP polling only - no WebSocket)
    * This method sets up a polling mechanism for real-time updates
    */
-  connect(): void {
+  async connect(): Promise<void> {
     if (this.isConnecting || this.isPolling) {
       console.log("[Diamond WS] Already connected or connecting");
       return;
@@ -74,15 +78,18 @@ class DiamondWebSocketService {
 
     console.log("[Diamond WS] Starting HTTP polling service...");
 
-    // Start polling for live updates
-    this.startPolling();
+    // Fetch initial data before starting polling intervals
+    console.log("[Diamond WS] Fetching initial data...");
+    await this.fetchAndEmitData();
+    console.log("[Diamond WS] Initial data fetched");
 
-    // Emit connected event
-    setTimeout(() => {
-      this.isConnecting = false;
-      this.isPolling = true;
-      this.emit("connected", { status: "polling_active" });
-    }, 100);
+    // Now start polling intervals for continuous updates
+    this.startPollingIntervals();
+
+    // Emit connected event after data is ready
+    this.isConnecting = false;
+    this.isPolling = true;
+    this.emit("connected", { status: "polling_active" });
   }
 
   /**
@@ -100,17 +107,14 @@ class DiamondWebSocketService {
   /**
    * Start intelligent polling for live data
    */
-  private startPolling(): void {
+  private startPollingIntervals(): void {
     // Clear any existing intervals first
     this.clearPollingIntervals();
 
-    // Initial fetch
-    this.fetchAndEmitData();
-
     // Set up polling intervals and store their IDs
-    // Sports list: every 5 minutes (rarely changes)
+    // Sports list: every 60 seconds (rarely changes, but faster than before)
     this.pollingIntervals.push(
-      setInterval(() => this.fetchSports(), 5 * 60 * 1000),
+      setInterval(() => this.fetchSports(), 60 * 1000),
     );
 
     // Matches: every 10 seconds for live updates
@@ -157,7 +161,17 @@ class DiamondWebSocketService {
       const base = apiHost.startsWith("/")
         ? apiHost
         : `${protocol}://${apiHost}`;
-      const response = await fetch(`${base}/allSportid?key=${apiKey}`);
+
+      // Add timeout and keepalive for faster requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout (increased from 5s)
+
+      const response = await fetch(`${base}/allSportid?key=${apiKey}`, {
+        signal: controller.signal,
+        keepalive: true, // Reuse connections
+      });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         console.warn(`[WebSocket] Sports API returned ${response.status}`);
@@ -199,7 +213,17 @@ class DiamondWebSocketService {
       const base = apiHost.startsWith("/")
         ? apiHost
         : `${protocol}://${apiHost}`;
-      const response = await fetch(`${base}/tree?key=${apiKey}`);
+
+      // Add timeout and keepalive for faster requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout (increased from 3s)
+
+      const response = await fetch(`${base}/tree?key=${apiKey}`, {
+        signal: controller.signal,
+        keepalive: true, // Reuse connections
+      });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         console.warn(`[WebSocket] Matches API returned ${response.status}`);
@@ -242,20 +266,66 @@ class DiamondWebSocketService {
       return;
     }
 
+<<<<<<< Updated upstream
     // Get all tracked matches for polling
     const trackedMatches = Array.from(this.activeOddsPolling.values());
 
     // Fetch odds for each tracked match
     const oddsPromises = trackedMatches.slice(0, 30).map(async (match) => {
+=======
+    // Clean up expired blacklist entries
+    const now = Date.now();
+    for (const [gmid, timestamp] of this.oddsBlacklist.entries()) {
+      if (now - timestamp > this.blacklistDuration) {
+        this.oddsBlacklist.delete(gmid);
+      }
+    }
+
+    // Filter out blacklisted matches
+    const availableMatches = liveMatches.filter(
+      (m) => !this.oddsBlacklist.has(m.gmid)
+    );
+
+    // Fetch odds for up to 20 live matches concurrently (increased from 10)
+    const oddsPromises = availableMatches.slice(0, 20).map(async (match) => {
+>>>>>>> Stashed changes
       try {
         const apiHost =
           import.meta.env.VITE_DIAMOND_API_HOST || "130.250.191.174:3009";
         const protocol = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "http";
         const apiKey =
           import.meta.env.VITE_DIAMOND_API_KEY || "mahi4449839dbabkadbakwq1qqd";
+
+        // Add timeout for faster failure and retry
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout (increased from 2s)
+
         const response = await fetch(
+<<<<<<< Updated upstream
           `${protocol}://${apiHost}/getPriveteData?gmid=${match.gmid}&sid=${match.sid}&key=${apiKey}`,
+=======
+          `${protocol}://${apiHost}/Getmatchdatawithidhop?gmid=${match.gmid}&sid=${match.sid}&key=${apiKey}`,
+          {
+            signal: controller.signal,
+            keepalive: true, // Reuse connections
+          }
+>>>>>>> Stashed changes
         );
+
+        clearTimeout(timeoutId);
+
+        // If 404, add to blacklist and skip
+        if (response.status === 404) {
+          this.oddsBlacklist.set(match.gmid, Date.now());
+          console.debug(`[WebSocket] Match ${match.gmid} has no odds - blacklisted for 5 minutes`);
+          return;
+        }
+
+        // Skip other error responses
+        if (!response.ok) {
+          return;
+        }
+
         const data = await response.json();
 
         if (data && data.data) {
@@ -543,6 +613,12 @@ class DiamondWebSocketService {
       const response = await fetch(
         `${base}/getPriveteData?gmid=${gmid}&sid=${sid}&key=${apiKey}`,
       );
+
+      // Silently skip 404s - match odds not available yet
+      if (!response.ok) {
+        return;
+      }
+
       const data = await response.json();
 
       if (data && data.data) {
@@ -556,11 +632,10 @@ class DiamondWebSocketService {
         });
       }
     } catch (error) {
-      console.error(
-        `[WebSocket] Error fetching odds for match ${gmid}:`,
-        error,
+      // Silent fail - odds not available or network error
+      console.debug(
+        `[WebSocket] Odds not available for match ${gmid}`,
       );
-      this.emit("error", { message: "Failed to fetch odds", gmid, error });
     }
   }
 
