@@ -21,6 +21,7 @@ const Sportsbook = () => {
     sportParam ? parseInt(sportParam) : 4,
   );
   const [showDebug, setShowDebug] = useState(false);
+  const isDev = import.meta.env.DEV;
 
   // Update selectedSport when URL params change
   useEffect(() => {
@@ -100,10 +101,10 @@ const Sportsbook = () => {
     <MainLayout>
       <div className="flex flex-col">
         {/* Sport Tabs */}
-        <div className="bg-[#e5e7eb] border-b-2 border-gray-300">
-          <div className="flex overflow-x-auto scrollbar-hide">
+        <div className="bg-card border-b border-border">
+          <div className="flex flex-wrap">
             {/* Status Indicator */}
-            <div className="flex items-center gap-2 px-3 md:px-4 py-2 md:py-3 border-r border-gray-300 bg-white flex-shrink-0">
+            <div className="flex items-center gap-2 px-3 md:px-4 py-2 md:py-3 border-r border-border bg-background flex-shrink-0">
               {isConnected ? (
                 <>
                   <Wifi className="w-3.5 h-3.5 md:w-4 md:h-4 text-green-500" />
@@ -133,10 +134,10 @@ const Sportsbook = () => {
                   setSelectedSport(sport.sid);
                   setSearchParams({ sport: sport.sid.toString() });
                 }}
-                className={`px-4 md:px-6 py-2 md:py-3 text-xs md:text-sm font-medium whitespace-nowrap border-r border-gray-300 transition-colors flex-shrink-0 ${
+                className={`px-4 md:px-6 py-2 md:py-3 text-xs md:text-sm font-medium whitespace-nowrap border-r border-border transition-colors ${
                   selectedSport === sport.sid
-                    ? "bg-[#4a5568] text-white"
-                    : "text-gray-700 hover:bg-gray-200"
+                    ? "bg-muted text-foreground"
+                    : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                 }`}
               >
                 {sportNames[index] || sport.name}
@@ -147,11 +148,11 @@ const Sportsbook = () => {
 
         {/* Competition Filter Indicator */}
         {competitionParam && (
-          <div className="bg-[#2d3a48] px-4 py-2 flex items-center justify-between border-b border-gray-700">
-            <div className="flex items-center gap-2 text-sm text-white">
+          <div className="bg-muted px-4 py-2 flex items-center justify-between border-b border-border">
+            <div className="flex items-center gap-2 text-sm text-foreground">
               <span className="font-semibold">Competition:</span>
               <span className="text-primary">{competitionParam}</span>
-              <span className="text-gray-400">({matches.length} matches)</span>
+              <span className="text-muted-foreground">({matches.length} matches)</span>
             </div>
             <Button
               variant="ghost"
@@ -159,7 +160,7 @@ const Sportsbook = () => {
               onClick={() =>
                 setSearchParams({ sport: selectedSport.toString() })
               }
-              className="text-xs text-gray-400 hover:text-white"
+              className="text-xs text-muted-foreground hover:text-foreground"
             >
               Clear Filter ×
             </Button>
@@ -167,39 +168,39 @@ const Sportsbook = () => {
         )}
 
         {/* Matches Table */}
-        <div className="bg-black">
+        <div className="bg-background">
           {/* Table Header */}
-          <div className="hidden md:grid grid-cols-12 bg-[#374151] border-b-2 border-gray-600">
-            <div className="col-span-6 px-4 py-2.5 text-sm font-semibold text-white border-r border-gray-600">
+          <div className="hidden md:grid grid-cols-12 bg-muted border-b border-border">
+            <div className="col-span-6 px-4 py-2.5 text-sm font-semibold text-foreground border-r border-border">
               Game
             </div>
-            <div className="col-span-2 px-2 py-2.5 text-center text-sm font-semibold text-white border-r border-gray-600">
+            <div className="col-span-2 px-2 py-2.5 text-center text-sm font-semibold text-foreground border-r border-border">
               1
             </div>
-            <div className="col-span-2 px-2 py-2.5 text-center text-sm font-semibold text-white border-r border-gray-600">
+            <div className="col-span-2 px-2 py-2.5 text-center text-sm font-semibold text-foreground border-r border-border">
               X
             </div>
-            <div className="col-span-2 px-2 py-2.5 text-center text-sm font-semibold text-white">
+            <div className="col-span-2 px-2 py-2.5 text-center text-sm font-semibold text-foreground">
               2
             </div>
           </div>
 
           {/* Loading State */}
           {isLoading && matches.length === 0 ? (
-            <div className="bg-black">
+            <div className="bg-background">
               {Array.from({ length: 5 }).map((_, i) => (
                 <MatchRowSkeleton key={i} />
               ))}
             </div>
           ) : matches.length === 0 ? (
-            <div className="text-center p-16 space-y-3 bg-black">
-              <div className="text-gray-400 text-lg">No events available</div>
-              <div className="text-gray-500 text-sm">
+            <div className="text-center p-10 space-y-2 bg-background">
+              <div className="text-muted-foreground text-lg">No events available</div>
+              <div className="text-muted-foreground text-sm">
                 {selectedSport === "all"
                   ? "There are no events across all sports at the moment"
                   : "There are no events for this sport at the moment"}
               </div>
-              <div className="text-gray-600 text-xs mt-4">
+              <div className="text-muted-foreground text-xs mt-3">
                 {lastUpdate > 0 &&
                   `Last updated: ${new Date(lastUpdate).toLocaleTimeString()}`}
               </div>
@@ -215,7 +216,7 @@ const Sportsbook = () => {
                   />
                 ))}
               {matches.length > visibleCount && (
-                <div className="flex justify-center py-4 bg-black">
+                <div className="flex justify-center py-4 bg-background">
                   <Button
                     variant="outline"
                     onClick={() => setVisibleCount((c) => c + 30)}
@@ -230,43 +231,45 @@ const Sportsbook = () => {
         </div>
 
         {/* API Debug Panel */}
-        <div className="mt-4 px-4">
-          <Button
-            variant="outline"
-            className="text-xs"
-            onClick={() => setShowDebug((s) => !s)}
-          >
-            {showDebug ? "Hide" : "Show"} API Debug Data
-          </Button>
-          {showDebug && (
-            <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="bg-[#1a1a1a] p-3 rounded border border-gray-700">
-                <div className="text-xs font-semibold text-gray-300 mb-2">
-                  Matches (tree endpoint)
+        {isDev && (
+          <div className="mt-4 px-4">
+            <Button
+              variant="outline"
+              className="text-xs"
+              onClick={() => setShowDebug((s) => !s)}
+            >
+              {showDebug ? "Hide" : "Show"} API Debug Data
+            </Button>
+            {showDebug && (
+              <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="bg-card p-3 rounded border border-border">
+                  <div className="text-xs font-semibold text-muted-foreground mb-2">
+                    Matches (tree endpoint)
+                  </div>
+                  <pre className="text-[10px] text-muted-foreground overflow-auto max-h-64">
+                    {JSON.stringify(matches.slice(0, 5), null, 2)}
+                  </pre>
                 </div>
-                <pre className="text-[10px] text-gray-300 overflow-auto max-h-64">
-                  {JSON.stringify(matches.slice(0, 5), null, 2)}
-                </pre>
-              </div>
-              <div className="bg-[#1a1a1a] p-3 rounded border border-gray-700">
-                <div className="text-xs font-semibold text-gray-300 mb-2">
-                  Match Details (/getDetailsData)
+                <div className="bg-card p-3 rounded border border-border">
+                  <div className="text-xs font-semibold text-muted-foreground mb-2">
+                    Match Details (/getDetailsData)
+                  </div>
+                  <pre className="text-[10px] text-muted-foreground overflow-auto max-h-64">
+                    {JSON.stringify(debugDetails ?? {}, null, 2)}
+                  </pre>
                 </div>
-                <pre className="text-[10px] text-gray-300 overflow-auto max-h-64">
-                  {JSON.stringify(debugDetails ?? {}, null, 2)}
-                </pre>
-              </div>
-              <div className="bg-[#1a1a1a] p-3 rounded border border-gray-700">
-                <div className="text-xs font-semibold text-gray-300 mb-2">
-                  Match Odds (/getPriveteData)
+                <div className="bg-card p-3 rounded border border-border">
+                  <div className="text-xs font-semibold text-muted-foreground mb-2">
+                    Match Odds (/getMatchOdds)
+                  </div>
+                  <pre className="text-[10px] text-muted-foreground overflow-auto max-h-64">
+                    {JSON.stringify(debugOdds ?? {}, null, 2)}
+                  </pre>
                 </div>
-                <pre className="text-[10px] text-gray-300 overflow-auto max-h-64">
-                  {JSON.stringify(debugOdds ?? {}, null, 2)}
-                </pre>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
     </MainLayout>
   );

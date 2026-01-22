@@ -65,10 +65,7 @@ export function BettingModal({
 
   const handleSubmit = () => {
     const success = betSlip.submitBet();
-    if (success) {
-      // Optionally show success message
-      console.log("Bet submitted successfully");
-    }
+    void success;
   };
 
   const quickStakeAmounts = [1000, 2000, 5000, 10000, 20000, 25000, 50000, 75000, 90000, 95000];
@@ -82,12 +79,12 @@ export function BettingModal({
       />
 
       {/* Modal */}
-      <div className="relative w-full h-full md:h-auto md:max-h-[90vh] md:w-[95vw] md:max-w-6xl bg-[#1a1a1a] md:rounded-lg shadow-2xl overflow-hidden flex flex-col">
+      <div className="relative w-full h-full md:h-auto md:max-h-[90vh] md:w-[95vw] md:max-w-6xl bg-background md:rounded-lg shadow-2xl overflow-hidden flex flex-col border border-border">
         {/* Header */}
-        <div className="bg-[#2d3748] px-4 py-3 flex items-center justify-between border-b border-gray-700">
+        <div className="bg-muted px-4 py-3 flex items-center justify-between border-b border-border">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h2 className="text-sm md:text-base font-bold text-white uppercase">
+              <h2 className="text-sm md:text-base font-bold text-foreground uppercase">
                 {match.name}
               </h2>
               {match.is_live && (
@@ -96,7 +93,7 @@ export function BettingModal({
                 </span>
               )}
             </div>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-muted-foreground">
               {match.start_date
                 ? new Date(match.start_date).toLocaleString("en-US", {
                     day: "2-digit",
@@ -117,7 +114,7 @@ export function BettingModal({
             </a>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-white transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
               <X className="h-5 w-5" />
             </button>
@@ -131,17 +128,17 @@ export function BettingModal({
             <div className="lg:col-span-2 space-y-4">
               {/* Match Odds */}
               {matchOdds.length > 0 && (
-                <div className="bg-[#0a0a0a] rounded-lg overflow-hidden">
-                  <div className="bg-[#2d3748] px-4 py-2 flex items-center justify-between">
-                    <h3 className="text-xs font-bold text-white uppercase">
+                <div className="bg-card rounded-lg overflow-hidden border border-border">
+                  <div className="bg-muted px-4 py-2 flex items-center justify-between border-b border-border">
+                    <h3 className="text-xs font-bold text-foreground uppercase">
                       Match Odds
                     </h3>
-                    <span className="text-xs text-gray-400">Max: 1.00</span>
+                    <span className="text-xs text-muted-foreground">Max: 1.00</span>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs">
                       <thead>
-                        <tr className="bg-[#1a1a1a] text-gray-400">
+                        <tr className="bg-muted/50 text-muted-foreground">
                           <th className="px-4 py-2 text-left font-semibold"></th>
                           <th className="px-2 py-2 text-center font-semibold" colSpan={2}>
                             Back
@@ -169,9 +166,9 @@ export function BettingModal({
                           return (
                             <tr
                               key={idx}
-                              className="border-b border-gray-800 hover:bg-[#1a1a1a]"
+                              className="border-b border-border hover:bg-muted/30"
                             >
-                              <td className="px-4 py-2 text-white font-semibold">
+                              <td className="px-4 py-2 text-foreground font-semibold">
                                 {runnerName}
                               </td>
                               <td className="px-2 py-2">
@@ -183,8 +180,8 @@ export function BettingModal({
                                   disabled={!backOdds?.odds || backOdds.odds <= 0}
                                   className={`w-full px-3 py-2 rounded text-center font-bold transition-all ${
                                     backOdds?.odds && backOdds.odds > 0
-                                      ? "bg-[#72bbef] hover:bg-[#5aa7dc] text-black cursor-pointer"
-                                      : "bg-[#2a2a2a] text-gray-600 cursor-not-allowed"
+                                      ? "bg-sky-300 hover:bg-sky-400 text-black cursor-pointer"
+                                      : "bg-muted text-muted-foreground cursor-not-allowed"
                                   }`}
                                 >
                                   <div className="text-sm">
@@ -200,7 +197,7 @@ export function BettingModal({
                                 </button>
                               </td>
                               <td className="px-2 py-2">
-                                <div className="text-[10px] text-gray-500 text-center">
+                                <div className="text-[10px] text-muted-foreground text-center">
                                   {backOdds?.size || "-"}
                                 </div>
                               </td>
@@ -213,8 +210,8 @@ export function BettingModal({
                                   disabled={!layOdds?.odds || layOdds.odds <= 0}
                                   className={`w-full px-3 py-2 rounded text-center font-bold transition-all ${
                                     layOdds?.odds && layOdds.odds > 0
-                                      ? "bg-[#faa9ba] hover:bg-[#f88fa5] text-black cursor-pointer"
-                                      : "bg-[#2a2a2a] text-gray-600 cursor-not-allowed"
+                                      ? "bg-rose-300 hover:bg-rose-400 text-black cursor-pointer"
+                                      : "bg-muted text-muted-foreground cursor-not-allowed"
                                   }`}
                                 >
                                   <div className="text-sm">
@@ -230,7 +227,7 @@ export function BettingModal({
                                 </button>
                               </td>
                               <td className="px-2 py-2">
-                                <div className="text-[10px] text-gray-500 text-center">
+                                <div className="text-[10px] text-muted-foreground text-center">
                                   {layOdds?.size || "-"}
                                 </div>
                               </td>

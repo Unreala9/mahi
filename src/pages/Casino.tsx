@@ -1,18 +1,26 @@
-import { useMemo, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { GameCard } from "@/components/casino/GameCard";
 import { CASINO_CATEGORIES } from "@/data/casinoCategories";
 import { fetchCasinoGames } from "@/services/casino";
 import type { CasinoGame } from "@/types/casino";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Casino() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeCategory, setActiveCategory] = useState("all");
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const cat = params.get("cat");
+    if (!cat) return;
+    if (CASINO_CATEGORIES.some((c) => c.id === cat)) {
+      setActiveCategory(cat);
+    }
+  }, [location.search]);
 
   // Fetch casino games
   const {
@@ -89,16 +97,6 @@ export default function Casino() {
 
   const filteredGames = gamesByCategory[activeCategory] || [];
 
-  const scrollTabs = (direction: "left" | "right") => {
-    if (scrollContainerRef.current) {
-      const scrollAmount = 300;
-      scrollContainerRef.current.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth",
-      });
-    }
-  };
-
   const handlePlay = (game: CasinoGame) => {
     navigate(`/casino/${game.gmid}`);
   };
@@ -126,55 +124,26 @@ export default function Casino() {
 
   return (
     <MainLayout>
-      {/* Horizontal Scrolling Tabs */}
-      <div className="relative mb-6 -mx-4 px-4">
-        <div className="flex items-center gap-2">
-          {/* Left Arrow */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="flex-shrink-0 h-10 w-10 rounded-full hover:bg-primary/10"
-            onClick={() => scrollTabs("left")}
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-
-          {/* Tabs Container */}
-          <div
-            ref={scrollContainerRef}
-            className="flex-1 overflow-x-auto scrollbar-hide scroll-smooth"
-          >
-            <div className="flex gap-2 min-w-max pb-1">
-              {CASINO_CATEGORIES.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => setActiveCategory(category.id)}
-                  className={`px-6 py-2.5 rounded-md font-semibold text-sm whitespace-nowrap transition-all ${
-                    activeCategory === category.id
-                      ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30"
-                      : "bg-slate-800/50 text-gray-300 hover:bg-slate-700/50"
-                  }`}
-                >
-                  {category.name}
-                  <span className="ml-2 text-xs opacity-70">
-                    {gamesByCategory[category.id]?.length || 0}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Right Arrow */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="flex-shrink-0 h-10 w-10 rounded-full hover:bg-primary/10"
-            onClick={() => scrollTabs("right")}
-          >
-            <ChevronRight className="h-5 w-5" />
-          </Button>
+      <div className="w-full max-w-7xl mx-auto">
+        {/* Category Tabs (wrap, no horizontal scroll) */}
+        <div className="mb-3 flex flex-wrap gap-2">
+          {CASINO_CATEGORIES.map((category) => (
+            <button
+              key={category.id}
+              onClick={() => setActiveCategory(category.id)}
+              className={`px-3 py-1.5 text-xs whitespace-nowrap border transition-colors ${
+                activeCategory === category.id
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-background text-foreground border-border hover:bg-muted"
+              }`}
+            >
+              <span className="font-semibold">{category.name}</span>
+              <span className="ml-2 text-[10px] text-muted-foreground">
+                {gamesByCategory[category.id]?.length || 0}
+              </span>
+            </button>
+          ))}
         </div>
-      </div>
 
       {/* Games Grid */}
       {filteredGames.length === 0 ? (
@@ -182,7 +151,7 @@ export default function Casino() {
           <p className="text-muted-foreground">No games in this category</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2">
           {filteredGames.map((game) => (
             <GameCard
               key={game.gmid}
@@ -192,6 +161,7 @@ export default function Casino() {
           ))}
         </div>
       )}
+      </div>
     </MainLayout>
   );
 }
