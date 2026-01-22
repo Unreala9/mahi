@@ -1,5 +1,5 @@
-import { useMemo, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { GameCard } from "@/components/casino/GameCard";
@@ -11,8 +11,18 @@ import { Button } from "@/components/ui/button";
 
 export default function Casino() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeCategory, setActiveCategory] = useState("all");
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const cat = params.get("cat");
+    if (!cat) return;
+    if (CASINO_CATEGORIES.some((c) => c.id === cat)) {
+      setActiveCategory(cat);
+    }
+  }, [location.search]);
 
   // Fetch casino games
   const {
@@ -127,19 +137,18 @@ export default function Casino() {
   return (
     <MainLayout>
       {/* Horizontal Scrolling Tabs */}
-      <div className="relative mb-6 -mx-4 px-4">
+      <div className="relative mb-4 -mx-6 px-6">
         <div className="flex items-center gap-2">
-          {/* Left Arrow */}
           <Button
             variant="ghost"
             size="icon"
-            className="flex-shrink-0 h-10 w-10 rounded-full hover:bg-primary/10"
+            className="flex-shrink-0 h-9 w-9"
             onClick={() => scrollTabs("left")}
+            aria-label="Scroll categories left"
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft className="h-4 w-4" />
           </Button>
 
-          {/* Tabs Container */}
           <div
             ref={scrollContainerRef}
             className="flex-1 overflow-x-auto scrollbar-hide scroll-smooth"
@@ -149,14 +158,14 @@ export default function Casino() {
                 <button
                   key={category.id}
                   onClick={() => setActiveCategory(category.id)}
-                  className={`px-6 py-2.5 rounded-md font-semibold text-sm whitespace-nowrap transition-all ${
+                  className={`px-4 py-2 text-sm whitespace-nowrap border transition-colors ${
                     activeCategory === category.id
-                      ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30"
-                      : "bg-slate-800/50 text-gray-300 hover:bg-slate-700/50"
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-background text-foreground border-border hover:bg-muted"
                   }`}
                 >
-                  {category.name}
-                  <span className="ml-2 text-xs opacity-70">
+                  <span className="font-semibold">{category.name}</span>
+                  <span className="ml-2 text-xs text-muted-foreground">
                     {gamesByCategory[category.id]?.length || 0}
                   </span>
                 </button>
@@ -164,14 +173,14 @@ export default function Casino() {
             </div>
           </div>
 
-          {/* Right Arrow */}
           <Button
             variant="ghost"
             size="icon"
-            className="flex-shrink-0 h-10 w-10 rounded-full hover:bg-primary/10"
+            className="flex-shrink-0 h-9 w-9"
             onClick={() => scrollTabs("right")}
+            aria-label="Scroll categories right"
           >
-            <ChevronRight className="h-5 w-5" />
+            <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
       </div>
@@ -182,7 +191,7 @@ export default function Casino() {
           <p className="text-muted-foreground">No games in this category</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
           {filteredGames.map((game) => (
             <GameCard
               key={game.gmid}
