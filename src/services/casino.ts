@@ -110,6 +110,12 @@ export function getImageCandidates(imgpath: string): string[] {
   return urls;
 }
 
+export function getImageUrlForGame(game: CasinoGame): string[] {
+  const imgpath =
+    (game as any)?.imgpath || (game as any)?.img || (game as any)?.image || "";
+  return getImageCandidates(String(imgpath));
+}
+
 export function inferCategory(game: CasinoGame): string {
   const name = game.gname.toLowerCase();
   if (name.includes("teenpatti") || name.includes("teen")) return "Teen Patti";

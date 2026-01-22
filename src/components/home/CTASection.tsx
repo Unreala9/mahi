@@ -27,7 +27,7 @@ const CTASection = () => {
                   Create Account
                 </Button>
               </Link>
-              <Link to="/games" className="w-full sm:w-auto">
+              <Link to="/casino" className="w-full sm:w-auto">
                 <Button variant="outline" className="w-full sm:w-auto h-12 px-8 text-lg font-bold border-white/20 text-white hover:bg-white/10 hover:border-white/40">
                   Browse Games
                   <ArrowRight className="w-5 h-5 ml-2" />

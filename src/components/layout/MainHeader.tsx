@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu } from "lucide-react";
+import { Menu, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -69,7 +69,6 @@ export const MainHeader = ({
 
   const navItems = [
     { label: "HOME", to: "/" },
-    { label: "LOTTERY", to: "/games" },
     { label: "CRICKET", to: "/sports?sport=4" },
     { label: "TENNIS", to: "/sports?sport=2" },
     { label: "FOOTBALL", to: "/sports?sport=1" },
@@ -81,6 +80,9 @@ export const MainHeader = ({
     { label: "LUCKY 7", to: "/casino?cat=lucky-7" },
     { label: "CRASH", to: "/casino?cat=others" },
   ];
+
+  const marqueeText =
+    "NEWLY LAUNCHED CASINO GAME *MATKA MARKET* EVERY HOUR OPEN & CLOSE MARKET WITH LIVE DEALER";
 
   const isActive = (to: string) => {
     const [path] = to.split("?");
@@ -125,9 +127,20 @@ export const MainHeader = ({
               </button>
             </div>
 
-            <div className="font-semibold whitespace-nowrap">
-              Balance:{" "}
-              <span className="font-mono">₹{Number(balance).toLocaleString()}</span>
+            <div className="flex items-center gap-2 whitespace-nowrap font-semibold">
+              <span>
+                Balance:{" "}
+                <span className="font-mono">₹{Number(balance).toLocaleString()}</span>
+              </span>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="h-9 px-2"
+                onClick={() => navigate("/wallet")}
+                aria-label="Wallet"
+              >
+                <Wallet className="h-4 w-4" />
+              </Button>
             </div>
 
             {isAuthed ? (
@@ -137,7 +150,12 @@ export const MainHeader = ({
                     {userLabel}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuContent
+                  align="end"
+                  sideOffset={6}
+                  portalled={false}
+                  className="w-56"
+                >
                   <DropdownMenuItem onClick={() => navigate("/wallet")}>
                     Account Statement
                   </DropdownMenuItem>
@@ -170,6 +188,18 @@ export const MainHeader = ({
                 Sign In
               </Button>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* Header marquee (loop) */}
+      <div className="bg-secondary text-secondary-foreground border-b border-border">
+        <div className="h-7 px-3 md:px-6 flex items-center overflow-hidden">
+          <div className="flex w-max whitespace-nowrap animate-marquee">
+            <div className="flex items-center gap-10 text-[11px] font-semibold italic uppercase tracking-wide">
+              <span>{marqueeText}</span>
+              <span aria-hidden="true">{marqueeText}</span>
+            </div>
           </div>
         </div>
       </div>

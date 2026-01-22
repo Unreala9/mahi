@@ -7,8 +7,6 @@ import { useEffect } from "react";
 import { diamondWS } from "@/services/websocket";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import PublicGames from "./pages/PublicGames";
-import Games from "./pages/Games";
 import Sportsbook from "./pages/Sportsbook";
 import CasinoLive from "./pages/CasinoLive";
 import Casino from "./pages/Casino";
@@ -69,7 +67,6 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/games" element={<PublicGames />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/terms" element={<Terms />} />
@@ -83,7 +80,6 @@ const App = () => {
                 <ProtectedRoute>
                   <Routes>
                     <Route path="/" element={<Dashboard />} />
-                    <Route path="games" element={<Games />} />
                   </Routes>
                 </ProtectedRoute>
               }

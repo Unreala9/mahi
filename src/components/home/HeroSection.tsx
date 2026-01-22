@@ -56,7 +56,7 @@ const HeroSection = () => {
                 Start Winning Now
               </Button>
             </Link>
-            <Link to="/games" className="w-full sm:w-auto">
+            <Link to="/casino" className="w-full sm:w-auto">
               <Button
                 variant="outline"
                 className="w-full sm:w-auto h-14 px-8 text-lg font-bold border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/30 hover:text-white transition-all duration-300 backdrop-blur-md rounded-xl"

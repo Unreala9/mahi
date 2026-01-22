@@ -21,7 +21,7 @@ const FeaturedGames = () => {
             </h2>
             <p className="text-muted-foreground ml-1">Top picks from our premium collection</p>
           </div>
-          <Link to="/games">
+          <Link to="/casino">
             <Button variant="outline" className="border-white/10 text-white hover:bg-white/5 hover:border-white/20">
               View All Games
               <ArrowRight className="w-4 h-4 ml-2" />
