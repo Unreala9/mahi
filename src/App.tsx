@@ -1,10 +1,5 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import OddsDebug from "./pages/OddsDebug";
-import OddsViewer from "./pages/OddsViewer";
-import OfflineOddsDashboard from "./pages/OfflineOddsDashboard";
-import OnlineOddsDashboard from "./pages/OnlineOddsDashboard";
-import TestOddsPage from "./pages/TestOddsPage";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -98,46 +93,6 @@ const App = () => {
               element={
                 <ProtectedRoute>
                   <Sportsbook />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/odds-debug"
-              element={
-                <ProtectedRoute>
-                  <OddsDebug />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/odds-viewer"
-              element={
-                <ProtectedRoute>
-                  <OddsViewer />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/offline-odds"
-              element={
-                <ProtectedRoute>
-                  <OfflineOddsDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/online-odds"
-              element={
-                <ProtectedRoute>
-                  <OnlineOddsDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/test-odds"
-              element={
-                <ProtectedRoute>
-                  <TestOddsPage />
                 </ProtectedRoute>
               }
             />
