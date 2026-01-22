@@ -363,6 +363,7 @@ export default function Casino() {
           ))}
         </Tabs>
       )}
+      </div>
     </MainLayout>
   );
 }

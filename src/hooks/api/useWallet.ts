@@ -1,13 +1,15 @@
+import type { UseQueryOptions } from "@tanstack/react-query";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { callEdgeFunction } from "@/lib/edge";
 
-export const useWalletBalance = () => {
+export const useWalletBalance = (options?: Omit<UseQueryOptions<number>, "queryKey" | "queryFn">) => {
   return useQuery({
     queryKey: ["wallet-balance"],
     queryFn: () =>
       callEdgeFunction("wallet?action=balance", {}, { method: "GET" }).then(
         (res: any) => res.balance || 0
       ),
+    ...(options ?? {}),
   });
 };
 
