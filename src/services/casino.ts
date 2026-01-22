@@ -1,27 +1,76 @@
 import { CasinoResponse, CasinoGame } from "@/types/casino";
 
 const API_HOST =
-  import.meta.env.VITE_DIAMOND_API_HOST || "130.250.191.174:3009";
-const API_PROTOCOL = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "http";
+  import.meta.env.VITE_DIAMOND_API_HOST || "/api/diamond";
+const API_PROTOCOL = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "";
 const API_KEY =
   import.meta.env.VITE_DIAMOND_API_KEY || "mahi4449839dbabkadbakwq1qqd";
-const DEFAULT_API = `${API_PROTOCOL}://${API_HOST}/casino/tableid?key=${API_KEY}`;
+
+// Build base URL properly
+const BASE_API_URL = API_HOST.startsWith("/")
+  ? API_HOST
+  : API_PROTOCOL
+  ? `${API_PROTOCOL}://${API_HOST}`
+  : `http://${API_HOST}`;
+
+const DEFAULT_API = `${BASE_API_URL}/casino/tableid?key=${API_KEY}`;
 const API_URL = import.meta.env.VITE_CASINO_API_URL || DEFAULT_API;
 const IMAGE_BASE =
-  import.meta.env.VITE_CASINO_IMAGE_BASE || `${API_PROTOCOL}://${API_HOST}`; // Use API host as base
+  import.meta.env.VITE_CASINO_IMAGE_BASE || BASE_API_URL; // Use API host as base
 
 export async function fetchCasinoGames(): Promise<CasinoGame[]> {
-  const res = await fetch(API_URL, { headers: { Accept: "*/*" } });
-  if (!res.ok) throw new Error("Failed to load casino data");
-  const json = (await res.json()) as CasinoResponse;
+  try {
+    if (import.meta.env.DEV) {
+      console.log("[Casino] Fetching from API:", API_URL);
+    }
 
-  // Debug: Check first game's imgpath
-  if (json.data.t1.length > 0) {
-    console.log("[Casino] Sample game data:", json.data.t1[0]);
-    console.log("[Casino] Sample imgpath:", json.data.t1[0].imgpath);
+    // Add timeout and faster failure
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3s timeout (reduced from 5s)
+
+    const res = await fetch(API_URL, {
+      headers: { Accept: "*/*" },
+      signal: controller.signal,
+      cache: "force-cache", // Use browser cache for faster loads
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      if (import.meta.env.DEV) {
+        console.warn("[Casino] API returned:", res.status);
+      }
+      throw new Error(`API returned ${res.status}`);
+    }
+
+    const json = (await res.json()) as CasinoResponse;
+
+    // Debug: Check first game's imgpath (only in dev)
+    if (import.meta.env.DEV && json.data.t1.length > 0) {
+      console.log("[Casino] API loaded successfully, games:", json.data.t1.length);
+      console.log("[Casino] Sample game data:", json.data.t1[0]);
+    }
+
+    return json.data.t1;
+  } catch (error) {
+    console.error("[Casino] API failed, loading fallback data:", error);
+
+    // Fallback to local JSON file
+    try {
+      const fallbackRes = await fetch("/casino.json");
+      if (!fallbackRes.ok) throw new Error("Fallback also failed");
+
+      const fallbackJson = (await fallbackRes.json()) as CasinoResponse;
+      if (import.meta.env.DEV) {
+        console.log("[Casino] Fallback loaded successfully, games:", fallbackJson.data.t1.length);
+      }
+
+      return fallbackJson.data.t1;
+    } catch (fallbackError) {
+      console.error("[Casino] Fallback also failed:", fallbackError);
+      throw new Error("Failed to load casino games from API and fallback");
+    }
   }
-
-  return json.data.t1;
 }
 
 export function getImageUrl(imgpath: string): string {
@@ -51,18 +100,12 @@ export function getImageCandidates(imgpath: string): string[] {
   // Build complete URL using API host
   const cleanPath = imgpath.startsWith("/") ? imgpath.substring(1) : imgpath;
 
-  // Try multiple paths where casino images might be stored
+  // Try only the most common paths (reduced from 6 to 3 for better performance)
   const urls = [
     `${IMAGE_BASE}/${cleanPath}`,
     `${IMAGE_BASE}/images/${cleanPath}`,
-    `${IMAGE_BASE}/casino/images/${cleanPath}`,
     `${IMAGE_BASE}/game-image/${cleanPath}`,
-    `${IMAGE_BASE}/static/images/${cleanPath}`,
-    // Try without extension as fallback
-    `${IMAGE_BASE}/${cleanPath.replace(/\.(gif|jpg|jpeg|png)$/i, "")}.png`,
   ];
-
-  console.log(`[Casino] Trying image URLs for ${imgpath}:`, urls);
 
   return urls;
 }
