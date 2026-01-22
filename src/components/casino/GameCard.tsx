@@ -27,7 +27,7 @@ const GameCardComponent = ({ game, onClick }: GameCardProps) => {
 
   return (
     <Card
-      className="group relative aspect-[4/3] overflow-hidden cursor-pointer border border-border hover:bg-muted transition-colors"
+      className="group relative aspect-square overflow-hidden cursor-pointer border border-border hover:bg-muted transition-colors"
       onClick={onClick}
     >
       {/* Image */}
@@ -41,7 +41,7 @@ const GameCardComponent = ({ game, onClick }: GameCardProps) => {
           <img
             src={imageSrc}
             alt={game.gname}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${!isImageLoaded ? "opacity-0" : "opacity-100"}`}
+            className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-300 ${!isImageLoaded ? "opacity-0" : "opacity-100"}`}
             onError={handleImageError}
             onLoad={handleImageLoad}
             loading="lazy"
