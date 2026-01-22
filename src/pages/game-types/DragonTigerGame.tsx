@@ -4,10 +4,11 @@ import { useCasinoLive } from "@/hooks/api/useCasinoLive";
 import type { CasinoGame } from "@/types/casino";
 import {
   BetSlipSidebar,
-  CardPlaceholder,
   GameHeader,
   ResultsSection,
 } from "./components/SharedGameComponents";
+import { PlayingCard, CardPlaceholder } from "@/components/casino/PlayingCard";
+import { BetButton } from "@/components/casino/BetButton";
 
 interface DragonTigerGameProps {
   game: CasinoGame;
@@ -17,53 +18,146 @@ export function DragonTigerGame({ game }: DragonTigerGameProps) {
   const [betAmount, setBetAmount] = useState("");
   const { data: liveData, odds } = useCasinoLive(game.gmid);
 
+  // Parse cards from API data
+  const cards = liveData?.card?.split(",") || [];
+  const dragonCard = cards[0];
+  const tigerCard = cards[1];
+
+  // Get betting markets from API
+  const markets = liveData?.sub || [];
+
+  // Categorize markets
+  const mainMarkets = markets.filter(
+    (m) =>
+      m.nat === "Dragon" ||
+      m.nat === "Tiger" ||
+      m.nat === "Tie" ||
+      m.nat === "Pair",
+  );
+
+  const dragonSideMarkets = markets.filter(
+    (m) =>
+      m.nat.includes("Dragon") &&
+      !mainMarkets.find((main) => main.nat === m.nat),
+  );
+
+  const tigerSideMarkets = markets.filter(
+    (m) =>
+      m.nat.includes("Tiger") &&
+      !mainMarkets.find((main) => main.nat === m.nat),
+  );
+
+  // Map market colors
+  const getMarketVariant = (nat: string) => {
+    if (nat.includes("Dragon")) return "primary";
+    if (nat.includes("Tiger")) return "danger";
+    if (nat.includes("Tie")) return "warning";
+    return "secondary";
+  };
+
   return (
     <MainLayout>
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-0 min-h-screen bg-background">
-        <div className="bg-[#2c3e50]">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-0 min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <div className="bg-gradient-to-br from-slate-800 to-slate-900">
           <GameHeader game={game} liveData={liveData} />
 
-          {/* Cards */}
-          <div className="px-4 py-4 flex justify-around items-center">
-            <div className="text-center">
-              <h3 className="text-white font-bold mb-2 text-sm uppercase">
-                DRAGON
-              </h3>
-              <CardPlaceholder />
-            </div>
-            <div className="text-white text-4xl font-bold">VS</div>
-            <div className="text-center">
-              <h3 className="text-white font-bold mb-2 text-sm uppercase">
-                TIGER
-              </h3>
-              <CardPlaceholder />
+          {/* Game Table - Card Display */}
+          <div className="p-6">
+            <div className="bg-gradient-to-br from-green-800 to-green-900 rounded-2xl shadow-2xl p-8 border-4 border-yellow-700/30">
+              {/* Cards Display */}
+              <div className="flex justify-around items-center mb-8">
+                <div className="text-center">
+                  <h3 className="text-yellow-400 font-bold mb-4 text-2xl uppercase tracking-wider drop-shadow-lg">
+                    🐉 Dragon
+                  </h3>
+                  {dragonCard ? (
+                    <PlayingCard card={dragonCard} className="w-24 h-36" />
+                  ) : (
+                    <CardPlaceholder className="w-24 h-36" />
+                  )}
+                </div>
+
+                <div className="text-white text-6xl font-bold tracking-wider drop-shadow-lg">
+                  VS
+                </div>
+
+                <div className="text-center">
+                  <h3 className="text-yellow-400 font-bold mb-4 text-2xl uppercase tracking-wider drop-shadow-lg">
+                    🐯 Tiger
+                  </h3>
+                  {tigerCard ? (
+                    <PlayingCard card={tigerCard} className="w-24 h-36" />
+                  ) : (
+                    <CardPlaceholder className="w-24 h-36" />
+                  )}
+                </div>
+              </div>
+
+              {/* Round Info */}
+              <div className="text-center text-yellow-200/80 text-sm">
+                Round:{" "}
+                <span className="font-mono font-bold">
+                  {liveData?.roundId || "Waiting..."}
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* Game Canvas */}
-          <div className="mx-4 mb-4 bg-black border-2 border-gray-600 h-[350px]" />
+          {/* Main Betting Markets */}
+          {mainMarkets.length > 0 && (
+            <div className="px-6 pb-4">
+              <h3 className="text-white font-bold mb-3 text-sm uppercase tracking-wide">
+                Main Markets
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {mainMarkets.map((market) => (
+                  <BetButton
+                    key={market.sid}
+                    market={market}
+                    variant={getMarketVariant(market.nat) as any}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
-          {/* Betting Options */}
-          <div className="px-4 py-4 grid grid-cols-3 gap-3">
-            <button className="bg-[#5dade2] hover:bg-[#4a9fd6] text-white py-6 px-4 rounded">
-              <div className="text-sm mb-1">Dragon</div>
-              <div className="text-3xl font-bold">
-                {odds?.markets?.[0]?.runners?.[0]?.odds?.toFixed(2) || "1.98"}
+          {/* Dragon Side Bets */}
+          {dragonSideMarkets.length > 0 && (
+            <div className="px-6 pb-4">
+              <h3 className="text-white font-bold mb-3 text-sm uppercase tracking-wide flex items-center gap-2">
+                <span className="text-blue-400">🐉</span> Dragon Side Bets
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                {dragonSideMarkets.map((market) => (
+                  <BetButton
+                    key={market.sid}
+                    market={market}
+                    variant="primary"
+                    className="py-4"
+                  />
+                ))}
               </div>
-            </button>
-            <button className="bg-[#f39c12] hover:bg-[#e67e22] text-white py-6 px-4 rounded">
-              <div className="text-sm mb-1">Tie</div>
-              <div className="text-3xl font-bold">
-                {odds?.markets?.[0]?.runners?.[1]?.odds?.toFixed(2) || "11.00"}
+            </div>
+          )}
+
+          {/* Tiger Side Bets */}
+          {tigerSideMarkets.length > 0 && (
+            <div className="px-6 pb-4">
+              <h3 className="text-white font-bold mb-3 text-sm uppercase tracking-wide flex items-center gap-2">
+                <span className="text-red-400">🐯</span> Tiger Side Bets
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                {tigerSideMarkets.map((market) => (
+                  <BetButton
+                    key={market.sid}
+                    market={market}
+                    variant="danger"
+                    className="py-4"
+                  />
+                ))}
               </div>
-            </button>
-            <button className="bg-[#e74c3c] hover:bg-[#c0392b] text-white py-6 px-4 rounded">
-              <div className="text-sm mb-1">Tiger</div>
-              <div className="text-3xl font-bold">
-                {odds?.markets?.[0]?.runners?.[2]?.odds?.toFixed(2) || "1.98"}
-              </div>
-            </button>
-          </div>
+            </div>
+          )}
 
           <ResultsSection />
         </div>
