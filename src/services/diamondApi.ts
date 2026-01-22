@@ -5,8 +5,8 @@ const API_PROTOCOL = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "";
 const BASE_URL = API_HOST.startsWith("/")
   ? API_HOST
   : API_PROTOCOL
-  ? `${API_PROTOCOL}://${API_HOST}`
-  : `http://${API_HOST}`;
+    ? `${API_PROTOCOL}://${API_HOST}`
+    : `http://${API_HOST}`;
 export const CASINO_IMG_BASE_URL = "/game-image";
 const API_KEY =
   import.meta.env.VITE_DIAMOND_API_KEY || "mahi4449839dbabkadbakwq1qqd";
@@ -80,19 +80,29 @@ export interface MatchDetails {
 export interface OddsData {
   match_odds?: Array<{
     runner_name: string;
+    nat?: string;
     odds?: any[];
     back?: { price: number; size?: number } | null;
     lay?: { price: number; size?: number } | null;
   }>;
   bookmaker?: Array<{
     runner_name: string;
+    nat?: string;
     odds?: any[];
     back?: { price: number; size?: number } | null;
     lay?: { price: number; size?: number } | null;
   }>;
   fancy?: Array<{
     runner_name: string;
+    nat?: string;
     runs?: number;
+    odds?: any[];
+    back?: { price: number; size?: number } | null;
+    lay?: { price: number; size?: number } | null;
+  }>;
+  tied_match?: Array<{
+    runner_name: string;
+    nat?: string;
     odds?: any[];
     back?: { price: number; size?: number } | null;
     lay?: { price: number; size?: number } | null;
