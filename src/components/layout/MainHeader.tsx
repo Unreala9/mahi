@@ -65,6 +65,8 @@ export const MainHeader = ({
     ? "Demo"
     : session?.user?.email?.split("@")[0] || "Account";
 
+  const isAuthed = isDemo || Boolean(session?.user);
+
   const navItems = [
     { label: "HOME", to: "/" },
     { label: "LOTTERY", to: "/games" },
@@ -89,7 +91,7 @@ export const MainHeader = ({
     <header className="sticky top-0 z-40 w-full">
       {/* Top bar */}
       <div className="bg-primary text-primary-foreground border-b border-border">
-        <div className="h-14 px-3 md:px-6 flex items-center justify-between">
+        <div className="h-14 px-3 md:px-6 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <button
               type="button"
@@ -105,74 +107,83 @@ export const MainHeader = ({
             </Link>
           </div>
 
-          <div className="flex items-center gap-4 text-sm">
-            <button
-              type="button"
-              className="hidden sm:inline-flex hover:underline"
-              onClick={() => navigate("/terms")}
-            >
-              Rules
-            </button>
-            <button
-              type="button"
-              className="hidden sm:inline-flex hover:underline"
-              onClick={() => navigate("/contact")}
-            >
-              Download Apk
-            </button>
+          <div className="flex items-center gap-3 text-sm flex-shrink-0">
+            <div className="hidden sm:flex items-center gap-4">
+              <button
+                type="button"
+                className="hover:underline"
+                onClick={() => navigate("/terms")}
+              >
+                Rules
+              </button>
+              <button
+                type="button"
+                className="hover:underline"
+                onClick={() => navigate("/contact")}
+              >
+                Download Apk
+              </button>
+            </div>
 
-            <div className="hidden md:block font-semibold">
+            <div className="font-semibold whitespace-nowrap">
               Balance:{" "}
               <span className="font-mono">₹{Number(balance).toLocaleString()}</span>
             </div>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="h-9 px-3 rounded-none"
-                >
-                  {userLabel}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={() => navigate("/wallet")}>
-                  Account Statement
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/bets")}>
-                  Current Bet
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/casino-live")}>
-                  Casino Results
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/profile")}>
-                  Set Button Values
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={async () => {
-                    await handleLogout?.();
-                  }}
-                >
-                  Sign Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {isAuthed ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="secondary" size="sm" className="h-9 px-3">
+                    {userLabel}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={() => navigate("/wallet")}>
+                    Account Statement
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/bets")}>
+                    Current Bet
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/casino-live")}>
+                    Casino Results
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/profile")}>
+                    Set Button Values
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={async () => {
+                      await handleLogout?.();
+                    }}
+                  >
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                variant="secondary"
+                size="sm"
+                className="h-9 px-3"
+                onClick={() => navigate("/auth")}
+              >
+                Sign In
+              </Button>
+            )}
           </div>
         </div>
       </div>
 
       {/* Nav bar */}
       <div className="bg-card border-b border-border">
-        <div className="h-11 px-3 md:px-6 flex items-center overflow-x-auto">
-          <div className="flex items-center gap-2 min-w-max">
+        <div className="px-3 md:px-6 py-2 flex items-center">
+          <div className="flex flex-wrap items-center gap-1">
             {navItems.map((item) => (
               <Link
                 key={item.label}
                 to={item.to}
                 className={
-                  "px-3 py-2 text-xs font-semibold tracking-wide border-b-2 " +
+                  "px-2 py-1 text-[11px] font-semibold tracking-wide border-b-2 " +
                   (isActive(item.to)
                     ? "border-primary text-foreground"
                     : "border-transparent text-muted-foreground hover:text-foreground")

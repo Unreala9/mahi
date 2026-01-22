@@ -66,7 +66,21 @@
       linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
     background-size: 40px 40px;
     background-attachment: fixed;
-    zoom: 0.9; /* 20% zoom out by default */
+    zoom: 0.8; /* ~20% zoom out by default (Chrome/Edge) */
+    overflow-x: hidden;
+  }
+
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  #root {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
   }
 
   ::selection {

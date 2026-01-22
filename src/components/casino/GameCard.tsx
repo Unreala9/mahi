@@ -27,7 +27,7 @@ const GameCardComponent = ({ game, onClick }: GameCardProps) => {
 
   return (
     <Card
-      className="group relative aspect-square overflow-hidden cursor-pointer border border-border hover:bg-muted transition-colors"
+      className="group relative aspect-[4/3] overflow-hidden cursor-pointer border border-border hover:bg-muted transition-colors"
       onClick={onClick}
     >
       {/* Image */}
@@ -56,7 +56,7 @@ const GameCardComponent = ({ game, onClick }: GameCardProps) => {
       )}
 
       {/* Name Overlay at Bottom */}
-      <div className="absolute bottom-0 left-0 right-0 bg-background/80 backdrop-blur px-2 py-1.5">
+      <div className="absolute bottom-0 left-0 right-0 bg-background/80 backdrop-blur px-2 py-1">
         <p className="text-xs font-semibold text-foreground truncate">
           {game.gname}
         </p>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { MatchEvent } from "@/services/diamondApi";
@@ -161,20 +161,30 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     }));
   };
 
-  // Static sport list (no emojis/icons)
-  const displaySports = [
-    { sid: 4, name: "Cricket" },
-    { sid: 1, name: "Football" },
-    { sid: 2, name: "Tennis" },
-    { sid: 3, name: "Table Tennis" },
-    { sid: 10, name: "Badminton" },
-    { sid: 5, name: "Esoccer" },
-    { sid: 6, name: "Basketball" },
-    { sid: 9, name: "Volleyball" },
-    { sid: 11, name: "Snooker" },
-    { sid: 7, name: "Horse Racing" },
-    { sid: 4339, name: "Greyhound Racing" },
-  ];
+  // Sports list (no emojis/icons) - prefer live data
+  const displaySports = useMemo(() => {
+    if (sports && sports.length > 0) {
+      return [...sports]
+        .map((s) => ({ sid: Number((s as any).sid), name: String((s as any).name) }))
+        .filter((s) => Number.isFinite(s.sid) && Boolean(s.name))
+        .sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    // Fallback
+    return [
+      { sid: 4, name: "Cricket" },
+      { sid: 1, name: "Football" },
+      { sid: 2, name: "Tennis" },
+      { sid: 3, name: "Table Tennis" },
+      { sid: 10, name: "Badminton" },
+      { sid: 5, name: "Esoccer" },
+      { sid: 6, name: "Basketball" },
+      { sid: 9, name: "Volleyball" },
+      { sid: 11, name: "Snooker" },
+      { sid: 7, name: "Horse Racing" },
+      { sid: 4339, name: "Greyhound Racing" },
+    ];
+  }, [sports]);
 
   const racingLinks: Array<{ label: string; sid: number }> = [
     { label: "Horse Racing", sid: 7 },
@@ -232,25 +242,15 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
   return (
     <>
-      {/* Mobile Overlay */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 md:hidden animate-in fade-in"
-          onClick={onClose}
-        />
-      )}
-
-      {/* Sidebar */}
-      <aside
-        className={`fixed left-0 top-0 h-screen w-72 md:w-64 bg-background border-r border-border flex flex-col z-50 transition-transform duration-300 md:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
-      >
+      {/* Desktop Sidebar (no internal scroll; grows with content) */}
+      <aside className="hidden md:flex w-64 bg-background border-r border-border flex-col overflow-visible">
         {/* Brand Header */}
-        <div className="h-16 flex items-center px-6 border-b border-border">
+        <div className="h-16 flex items-center px-6 border-b border-border flex-shrink-0">
           <img src="/mahiex.png" alt="" />
         </div>
 
         {/* Navigation */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 min-h-0">
           <nav>
             {/* Racing */}
             <SectionHeader
@@ -396,17 +396,176 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                 active={location.pathname === "/profile"}
               />
             </div>
-          ) : (
-            <div>
-              <RowButton
-                label="Sign In"
-                onClick={() => handleNavigate("/auth")}
-                active={location.pathname === "/auth"}
-              />
-            </div>
-          )}
+          ) : null}
         </div>
       </aside>
+
+      {/* Mobile Sidebar (overlay scrolls; sidebar grows with content) */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-50 md:hidden bg-black/80 backdrop-blur-sm animate-in fade-in overflow-y-auto"
+          onClick={onClose}
+        >
+          <aside
+            className="w-64 bg-background border-r border-border flex flex-col overflow-visible animate-in slide-in-from-left duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Brand Header */}
+            <div className="h-16 flex items-center px-6 border-b border-border flex-shrink-0">
+              <img src="/mahiex.png" alt="" />
+            </div>
+
+            {/* Navigation */}
+            <div className="flex-1 min-h-0">
+              <nav>
+                {/* Racing */}
+                <SectionHeader
+                  title="Racing Sports"
+                  open={isRacingOpen}
+                  onToggle={() => setIsRacingOpen((v) => !v)}
+                />
+                {isRacingOpen && (
+                  <div>
+                    {racingLinks.map((r) => (
+                      <RowButton
+                        key={r.sid}
+                        label={r.label}
+                        onClick={() => handleNavigate(`/sports?sport=${r.sid}`)}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* Others */}
+                <SectionHeader
+                  title="Others"
+                  open={isOthersOpen}
+                  onToggle={() => setIsOthersOpen((v) => !v)}
+                />
+                {isOthersOpen && (
+                  <div>
+                    {othersLinks.map((item) => (
+                      <RowButton
+                        key={item.label}
+                        label={item.label}
+                        onClick={() => handleNavigate(item.path)}
+                        active={location.pathname === item.path}
+                      />
+                    ))}
+                    <RowButton
+                      label="My Bets"
+                      onClick={() => handleNavigate("/bets")}
+                      active={location.pathname === "/bets"}
+                    />
+                    <RowButton
+                      label="Wallet"
+                      onClick={() => handleNavigate("/wallet")}
+                      active={location.pathname === "/wallet"}
+                    />
+                    {isAdmin && (
+                      <RowButton
+                        label="Admin"
+                        onClick={() => handleNavigate("/admin")}
+                        active={location.pathname.startsWith("/admin")}
+                      />
+                    )}
+                  </div>
+                )}
+
+                {/* All sports */}
+                <SectionHeader
+                  title="All Sports"
+                  open={isAllSportsOpen}
+                  onToggle={() => setIsAllSportsOpen((v) => !v)}
+                />
+                {isAllSportsOpen && (
+                  <div>
+                    {displaySports.map((sport) => {
+                      const isSportExpanded = expandedSports.includes(sport.sid);
+                      const competitions = getCompetitionsBySport(sport.sid);
+
+                      return (
+                        <div key={sport.sid}>
+                          <RowButton
+                            label={sport.name}
+                            left={<ExpandBox expanded={isSportExpanded} />}
+                            onClick={() => toggleSport(sport.sid)}
+                          />
+
+                          {isSportExpanded && (
+                            <div className="bg-background">
+                              {competitions.length === 0 ? (
+                                <div className="px-3 py-2 text-xs text-muted-foreground border-b border-border">
+                                  {loading ? "Loading…" : "No matches"}
+                                </div>
+                              ) : (
+                                competitions.map((comp) => {
+                                  const isCompExpanded =
+                                    expandedCompetitions.includes(comp.name);
+                                  return (
+                                    <div key={comp.name}>
+                                      <button
+                                        type="button"
+                                        onClick={() => toggleCompetition(comp.name)}
+                                        className="w-full flex items-center justify-between gap-2 px-7 py-2 text-xs bg-muted/40 hover:bg-muted border-b border-border"
+                                      >
+                                        <span className="truncate">
+                                          {isCompExpanded ? "-" : "+"} {comp.name}
+                                        </span>
+                                        <span className="text-[11px] text-muted-foreground">
+                                          {comp.matches.length}
+                                        </span>
+                                      </button>
+
+                                      {isCompExpanded && (
+                                        <div>
+                                          {comp.matches.map((match) => (
+                                            <button
+                                              key={match.gmid}
+                                              type="button"
+                                              onClick={() =>
+                                                handleNavigate(
+                                                  `/match/${match.gmid}/${sport.sid}`,
+                                                )
+                                              }
+                                              className="w-full px-10 py-2 text-xs text-left bg-background hover:bg-muted border-b border-border"
+                                            >
+                                              <span className="truncate">
+                                                {match.name}
+                                              </span>
+                                            </button>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </nav>
+            </div>
+
+            {/* Profile Section */}
+            <div className="border-t border-border">
+              {user ? (
+                <div>
+                  <RowButton
+                    label="Profile"
+                    onClick={() => handleNavigate("/profile")}
+                    active={location.pathname === "/profile"}
+                  />
+                </div>
+              ) : null}
+            </div>
+          </aside>
+        </div>
+      )}
     </>
   );
 };
