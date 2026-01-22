@@ -81,7 +81,7 @@ export default function DiamondMatch() {
 
   return (
     <MainLayout>
-      <div className="container mx-auto p-4 space-y-4">
+      <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold">Match Details</h1>
           <Button asChild>
@@ -89,7 +89,7 @@ export default function DiamondMatch() {
           </Button>
         </div>
 
-        <Card className="bg-[#2d0000] border-[#5a0000] overflow-hidden">
+        <Card className="overflow-hidden">
           <div className="p-4">
             <div className="flex items-start justify-between">
               <div className="flex-1">
@@ -100,16 +100,16 @@ export default function DiamondMatch() {
                     </Badge>
                   )}
                   {details?.start_date && !details?.is_live && (
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-muted-foreground">
                       {new Date(details.start_date).toLocaleString()}
                     </span>
                   )}
                 </div>
                 <div className="space-y-1">
-                  <div className="text-white font-semibold">{teams.home}</div>
-                  <div className="text-white font-semibold">{teams.away}</div>
+                  <div className="text-foreground font-semibold">{teams.home}</div>
+                  <div className="text-foreground font-semibold">{teams.away}</div>
                 </div>
-                <div className="text-xs text-gray-400 mt-2">
+                <div className="text-xs text-muted-foreground mt-2">
                   GMID: {gmid} | SID:{" "}
                   {sidForQueries ?? (resolvingSid ? "resolving…" : "…")}
                 </div>
@@ -127,25 +127,25 @@ export default function DiamondMatch() {
           </Card>
         )}
 
-        <Card className="p-4 bg-[#1d0000] border-[#5a0000]">
-          <h2 className="text-sm font-bold text-gold mb-3">Odds</h2>
+        <Card className="p-4">
+          <h2 className="text-sm font-bold mb-3">Odds</h2>
           {loadingOdds || resolvingSid ? (
-            <div className="text-center text-gray-400 py-4">
+            <div className="text-center text-muted-foreground py-4">
               Loading odds...
             </div>
           ) : !sidForQueries ? (
-            <div className="text-center text-gray-400 py-4">
+            <div className="text-center text-muted-foreground py-4">
               Waiting for match ID resolution…
             </div>
           ) : !oddsData ? (
-            <div className="text-center text-gray-400 py-4">
+            <div className="text-center text-muted-foreground py-4">
               No odds available
             </div>
           ) : (
             <div className="space-y-4">
               {oddsData.match_odds && oddsData.match_odds.length > 0 && (
                 <div>
-                  <h4 className="text-sm font-bold text-gold mb-2">
+                  <h4 className="text-sm font-bold mb-2">
                     Match Odds
                   </h4>
                   <div className="grid gap-2">
@@ -164,7 +164,7 @@ export default function DiamondMatch() {
               )}
               {oddsData.bookmaker && oddsData.bookmaker.length > 0 && (
                 <div>
-                  <h4 className="text-sm font-bold text-gold mb-2">
+                  <h4 className="text-sm font-bold mb-2">
                     Bookmaker
                   </h4>
                   <div className="grid gap-2">
@@ -183,7 +183,7 @@ export default function DiamondMatch() {
               )}
               {oddsData.fancy && oddsData.fancy.length > 0 && (
                 <div>
-                  <h4 className="text-sm font-bold text-gold mb-2">Fancy</h4>
+                  <h4 className="text-sm font-bold mb-2">Fancy</h4>
                   <div className="grid gap-2">
                     {oddsData.fancy.map((fancy: any, idx: number) => (
                       <OddsRow
@@ -209,13 +209,13 @@ function OddsRow({ label, back, lay }: { label: string; back: any; lay: any }) {
   const layOdds = Array.isArray(lay) ? lay[0] : lay;
 
   return (
-    <div className="flex items-center gap-2 bg-[#2d0000] p-2 rounded">
-      <div className="flex-1 text-sm text-white">{label}</div>
+    <div className="flex items-center gap-2 bg-muted/30 p-2 rounded border border-border">
+      <div className="flex-1 text-sm text-foreground">{label}</div>
       <div className="flex gap-2">
         <Button
           size="sm"
           disabled={!backOdds || !backOdds.price}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 min-w-[60px] disabled:opacity-30"
+          className="bg-sky-300 hover:bg-sky-400 text-black px-3 py-1 min-w-[60px] disabled:opacity-30"
         >
           <div className="text-center">
             <div className="font-bold">{backOdds?.price || "-"}</div>
@@ -227,7 +227,7 @@ function OddsRow({ label, back, lay }: { label: string; back: any; lay: any }) {
         <Button
           size="sm"
           disabled={!layOdds || !layOdds.price}
-          className="bg-pink-600 hover:bg-pink-700 text-white px-3 py-1 min-w-[60px] disabled:opacity-30"
+          className="bg-rose-300 hover:bg-rose-400 text-black px-3 py-1 min-w-[60px] disabled:opacity-30"
         >
           <div className="text-center">
             <div className="font-bold">{layOdds?.price || "-"}</div>

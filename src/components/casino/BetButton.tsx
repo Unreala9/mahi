@@ -29,14 +29,12 @@ export function BetButton({
   const isActive = market.gstatus === "ACTIVE";
   const odds = market.b || 0;
 
-  // Color variants
   const variantClasses = {
-    primary: "from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600",
-    success: "from-green-500 via-green-600 to-green-700 hover:from-green-600",
-    danger: "from-red-500 via-red-600 to-red-700 hover:from-red-600",
-    warning:
-      "from-yellow-500 via-yellow-600 to-yellow-700 hover:from-yellow-600",
-    secondary: "from-gray-500 via-gray-600 to-gray-700 hover:from-gray-600",
+    primary: "border-primary/30",
+    success: "border-primary/30",
+    danger: "border-destructive/30",
+    warning: "border-primary/30",
+    secondary: "border-border",
   };
 
   return (
@@ -44,39 +42,27 @@ export function BetButton({
       onClick={onClick}
       disabled={!isActive}
       className={cn(
-        "relative overflow-hidden rounded-lg",
-        "px-4 py-6 transition-all duration-200",
-        "transform hover:scale-105 active:scale-95",
-        "shadow-lg hover:shadow-xl",
-        "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100",
-        isActive && "animate-pulse-subtle",
+        "relative overflow-hidden",
+        "px-3 py-3 border bg-background text-foreground",
+        "transition-colors",
+        "hover:bg-muted",
+        "disabled:opacity-50 disabled:cursor-not-allowed",
+        variantClasses[variant],
         className,
       )}
     >
-      {/* Background gradient */}
-      <div
-        className={cn(
-          "absolute inset-0 bg-gradient-to-br",
-          variantClasses[variant],
-          !isActive && "grayscale",
-        )}
-      />
-
       {/* Content */}
-      <div className="relative z-10 flex flex-col items-center gap-2">
-        {/* Market name */}
-        <div className="text-sm font-semibold text-white/90 uppercase tracking-wide">
-          {market.nat}
+      <div className="relative z-10 flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <div className="text-xs font-semibold uppercase tracking-wide truncate">
+            {market.nat}
+          </div>
+          <div className="text-[11px] text-muted-foreground">
+            ₹{market.min} - ₹{market.max.toLocaleString()}
+          </div>
         </div>
-
-        {/* Odds display */}
-        <div className="text-3xl font-bold text-white font-mono">
+        <div className="text-lg font-semibold font-mono tabular-nums">
           {odds.toFixed(2)}
-        </div>
-
-        {/* Min/Max */}
-        <div className="text-xs text-white/70">
-          ₹{market.min} - ₹{market.max.toLocaleString()}
         </div>
       </div>
 
@@ -87,11 +73,6 @@ export function BetButton({
             SUSPENDED
           </span>
         </div>
-      )}
-
-      {/* Pulse effect when active */}
-      {isActive && (
-        <div className="absolute inset-0 bg-white/10 animate-ping opacity-20" />
       )}
     </button>
   );
