@@ -18,20 +18,29 @@ export default function Casino() {
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<CasinoTabCategory>("SMART");
 
-  // Fetch real casino games from API
+  // Fetch real casino games from API with fallback
   const {
     data: apiGames,
     isLoading,
     isError,
+    error,
   } = useQuery({
     queryKey: ["casino-games"],
     queryFn: fetchCasinoGames,
+    staleTime: 10 * 60 * 1000, // 10 minutes (increased for better caching)
+    gcTime: 15 * 60 * 1000, // Keep in cache for 15 minutes
+    retry: 1, // Only retry once to fail faster
+    retryDelay: 500, // Faster retry (500ms instead of 1s)
+    refetchOnWindowFocus: false, // Don't refetch when window regains focus
+    refetchOnMount: false, // Don't refetch on component remount
   });
 
-  // Debug logging
-  console.log("[Casino] API Games:", apiGames);
-  console.log("[Casino] Loading:", isLoading);
-  console.log("[Casino] Error:", isError);
+  // Debug logging (only in development)
+  if (import.meta.env.DEV) {
+    console.log("[Casino] API Games:", apiGames?.length, "games");
+    console.log("[Casino] Loading:", isLoading);
+    console.log("[Casino] Error:", isError, error);
+  }
 
   // Organize games by tab based on game name patterns
   const gamesByTab = useMemo(() => {
@@ -167,8 +176,10 @@ export default function Casino() {
       }
     });
 
-    console.log("[Casino] Games organized by tab:", organized);
-    console.log("[Casino] Total games:", apiGames.length);
+    if (import.meta.env.DEV) {
+      console.log("[Casino] Games organized by tab:", organized);
+      console.log("[Casino] Total games:", apiGames.length);
+    }
 
     return organized as Record<CasinoTabCategory, CasinoGame[]>;
   }, [apiGames]);
@@ -194,38 +205,43 @@ export default function Casino() {
   return (
     <MainLayout>
       {/* Hero */}
-      <div className="bg-gradient-to-r from-purple-900 via-pink-900 to-red-900 p-4 md:p-8 rounded-xl border border-purple-700 mb-4 md:mb-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
+      <div className="bg-gradient-to-br from-purple-900/90 via-pink-900/90 to-red-900/90 p-6 rounded-2xl border border-purple-500/30 mb-6 relative overflow-hidden backdrop-blur-sm">
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5"></div>
         <div className="relative z-10">
-          <div className="flex items-center justify-between mb-2">
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white flex items-center gap-2 md:gap-3">
-              <Sparkles className="h-6 w-6 md:h-8 md:w-8 animate-pulse" />
+          <div className="flex items-center justify-between mb-3">
+            <h1 className="text-3xl md:text-4xl font-black text-white flex items-center gap-3">
+              <Sparkles className="h-8 w-8 text-yellow-400 animate-pulse" />
               Casino Games
             </h1>
-            <Badge className="bg-white text-purple-900 font-bold tracking-widest uppercase px-3 py-1">
+            <Badge className="bg-white/95 text-purple-900 font-bold tracking-wider uppercase px-4 py-1.5 text-sm shadow-lg">
               {totalGames} Games
             </Badge>
           </div>
-          <p className="text-purple-200 text-sm md:text-base">
-            Experience the thrill with crash games, slots, live dealers, and
-            provably fair gaming
+          <p className="text-purple-100 text-base max-w-2xl">
+            Experience premium gaming with live dealers, instant wins, and provably fair games
           </p>
-          <div className="flex gap-4 mt-4">
+          <div className="flex flex-wrap gap-6 mt-5">
             <div className="flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-yellow-400" />
-              <span className="text-yellow-400 font-semibold text-sm">
+              <div className="h-8 w-8 rounded-lg bg-yellow-500/20 flex items-center justify-center">
+                <Trophy className="h-4 w-4 text-yellow-400" />
+              </div>
+              <span className="text-yellow-300 font-semibold text-sm">
                 Live Dealers
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-green-400" />
-              <span className="text-green-400 font-semibold text-sm">
+              <div className="h-8 w-8 rounded-lg bg-green-500/20 flex items-center justify-center">
+                <Zap className="h-4 w-4 text-green-400" />
+              </div>
+              <span className="text-green-300 font-semibold text-sm">
                 Instant Win
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <Star className="h-5 w-5 text-blue-400" />
-              <span className="text-blue-400 font-semibold text-sm">
+              <div className="h-8 w-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                <Star className="h-4 w-4 text-blue-400" />
+              </div>
+              <span className="text-blue-300 font-semibold text-sm">
                 Provably Fair
               </span>
             </div>
@@ -234,14 +250,14 @@ export default function Casino() {
       </div>
 
       {/* Search Bar */}
-      <Card className="p-3 mb-4 rounded-xl">
+      <Card className="p-4 mb-6 rounded-xl border-border/50 bg-card/50 backdrop-blur-sm">
         <div className="relative">
-          <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Search className="h-5 w-5 absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search games..."
+            placeholder="Search for your favorite games..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 rounded-xl"
+            className="pl-12 h-12 rounded-xl bg-background/50 border-border/50 focus:border-primary/50 text-base"
           />
         </div>
       </Card>
@@ -249,14 +265,28 @@ export default function Casino() {
       {/* Loading and Error States */}
       {isLoading && (
         <Card className="p-8 text-center">
-          <p className="text-muted-foreground">Loading casino games...</p>
+          <div className="flex flex-col items-center gap-3">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+            <p className="text-muted-foreground">Loading casino games...</p>
+            <p className="text-xs text-muted-foreground">This may take a few seconds</p>
+          </div>
         </Card>
       )}
       {isError && (
         <Card className="p-8 text-center">
-          <p className="text-destructive">
-            Failed to load casino games. Please try again.
+          <p className="text-destructive mb-2">
+            Failed to load casino games from API.
           </p>
+          <p className="text-sm text-muted-foreground mb-4">
+            {error instanceof Error ? error.message : "Unknown error occurred"}
+          </p>
+          <Button
+            onClick={() => window.location.reload()}
+            variant="outline"
+            className="mx-auto"
+          >
+            Retry
+          </Button>
         </Card>
       )}
 
@@ -267,44 +297,59 @@ export default function Casino() {
           onValueChange={(v) => setActiveTab(v as CasinoTabCategory)}
           className="w-full"
         >
-          <TabsList className="w-full flex-wrap h-auto gap-2 bg-muted/50 p-2 rounded-xl mb-4">
-            {CASINO_TABS.map((tab) => (
-              <TabsTrigger
-                key={tab.id}
-                value={tab.id}
-                className="flex-1 min-w-[100px] data-[state=active]:bg-purple-600 data-[state=active]:text-white rounded-lg"
-              >
-                <span className="mr-2">{tab.icon}</span>
-                {tab.name}
-                <Badge
-                  variant="secondary"
-                  className="ml-2 h-5 min-w-[20px] text-xs"
-                >
-                  {gamesByTab[tab.id]?.length || 0}
-                </Badge>
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <div className="mb-6 relative">
+            <div className="overflow-x-auto scrollbar-hide">
+              <TabsList className="inline-flex items-center gap-3 bg-gradient-to-r from-muted/40 via-muted/30 to-muted/40 p-3 rounded-full w-full justify-start backdrop-blur-sm border border-border/30">
+                {CASINO_TABS.map((tab) => (
+                  <TabsTrigger
+                    key={tab.id}
+                    value={tab.id}
+                    className="flex items-center gap-3 px-6 py-3.5 rounded-full bg-background/50 border-2 border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-purple-600 data-[state=active]:via-purple-500 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:border-purple-400/50 data-[state=active]:shadow-2xl data-[state=active]:shadow-purple-500/30 hover:bg-background hover:border-border/50 transition-all duration-300 whitespace-nowrap hover:scale-105 data-[state=active]:scale-105"
+                  >
+                    <div className="flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 data-[state=active]:from-white/20 data-[state=active]:to-white/30">
+                      <span className="text-2xl">{tab.icon}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="font-black text-base uppercase tracking-wider">{tab.name}</span>
+                      <Badge className="h-6 min-w-[28px] px-2 text-xs font-black rounded-full bg-purple-500/20 text-purple-300 data-[state=active]:bg-white/30 data-[state=active]:text-white border-0 shadow-sm">
+                        {gamesByTab[tab.id]?.length || 0}
+                      </Badge>
+                    </div>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </div>
+          </div>
 
           {CASINO_TABS.map((tab) => (
             <TabsContent key={tab.id} value={tab.id} className="mt-0">
-              <div className="mb-4">
-                <h2 className="text-xl font-bold text-white mb-1">
-                  {tab.name}
-                </h2>
-                <p className="text-sm text-muted-foreground">
+              <div className="mb-6 pb-4 border-b border-border/30">
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-2xl">{tab.icon}</span>
+                  <h2 className="text-2xl font-black text-white uppercase tracking-tight">
+                    {tab.name}
+                  </h2>
+                  <Badge variant="outline" className="ml-2 font-semibold">
+                    {gamesByTab[tab.id]?.length || 0} Games
+                  </Badge>
+                </div>
+                <p className="text-sm text-muted-foreground ml-11">
                   {tab.description}
                 </p>
               </div>
 
               {filteredGames.length === 0 ? (
-                <Card className="p-8 text-center">
-                  <p className="text-muted-foreground">
-                    No games found matching your search.
+                <Card className="p-12 text-center rounded-xl border-dashed">
+                  <Search className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                  <p className="text-lg font-semibold text-muted-foreground mb-1">
+                    No games found
+                  </p>
+                  <p className="text-sm text-muted-foreground/70">
+                    Try adjusting your search terms
                   </p>
                 </Card>
               ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-4">
                   {filteredGames.map((game) => (
                     <GameCard
                       key={game.gmid}

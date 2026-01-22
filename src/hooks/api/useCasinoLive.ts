@@ -128,14 +128,14 @@ export function useCasinoLiveMultiple(gmids: string[]) {
       unsubscribers.push(unsubscribe);
     });
 
-    // Update status for all games
+    // Update status for all games (reduced frequency from 2s to 5s)
     const statusInterval = setInterval(() => {
       const newStatusMap = new Map<string, string>();
       gmids.forEach((gmid) => {
         newStatusMap.set(gmid, casinoWebSocket.getStatus(gmid));
       });
       setStatusMap(newStatusMap);
-    }, 2000);
+    }, 5000); // Increased from 2000ms to 5000ms
 
     return () => {
       unsubscribers.forEach((fn) => fn());

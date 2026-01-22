@@ -13,17 +13,17 @@ export function GameHeader({
   liveData?: CasinoGameData | null;
 }) {
   return (
-    <div className="bg-[#34495e] px-4 py-2 flex items-center justify-between border-b border-gray-700">
-      <div className="flex items-center gap-3">
-        <ChevronUp className="w-5 h-5 text-blue-400 cursor-pointer hover:text-blue-300" />
-        <h1 className="text-white font-bold text-lg uppercase tracking-wide">
+    <div className="bg-[#34495e] px-3 py-2 flex items-center justify-between border-b border-gray-700">
+      <div className="flex items-center gap-2">
+        <ChevronUp className="w-4 h-4 text-blue-400 cursor-pointer hover:text-blue-300" />
+        <h1 className="text-white font-bold text-base uppercase tracking-wide">
           {game.gname}
         </h1>
-        <button className="text-blue-400 text-sm underline hover:text-blue-300">
+        <button className="text-blue-400 text-xs underline hover:text-blue-300">
           Rules
         </button>
       </div>
-      <div className="text-white text-sm">
+      <div className="text-white text-xs">
         Round ID:{" "}
         <span className="font-mono">{liveData?.roundId || "Waiting..."}</span>
       </div>
@@ -33,8 +33,8 @@ export function GameHeader({
 
 export function CardPlaceholder() {
   return (
-    <div className="w-12 h-16 bg-[#ecf0f1] border-2 border-gray-400 rounded-lg flex items-center justify-center">
-      <div className="w-9 h-14 border border-dashed border-gray-400 rounded" />
+    <div className="w-10 h-14 bg-[#ecf0f1] border-2 border-gray-400 rounded-lg flex items-center justify-center">
+      <div className="w-8 h-12 border border-dashed border-gray-400 rounded" />
     </div>
   );
 }
@@ -48,17 +48,17 @@ export function BetSlipSidebar({
 }) {
   return (
     <div className="bg-white border-l border-gray-200">
-      <div className="bg-[#34495e] text-white px-4 py-3 font-bold">My Bet</div>
-      <div className="p-4">
+      <div className="bg-[#34495e] text-white px-3 py-2 font-bold text-sm">My Bet</div>
+      <div className="p-3">
         <div className="grid grid-cols-3 gap-2 mb-2 text-xs font-semibold text-gray-600">
           <div>Matched Bet</div>
           <div className="text-center">Odds</div>
           <div className="text-right">Stake</div>
         </div>
-        <div className="min-h-[300px] flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg">
+        <div className="min-h-[200px] flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg">
           <p className="text-gray-400 text-sm">No bets placed</p>
         </div>
-        <div className="mt-4 space-y-3">
+        <div className="mt-3 space-y-2">
           <div>
             <label className="text-xs text-gray-600 mb-1 block">
               Stake Amount
@@ -68,7 +68,7 @@ export function BetSlipSidebar({
               value={betAmount}
               onChange={(e) => setBetAmount(e.target.value)}
               placeholder="Enter amount"
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 text-sm"
             />
           </div>
           <div className="grid grid-cols-4 gap-2">
@@ -76,13 +76,13 @@ export function BetSlipSidebar({
               <button
                 key={amount}
                 onClick={() => setBetAmount(String(amount))}
-                className="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded text-sm font-semibold"
+                className="bg-gray-200 hover:bg-gray-300 px-2 py-1.5 rounded text-xs font-semibold"
               >
                 {amount}
               </button>
             ))}
           </div>
-          <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 text-base font-bold">
+          <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 text-sm font-bold">
             Place Bet
           </Button>
         </div>
@@ -106,18 +106,18 @@ export function ResultsSection() {
   ];
 
   return (
-    <div className="px-4 py-4">
-      <div className="bg-[#34495e] rounded-t p-3 flex items-center justify-between">
-        <span className="text-white font-semibold">Last Result</span>
-        <button className="text-blue-400 hover:text-blue-300 text-sm">
+    <div className="px-4 py-3">
+      <div className="bg-[#34495e] rounded-t p-2 flex items-center justify-between">
+        <span className="text-white font-semibold text-sm">Last Result</span>
+        <button className="text-blue-400 hover:text-blue-300 text-xs">
           View All
         </button>
       </div>
-      <div className="bg-[#2c3e50] rounded-b p-4 flex gap-2 overflow-x-auto">
+      <div className="bg-[#2c3e50] rounded-b p-3 flex gap-2 overflow-x-auto">
         {mockResults.map((item, idx) => (
           <div
             key={idx}
-            className={`${item.color} w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0`}
+            className={`${item.color} w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0`}
           >
             {item.result}
           </div>

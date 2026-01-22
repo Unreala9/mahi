@@ -117,14 +117,14 @@ class DiamondWebSocketService {
       setInterval(() => this.fetchSports(), 60 * 1000),
     );
 
-    // Matches: every 10 seconds for live updates
+    // Matches: every 5 seconds for faster live updates (reduced from 10s)
     this.pollingIntervals.push(
-      setInterval(() => this.fetchMatches(), 10 * 1000),
+      setInterval(() => this.fetchMatches(), 5 * 1000),
     );
 
-    // Live matches odds: every 3 seconds (if any live matches)
+    // Live matches odds: every 1.5 seconds for real-time feel (reduced from 3s)
     this.pollingIntervals.push(
-      setInterval(() => this.fetchLiveMatchUpdates(), 3 * 1000),
+      setInterval(() => this.fetchLiveMatchUpdates(), 1500),
     );
 
     console.log(
@@ -155,20 +155,25 @@ class DiamondWebSocketService {
   private async fetchSports(): Promise<void> {
     try {
       const apiHost = import.meta.env.VITE_DIAMOND_API_HOST || "/api/diamond";
-      const protocol = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "http";
+      const protocol = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "";
       const apiKey =
         import.meta.env.VITE_DIAMOND_API_KEY || "mahi4449839dbabkadbakwq1qqd";
       const base = apiHost.startsWith("/")
         ? apiHost
-        : `${protocol}://${apiHost}`;
+        : protocol
+        ? `${protocol}://${apiHost}`
+        : `http://${apiHost}`;
 
       // Add timeout and keepalive for faster requests
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout (increased from 5s)
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
 
       const response = await fetch(`${base}/allSportid?key=${apiKey}`, {
         signal: controller.signal,
         keepalive: true, // Reuse connections
+        headers: {
+          'Connection': 'keep-alive',
+        },
       });
 
       clearTimeout(timeoutId);
@@ -207,20 +212,28 @@ class DiamondWebSocketService {
   private async fetchMatches(): Promise<void> {
     try {
       const apiHost = import.meta.env.VITE_DIAMOND_API_HOST || "/api/diamond";
-      const protocol = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "http";
+      const protocol = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "";
       const apiKey =
         import.meta.env.VITE_DIAMOND_API_KEY || "mahi4449839dbabkadbakwq1qqd";
+
+      // If apiHost starts with /, use it as is (proxy path)
+      // Otherwise, prepend protocol
       const base = apiHost.startsWith("/")
         ? apiHost
-        : `${protocol}://${apiHost}`;
+        : protocol
+        ? `${protocol}://${apiHost}`
+        : `http://${apiHost}`;
 
       // Add timeout and keepalive for faster requests
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout (increased from 3s)
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
 
       const response = await fetch(`${base}/tree?key=${apiKey}`, {
         signal: controller.signal,
         keepalive: true, // Reuse connections
+        headers: {
+          'Connection': 'keep-alive',
+        },
       });
 
       clearTimeout(timeoutId);
@@ -282,24 +295,35 @@ class DiamondWebSocketService {
       (m) => !this.oddsBlacklist.has(m.gmid)
     );
 
-    // Fetch odds for each tracked match (up to 30)
-    const oddsPromises = availableMatches.slice(0, 30).map(async (match) => {
+    // Fetch odds for each tracked match (up to 50 for better throughput)
+    const oddsPromises = availableMatches.slice(0, 50).map(async (match) => {
       try {
         const apiHost =
-          import.meta.env.VITE_DIAMOND_API_HOST || "130.250.191.174:3009";
-        const protocol = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "http";
+          import.meta.env.VITE_DIAMOND_API_HOST || "/api/diamond";
+        const protocol = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "";
         const apiKey =
           import.meta.env.VITE_DIAMOND_API_KEY || "mahi4449839dbabkadbakwq1qqd";
 
+        // If apiHost starts with /, use it as is (proxy path)
+        // Otherwise, prepend protocol
+        const base = apiHost.startsWith("/")
+          ? apiHost
+          : protocol
+          ? `${protocol}://${apiHost}`
+          : `http://${apiHost}`;
+
         // Add timeout for faster failure and retry
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+        const timeoutId = setTimeout(() => controller.abort(), 3000); // 3s timeout for real-time odds
 
         const response = await fetch(
-          `${protocol}://${apiHost}/getPriveteData?gmid=${match.gmid}&sid=${match.sid}&key=${apiKey}`,
+          `${base}/getPriveteData?gmid=${match.gmid}&sid=${match.sid}&key=${apiKey}`,
           {
             signal: controller.signal,
             keepalive: true, // Reuse connections
+            headers: {
+              'Connection': 'keep-alive',
+            },
           }
         );
 
@@ -595,12 +619,14 @@ class DiamondWebSocketService {
   private async fetchMatchOdds(gmid: number, sid: number): Promise<void> {
     try {
       const apiHost = import.meta.env.VITE_DIAMOND_API_HOST || "/api/diamond";
-      const protocol = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "http";
+      const protocol = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "";
       const apiKey =
         import.meta.env.VITE_DIAMOND_API_KEY || "mahi4449839dbabkadbakwq1qqd";
       const base = apiHost.startsWith("/")
         ? apiHost
-        : `${protocol}://${apiHost}`;
+        : protocol
+        ? `${protocol}://${apiHost}`
+        : `http://${apiHost}`;
       const response = await fetch(
         `${base}/getPriveteData?gmid=${gmid}&sid=${sid}&key=${apiKey}`,
       );
