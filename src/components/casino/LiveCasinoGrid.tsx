@@ -4,7 +4,7 @@ import { useCasinoLiveMultiple } from "@/hooks/api/useCasinoLive";
 import { Activity, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { CasinoGame } from "@/types/casino";
-import { getImageUrlForGame } from "@/services/casino";
+import { getImageCandidates } from "@/services/casino";
 import { useState } from "react";
 
 interface LiveCasinoGridProps {
@@ -38,7 +38,7 @@ export function LiveCasinoGrid({
 function LiveGameCard({ game, liveData }: { game: CasinoGame; liveData: any }) {
   const [imageError, setImageError] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
-  const imageUrl = getImageUrlForGame(game)[0];
+  const imageUrl = getImageCandidates(game.imgpath)[0];
 
   return (
     <Card className="group relative aspect-square bg-slate-900 overflow-hidden cursor-pointer border-2 border-white/10 hover:border-primary/60 hover:shadow-xl hover:shadow-primary/20 transition-all duration-200 rounded-sm">
