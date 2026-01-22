@@ -1,10 +1,12 @@
 // Use environment variables with fallback to proxied relative path
 // If `VITE_DIAMOND_API_HOST` starts with '/', treat it as a relative proxy path
 const API_HOST = import.meta.env.VITE_DIAMOND_API_HOST || "/api/diamond";
-const API_PROTOCOL = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "http";
+const API_PROTOCOL = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "";
 const BASE_URL = API_HOST.startsWith("/")
   ? API_HOST
-  : `${API_PROTOCOL}://${API_HOST}`;
+  : API_PROTOCOL
+  ? `${API_PROTOCOL}://${API_HOST}`
+  : `http://${API_HOST}`;
 export const CASINO_IMG_BASE_URL = "/game-image";
 const API_KEY =
   import.meta.env.VITE_DIAMOND_API_KEY || "mahi4449839dbabkadbakwq1qqd";

@@ -12,7 +12,7 @@ interface LiveCasinoGridProps {
 
 export function LiveCasinoGrid({
   games,
-  maxDisplay = 20,
+  maxDisplay = 8, // Reduced from 20 to 8 for better performance
 }: LiveCasinoGridProps) {
   const gmids = games.slice(0, maxDisplay).map((g) => g.gmid);
   const { getData, getStatus, connectedCount, isLoading } =
