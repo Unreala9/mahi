@@ -4,8 +4,7 @@ dist/
 
 # Environment files (do not commit secrets)
 .env
-.env.*
-
+.env.local
 # Local config
 *.local
 *.log
