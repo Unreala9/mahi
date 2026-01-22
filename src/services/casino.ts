@@ -1,6 +1,7 @@
 import { CasinoResponse, CasinoGame } from "@/types/casino";
 
-const API_HOST = import.meta.env.VITE_DIAMOND_API_HOST || "/api/diamond";
+const API_HOST =
+  import.meta.env.VITE_DIAMOND_API_HOST || "/api/diamond";
 const API_PROTOCOL = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "";
 const API_KEY =
   import.meta.env.VITE_DIAMOND_API_KEY || "mahi4449839dbabkadbakwq1qqd";
@@ -9,18 +10,13 @@ const API_KEY =
 const BASE_API_URL = API_HOST.startsWith("/")
   ? API_HOST
   : API_PROTOCOL
-    ? `${API_PROTOCOL}://${API_HOST}`
-    : `http://${API_HOST}`;
+  ? `${API_PROTOCOL}://${API_HOST}`
+  : `http://${API_HOST}`;
 
 const DEFAULT_API = `${BASE_API_URL}/casino/tableid?key=${API_KEY}`;
 const API_URL = import.meta.env.VITE_CASINO_API_URL || DEFAULT_API;
-
-// Casino game images CDN
-const IMAGE_CDN = "https://nd.sprintstaticdata.com/casino-icons/lc";
-const IMAGE_BASE = import.meta.env.VITE_CASINO_IMAGE_BASE || IMAGE_CDN;
-
-// Debug log to verify CDN is being used
-console.log("[Casino] IMAGE_BASE:", IMAGE_BASE);
+const IMAGE_BASE =
+  import.meta.env.VITE_CASINO_IMAGE_BASE || BASE_API_URL; // Use API host as base
 
 export async function fetchCasinoGames(): Promise<CasinoGame[]> {
   try {
@@ -51,10 +47,7 @@ export async function fetchCasinoGames(): Promise<CasinoGame[]> {
 
     // Debug: Check first game's imgpath (only in dev)
     if (import.meta.env.DEV && json.data.t1.length > 0) {
-      console.log(
-        "[Casino] API loaded successfully, games:",
-        json.data.t1.length,
-      );
+      console.log("[Casino] API loaded successfully, games:", json.data.t1.length);
       console.log("[Casino] Sample game data:", json.data.t1[0]);
     }
 
@@ -69,10 +62,7 @@ export async function fetchCasinoGames(): Promise<CasinoGame[]> {
 
       const fallbackJson = (await fallbackRes.json()) as CasinoResponse;
       if (import.meta.env.DEV) {
-        console.log(
-          "[Casino] Fallback loaded successfully, games:",
-          fallbackJson.data.t1.length,
-        );
+        console.log("[Casino] Fallback loaded successfully, games:", fallbackJson.data.t1.length);
       }
 
       return fallbackJson.data.t1;
@@ -100,37 +90,6 @@ function getApiOrigin(): string | null {
   }
 }
 
-/**
- * Get image URL for a specific game from CDN
- * @param game - The casino game object containing imgpath
- * @returns Array with the CDN image URL
- */
-export function getImageUrlForGame(game: CasinoGame): string[] {
-  if (!game.imgpath) return [];
-
-  // If already absolute URL, use it directly
-  if (/^https?:\/\//i.test(game.imgpath)) return [game.imgpath];
-
-  // Clean the path (remove leading slash if present)
-  const cleanPath = game.imgpath.startsWith("/")
-    ? game.imgpath.substring(1)
-    : game.imgpath;
-
-  // Construct CDN URL: https://nd.sprintstaticdata.com/casino-icons/lc/{imgpath}
-  const imageUrl = `${IMAGE_BASE}/${cleanPath}`;
-
-  // Log in dev mode for debugging
-  if (import.meta.env.DEV) {
-    console.log(`[Casino Image] Loading ${game.gname} from:`, imageUrl);
-  }
-
-  return [imageUrl];
-}
-
-/**
- * Legacy function for backward compatibility
- * @deprecated Use getImageUrlForGame instead for better accuracy
- */
 export function getImageCandidates(imgpath: string): string[] {
   if (!imgpath) return [];
 
@@ -141,12 +100,11 @@ export function getImageCandidates(imgpath: string): string[] {
   // Build complete URL using API host
   const cleanPath = imgpath.startsWith("/") ? imgpath.substring(1) : imgpath;
 
-  // Try common paths
+  // Try only the most common paths (reduced from 6 to 3 for better performance)
   const urls = [
     `${IMAGE_BASE}/${cleanPath}`,
     `${IMAGE_BASE}/images/${cleanPath}`,
     `${IMAGE_BASE}/game-image/${cleanPath}`,
-    `${IMAGE_BASE}/cards/${cleanPath}`,
   ];
 
   return urls;
