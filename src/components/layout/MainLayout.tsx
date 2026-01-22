@@ -1,9 +1,8 @@
 import { ReactNode, useEffect, useState } from "react";
-import { Sidebar } from "./Sidebar";
-import { MainHeader } from "./MainHeader";
-import { MainFooter } from "./MainFooter";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Sidebar } from "./Sidebar";
+import { MainHeader } from "./MainHeader";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -41,7 +40,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   const handleLogout = async () => {
     localStorage.removeItem("demo_session");
     await supabase.auth.signOut();
-    navigate("/auth");
+    navigate("/");
   };
 
   if (loading) {
@@ -60,13 +59,10 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex">
+    <div className="min-h-screen bg-background text-foreground flex overflow-x-hidden">
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-      <main className="flex-1 md:ml-64 transition-all duration-500 ease-premium min-h-screen flex flex-col relative">
-        {/* Animated background glow */}
-        <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
-
+      <main className="flex-1 min-w-0 min-h-screen flex flex-col relative overflow-x-hidden">
         <MainHeader
           session={session}
           handleLogout={handleLogout}
@@ -74,22 +70,10 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
         />
 
         {/* Content Area */}
-        <div className="flex-1 w-full max-w-7xl mx-auto px-6 py-8 md:py-12 relative z-10 animate-fade-in min-h-screen">
+        <div className="flex-1 w-full px-3 md:px-4 py-4 relative overflow-x-hidden">
           {children}
         </div>
-
-        <MainFooter />
       </main>
-
-      <style>{`
-        @keyframes loading {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(200%); }
-        }
-        .ease-premium {
-          transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-        }
-      `}</style>
     </div>
   );
 };

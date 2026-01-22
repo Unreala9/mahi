@@ -1,26 +1,7 @@
-import { useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-  LayoutDashboard,
-  Wallet,
-  Settings,
-  ChevronDown,
-  ChevronRight,
-  RefreshCw,
-  Wifi,
-  WifiOff,
-  Gamepad2,
-  Trophy,
-  History,
-  User,
-  FileText,
-  Shield,
-  Phone,
-  HelpCircle,
-  LogOut,
-} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { SportId, MatchEvent } from "@/services/diamondApi";
+import { MatchEvent } from "@/services/diamondApi";
 import { useLiveSportsData } from "@/hooks/api/useLiveSportsData";
 
 interface SidebarProps {
@@ -38,7 +19,9 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const [expandedCompetitions, setExpandedCompetitions] = useState<string[]>(
     [],
   );
-  const [isSportsDropdownOpen, setIsSportsDropdownOpen] = useState(false);
+  const [isRacingOpen, setIsRacingOpen] = useState(true);
+  const [isOthersOpen, setIsOthersOpen] = useState(true);
+  const [isAllSportsOpen, setIsAllSportsOpen] = useState(true);
 
   // Use live sports data hook - only call once
   const sportsData = useLiveSportsData();
@@ -47,10 +30,6 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     matches: allMatches,
     liveMatches,
     isLoading: loading,
-    isConnected,
-    error,
-    lastUpdate,
-    refresh,
   } = sportsData;
 
   useEffect(() => {
@@ -127,17 +106,16 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     }
   };
 
-  const navItems = [
-    { icon: LayoutDashboard, label: "Dashboard", path: "/" },
-    { icon: History, label: "My Bets", path: "/bets" },
-    { icon: Wallet, label: "Wallet", path: "/wallet" },
-    { icon: Gamepad2, label: "Casino", path: "/casino" },
-    { icon: Trophy, label: "Sports", path: "/sports" },
+  const othersLinks: Array<{ label: string; path: string }> = [
+    { label: "Our Casino", path: "/casino" },
+    { label: "Our VIP Casino", path: "/casino" },
+    { label: "Our Premium Casino", path: "/casino" },
+    { label: "Our Virtual", path: "/games" },
+    { label: "Tembo", path: "/casino" },
+    { label: "Live Casino", path: "/casino-live" },
+    { label: "Slot Game", path: "/casino" },
+    { label: "Fantasy Game", path: "/games" },
   ];
-
-  if (isAdmin) {
-    navItems.push({ icon: Settings, label: "Admin", path: "/admin" });
-  }
 
   const toggleSport = (sportId: number) => {
     setExpandedSports((prev) =>
@@ -183,255 +161,411 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     }));
   };
 
-  // Static sport list - always available, no API needed
-  const staticSports = [
-    { sid: 4, name: "Cricket", icon: "🏏" },
-    { sid: 1, name: "Football", icon: "⚽" },
-    { sid: 2, name: "Tennis", icon: "🎾" },
-    { sid: 3, name: "Table Tennis", icon: "🏓" },
-    { sid: 5, name: "Esoccer", icon: "⚽" },
-    { sid: 7, name: "Horse Racing", icon: "🏇" },
-    { sid: 4339, name: "Greyhound Racing", icon: "🐕" },
-    { sid: 6, name: "Basketball", icon: "🏀" },
-    { sid: 8, name: "Wrestling", icon: "🤼" },
-    { sid: 9, name: "Volleyball", icon: "🏐" },
-    { sid: 10, name: "Badminton", icon: "🏸" },
-    { sid: 11, name: "Snooker", icon: "🎱" },
-    { sid: 12, name: "Darts", icon: "🎯" },
-    { sid: 13, name: "Boxing", icon: "🥊" },
+  // Sports list (no emojis/icons) - prefer live data
+  const displaySports = useMemo(() => {
+    if (sports && sports.length > 0) {
+      return [...sports]
+        .map((s) => ({ sid: Number((s as any).sid), name: String((s as any).name) }))
+        .filter((s) => Number.isFinite(s.sid) && Boolean(s.name))
+        .sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    // Fallback
+    return [
+      { sid: 4, name: "Cricket" },
+      { sid: 1, name: "Football" },
+      { sid: 2, name: "Tennis" },
+      { sid: 3, name: "Table Tennis" },
+      { sid: 10, name: "Badminton" },
+      { sid: 5, name: "Esoccer" },
+      { sid: 6, name: "Basketball" },
+      { sid: 9, name: "Volleyball" },
+      { sid: 11, name: "Snooker" },
+      { sid: 7, name: "Horse Racing" },
+      { sid: 4339, name: "Greyhound Racing" },
+    ];
+  }, [sports]);
+
+  const racingLinks: Array<{ label: string; sid: number }> = [
+    { label: "Horse Racing", sid: 7 },
+    { label: "Greyhound Racing", sid: 4339 },
   ];
 
-  // Use static sports list for display, API data only for match counts
-  const displaySports = staticSports;
+  const SectionHeader = ({
+    title,
+    open,
+    onToggle,
+  }: {
+    title: string;
+    open: boolean;
+    onToggle: () => void;
+  }) => (
+    <button
+      type="button"
+      onClick={onToggle}
+      className="w-full flex items-center justify-between px-3 py-2 bg-primary text-primary-foreground font-semibold text-sm border-b border-border"
+    >
+      <span>{title}</span>
+      <span className="text-xs">{open ? "▴" : "▾"}</span>
+    </button>
+  );
+
+  const RowButton = ({
+    label,
+    onClick,
+    left,
+    active,
+  }: {
+    label: string;
+    onClick: () => void;
+    left?: React.ReactNode;
+    active?: boolean;
+  }) => (
+    <button
+      type="button"
+      onClick={onClick}
+      className={
+        "w-full flex items-center gap-2 px-3 py-2 text-sm border-b border-border text-foreground " +
+        (active ? "bg-muted" : "bg-muted/60 hover:bg-muted")
+      }
+    >
+      {left}
+      <span className="truncate">{label}</span>
+    </button>
+  );
+
+  const ExpandBox = ({ expanded }: { expanded: boolean }) => (
+    <span className="w-4 h-4 border border-border bg-background text-[12px] leading-none flex items-center justify-center flex-shrink-0">
+      {expanded ? "-" : "+"}
+    </span>
+  );
 
   return (
     <>
-      {/* Mobile Overlay */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 md:hidden animate-in fade-in"
-          onClick={onClose}
-        />
-      )}
-
-      {/* Sidebar */}
-      <aside
-        className={`fixed left-0 top-0 h-screen w-72 md:w-64 premium-glass-blue border-r border-border flex flex-col z-50 transition-transform duration-300 md:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
-      >
+      {/* Desktop Sidebar (no internal scroll; grows with content) */}
+      <aside className="hidden md:flex w-64 bg-background border-r border-border flex-col overflow-visible">
         {/* Brand Header */}
-        <div className="h-16 flex items-center px-6 border-b border-border">
+        <div className="h-16 flex items-center px-6 border-b border-border flex-shrink-0">
           <img src="/mahiex.png" alt="" />
         </div>
 
         {/* Navigation */}
-        <div className="flex-1 overflow-y-auto py-4">
-          <nav className="space-y-0.5 px-2">
-            {/* Regular Nav Items */}
-            {navItems.map((item) => {
-              const isActive = location.pathname === item.path;
-              return (
-                <button
-                  key={item.path}
-                  onClick={() => handleNavigate(item.path)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold uppercase tracking-wider transition-all duration-150 group ${
-                    isActive
-                      ? "bg-primary text-black sidebar-active-item"
-                      : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-                  }`}
-                >
-                  <item.icon
-                    className={`w-4 h-4 ${
-                      isActive
-                        ? "text-black"
-                        : "text-muted-foreground group-hover:text-primary"
-                    }`}
+        <div className="flex-1 min-h-0">
+          <nav>
+            {/* Racing */}
+            <SectionHeader
+              title="Racing Sports"
+              open={isRacingOpen}
+              onToggle={() => setIsRacingOpen((v) => !v)}
+            />
+            {isRacingOpen && (
+              <div>
+                {racingLinks.map((r) => (
+                  <RowButton
+                    key={r.sid}
+                    label={r.label}
+                    onClick={() => handleNavigate(`/sports?sport=${r.sid}`)}
                   />
-                  {item.label}
-                </button>
-              );
-            })}
-
-            {/* Sports Section - Always Visible */}
-            <div className="mt-4">
-              {/* Connection Status & Refresh */}
-              <div className="px-4 py-2 flex items-center justify-between border-b border-border/30 mb-2">
-                <div className="flex items-center gap-2 text-xs">
-                  {isConnected ? (
-                    <>
-                      <Wifi className="w-3 h-3 text-green-500" />
-                      <span className="text-muted-foreground">
-                        Live Updates
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <WifiOff className="w-3 h-3 text-yellow-500" />
-                      <span className="text-muted-foreground">Updating...</span>
-                    </>
-                  )}
-                </div>
-                <button
-                  onClick={refresh}
-                  disabled={loading}
-                  className="text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
-                  title="Refresh data"
-                >
-                  <RefreshCw
-                    className={`w-3 h-3 ${loading ? "animate-spin" : ""}`}
-                  />
-                </button>
+                ))}
               </div>
+            )}
 
-              {/* Always show sports list - no loading state needed */}
-              {displaySports.map((sport) => {
-                const isSportExpanded = expandedSports.includes(sport.sid);
-                const competitions = getCompetitionsBySport(sport.sid);
-                const sportLiveCount = liveMatches.filter(
-                  (m) => m.sid === sport.sid,
-                ).length;
+            {/* Others */}
+            <SectionHeader
+              title="Others"
+              open={isOthersOpen}
+              onToggle={() => setIsOthersOpen((v) => !v)}
+            />
+            {isOthersOpen && (
+              <div>
+                {othersLinks.map((item) => (
+                  <RowButton
+                    key={item.label}
+                    label={item.label}
+                    onClick={() => handleNavigate(item.path)}
+                    active={location.pathname === item.path}
+                  />
+                ))}
+                <RowButton
+                  label="My Bets"
+                  onClick={() => handleNavigate("/bets")}
+                  active={location.pathname === "/bets"}
+                />
+                <RowButton
+                  label="Wallet"
+                  onClick={() => handleNavigate("/wallet")}
+                  active={location.pathname === "/wallet"}
+                />
+                {isAdmin && (
+                  <RowButton
+                    label="Admin"
+                    onClick={() => handleNavigate("/admin")}
+                    active={location.pathname.startsWith("/admin")}
+                  />
+                )}
+              </div>
+            )}
 
-                return (
-                  <div key={sport.sid} className="border-b border-border/30">
-                    {/* Sport Header */}
-                    <div className="w-full flex items-center justify-between px-6 py-2.5 text-xs font-bold transition-colors hover:bg-muted/30">
-                      <button
+            {/* All sports */}
+            <SectionHeader
+              title="All Sports"
+              open={isAllSportsOpen}
+              onToggle={() => setIsAllSportsOpen((v) => !v)}
+            />
+            {isAllSportsOpen && (
+              <div>
+                {displaySports.map((sport) => {
+                  const isSportExpanded = expandedSports.includes(sport.sid);
+                  const competitions = getCompetitionsBySport(sport.sid);
+
+                  return (
+                    <div key={sport.sid}>
+                      <RowButton
+                        label={sport.name}
+                        left={<ExpandBox expanded={isSportExpanded} />}
                         onClick={() => toggleSport(sport.sid)}
-                        className="flex-1 flex items-center gap-2 text-left"
-                      >
-                        {isSportExpanded ? (
-                          <ChevronDown className="w-3 h-3" />
-                        ) : (
-                          <ChevronRight className="w-3 h-3" />
-                        )}
-                        <span className="text-sm">{sport.icon}</span>
-                        <span>{sport.name}</span>
-                      </button>
-                      {/* Only show LIVE indicator - no match counts (matches D247 UX) */}
-                      {sportLiveCount > 0 && (
-                        <span className="bg-green-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
-                          {sportLiveCount} LIVE
-                        </span>
-                      )}
-                    </div>
+                      />
 
-                    {/* Competitions */}
-                    {isSportExpanded && (
-                      <div className="bg-background/30">
-                        {competitions.length === 0 ? (
-                          <div className="px-8 py-2 text-xs text-muted-foreground">
-                            {loading ? "Loading matches..." : "No matches available"}
-                          </div>
-                        ) : (
-                          competitions.map((comp) => {
-                            const isCompExpanded =
-                              expandedCompetitions.includes(comp.name);
-
-                            return (
-                              <div key={comp.name}>
-                                {/* Competition Header */}
-                                <div className="w-full flex items-center justify-between px-8 py-2 text-xs font-medium transition-colors hover:bg-muted/20">
+                      {isSportExpanded && (
+                        <div className="bg-background">
+                          {competitions.length === 0 ? (
+                            <div className="px-3 py-2 text-xs text-muted-foreground border-b border-border">
+                              {loading ? "Loading…" : "No matches"}
+                            </div>
+                          ) : (
+                            competitions.map((comp) => {
+                              const isCompExpanded =
+                                expandedCompetitions.includes(comp.name);
+                              return (
+                                <div key={comp.name}>
                                   <button
-                                    onClick={() =>
-                                      toggleCompetition(comp.name)
-                                    }
-                                    className="flex-1 flex items-center gap-2 text-left"
+                                    type="button"
+                                    onClick={() => toggleCompetition(comp.name)}
+                                    className="w-full flex items-center justify-between gap-2 px-7 py-2 text-xs bg-muted/40 hover:bg-muted border-b border-border"
                                   >
-                                    {isCompExpanded ? (
-                                      <ChevronDown className="w-3 h-3" />
-                                    ) : (
-                                      <ChevronRight className="w-3 h-3" />
-                                    )}
                                     <span className="truncate">
-                                      {comp.name}
+                                      {isCompExpanded ? "-" : "+"} {comp.name}
+                                    </span>
+                                    <span className="text-[11px] text-muted-foreground">
+                                      {comp.matches.length}
                                     </span>
                                   </button>
-                                  <button
-                                    onClick={() =>
-                                      handleNavigate(
-                                        `/sports?sport=${sport.sid}&competition=${encodeURIComponent(comp.name)}`,
-                                      )
-                                    }
-                                    className="text-[10px] bg-muted px-1.5 py-0.5 rounded ml-2 hover:bg-muted/70 transition-colors"
-                                  >
-                                    {comp.matches.length}
-                                  </button>
-                                </div>
 
-                                {/* Matches */}
-                                {isCompExpanded && (
-                                  <div className="bg-background/50">
-                                    {comp.matches.map((match) => (
-                                      <button
-                                        key={match.gmid}
-                                        onClick={() =>
-                                          handleNavigate(
-                                            `/match/${match.gmid}/${sport.sid}`,
-                                          )
-                                        }
-                                        className="w-full px-10 py-1.5 text-xs text-left transition-colors hover:bg-muted/20 border-b border-border/20"
-                                      >
-                                        <div className="flex items-center gap-2">
-                                          {match.is_live && (
-                                            <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse flex-shrink-0" />
-                                          )}
-                                          <span className="truncate text-muted-foreground hover:text-foreground">
+                                  {isCompExpanded && (
+                                    <div>
+                                      {comp.matches.map((match) => (
+                                        <button
+                                          key={match.gmid}
+                                          type="button"
+                                          onClick={() =>
+                                            handleNavigate(
+                                              `/match/${match.gmid}/${sport.sid}`,
+                                            )
+                                          }
+                                          className="w-full px-10 py-2 text-xs text-left bg-background hover:bg-muted border-b border-border"
+                                        >
+                                          <span className="truncate">
                                             {match.name}
                                           </span>
-                                        </div>
-                                      </button>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                                        </button>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
+                      )}
+
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </nav>
         </div>
 
         {/* Profile Section */}
         <div className="border-t border-border">
           {user ? (
-            <div className="p-4">
-              <button
+            <div>
+              <RowButton
+                label="Profile"
                 onClick={() => handleNavigate("/profile")}
-                className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold transition-all duration-150 rounded-lg group ${
-                  location.pathname === "/profile"
-                    ? "bg-primary text-black"
-                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-                }`}
-              >
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <User className="w-4 h-4 text-primary" />
-                </div>
-                <div className="flex-1 text-left">
-                  <div className="text-xs font-semibold truncate">
-                    {profile?.full_name || user.email?.split("@")[0] || "User"}
-                  </div>
-                  <div className="text-[10px] text-muted-foreground">
-                    View Profile
-                  </div>
-                </div>
-              </button>
+                active={location.pathname === "/profile"}
+              />
             </div>
-          ) : (
-            <div className="p-4">
-              <button
-                onClick={() => handleNavigate("/auth")}
-                className="w-full px-4 py-2 bg-primary text-black rounded-lg font-semibold text-sm transition-colors hover:bg-primary/90"
-              >
-                Sign In
-              </button>
-            </div>
-          )}
+          ) : null}
         </div>
       </aside>
+
+      {/* Mobile Sidebar (overlay scrolls; sidebar grows with content) */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-50 md:hidden bg-black/80 backdrop-blur-sm animate-in fade-in overflow-y-auto"
+          onClick={onClose}
+        >
+          <aside
+            className="w-64 bg-background border-r border-border flex flex-col overflow-visible animate-in slide-in-from-left duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Brand Header */}
+            <div className="h-16 flex items-center px-6 border-b border-border flex-shrink-0">
+              <img src="/mahiex.png" alt="" />
+            </div>
+
+            {/* Navigation */}
+            <div className="flex-1 min-h-0">
+              <nav>
+                {/* Racing */}
+                <SectionHeader
+                  title="Racing Sports"
+                  open={isRacingOpen}
+                  onToggle={() => setIsRacingOpen((v) => !v)}
+                />
+                {isRacingOpen && (
+                  <div>
+                    {racingLinks.map((r) => (
+                      <RowButton
+                        key={r.sid}
+                        label={r.label}
+                        onClick={() => handleNavigate(`/sports?sport=${r.sid}`)}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* Others */}
+                <SectionHeader
+                  title="Others"
+                  open={isOthersOpen}
+                  onToggle={() => setIsOthersOpen((v) => !v)}
+                />
+                {isOthersOpen && (
+                  <div>
+                    {othersLinks.map((item) => (
+                      <RowButton
+                        key={item.label}
+                        label={item.label}
+                        onClick={() => handleNavigate(item.path)}
+                        active={location.pathname === item.path}
+                      />
+                    ))}
+                    <RowButton
+                      label="My Bets"
+                      onClick={() => handleNavigate("/bets")}
+                      active={location.pathname === "/bets"}
+                    />
+                    <RowButton
+                      label="Wallet"
+                      onClick={() => handleNavigate("/wallet")}
+                      active={location.pathname === "/wallet"}
+                    />
+                    {isAdmin && (
+                      <RowButton
+                        label="Admin"
+                        onClick={() => handleNavigate("/admin")}
+                        active={location.pathname.startsWith("/admin")}
+                      />
+                    )}
+                  </div>
+                )}
+
+                {/* All sports */}
+                <SectionHeader
+                  title="All Sports"
+                  open={isAllSportsOpen}
+                  onToggle={() => setIsAllSportsOpen((v) => !v)}
+                />
+                {isAllSportsOpen && (
+                  <div>
+                    {displaySports.map((sport) => {
+                      const isSportExpanded = expandedSports.includes(sport.sid);
+                      const competitions = getCompetitionsBySport(sport.sid);
+
+                      return (
+                        <div key={sport.sid}>
+                          <RowButton
+                            label={sport.name}
+                            left={<ExpandBox expanded={isSportExpanded} />}
+                            onClick={() => toggleSport(sport.sid)}
+                          />
+
+                          {isSportExpanded && (
+                            <div className="bg-background">
+                              {competitions.length === 0 ? (
+                                <div className="px-3 py-2 text-xs text-muted-foreground border-b border-border">
+                                  {loading ? "Loading…" : "No matches"}
+                                </div>
+                              ) : (
+                                competitions.map((comp) => {
+                                  const isCompExpanded =
+                                    expandedCompetitions.includes(comp.name);
+                                  return (
+                                    <div key={comp.name}>
+                                      <button
+                                        type="button"
+                                        onClick={() => toggleCompetition(comp.name)}
+                                        className="w-full flex items-center justify-between gap-2 px-7 py-2 text-xs bg-muted/40 hover:bg-muted border-b border-border"
+                                      >
+                                        <span className="truncate">
+                                          {isCompExpanded ? "-" : "+"} {comp.name}
+                                        </span>
+                                        <span className="text-[11px] text-muted-foreground">
+                                          {comp.matches.length}
+                                        </span>
+                                      </button>
+
+                                      {isCompExpanded && (
+                                        <div>
+                                          {comp.matches.map((match) => (
+                                            <button
+                                              key={match.gmid}
+                                              type="button"
+                                              onClick={() =>
+                                                handleNavigate(
+                                                  `/match/${match.gmid}/${sport.sid}`,
+                                                )
+                                              }
+                                              className="w-full px-10 py-2 text-xs text-left bg-background hover:bg-muted border-b border-border"
+                                            >
+                                              <span className="truncate">
+                                                {match.name}
+                                              </span>
+                                            </button>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </nav>
+            </div>
+
+            {/* Profile Section */}
+            <div className="border-t border-border">
+              {user ? (
+                <div>
+                  <RowButton
+                    label="Profile"
+                    onClick={() => handleNavigate("/profile")}
+                    active={location.pathname === "/profile"}
+                  />
+                </div>
+              ) : null}
+            </div>
+          </aside>
+        </div>
+      )}
     </>
   );
 };
