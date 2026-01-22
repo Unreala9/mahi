@@ -3,8 +3,7 @@ node_modules/
 dist/
 
 # Environment files (do not commit secrets)
-.env
-.env.*
+
 
 # Local config
 *.local

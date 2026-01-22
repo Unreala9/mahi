@@ -26,22 +26,22 @@ export function TeenpattiGame({ game }: TeenpattiGameProps) {
           <GameHeader game={game} liveData={liveData} />
 
           {/* Cards Display */}
-          <div className="px-4 py-4 space-y-4">
+          <div className="px-3 py-3 space-y-3">
             <div>
-              <h3 className="text-white font-bold mb-2 text-sm uppercase">
+              <h3 className="text-white font-bold mb-1.5 text-xs uppercase">
                 PLAYER A
               </h3>
-              <div className="flex gap-2">
+              <div className="flex gap-1.5">
                 <CardPlaceholder />
                 <CardPlaceholder />
                 <CardPlaceholder />
               </div>
             </div>
             <div>
-              <h3 className="text-white font-bold mb-2 text-sm uppercase">
+              <h3 className="text-white font-bold mb-1.5 text-xs uppercase">
                 PLAYER B
               </h3>
-              <div className="flex gap-2">
+              <div className="flex gap-1.5">
                 <CardPlaceholder />
                 <CardPlaceholder />
                 <CardPlaceholder />
@@ -50,19 +50,19 @@ export function TeenpattiGame({ game }: TeenpattiGameProps) {
           </div>
 
           {/* Game Canvas */}
-          <div className="mx-4 mb-4 bg-black border-2 border-gray-600 h-[350px]" />
+          <div className="mx-3 mb-3 bg-black border-2 border-gray-600 h-[250px]" />
 
           {/* Betting Options */}
-          <div className="px-4 py-4 grid grid-cols-2 gap-3">
-            <button className="bg-[#5dade2] hover:bg-[#4a9fd6] text-white py-6 px-4 rounded">
-              <div className="text-sm font-medium mb-1">Player A</div>
-              <div className="text-3xl font-bold">
+          <div className="px-3 py-3 grid grid-cols-2 gap-2">
+            <button className="bg-[#5dade2] hover:bg-[#4a9fd6] text-white py-4 px-3 rounded">
+              <div className="text-xs font-medium mb-1">Player A</div>
+              <div className="text-2xl font-bold">
                 {odds?.markets?.[0]?.runners?.[0]?.odds?.toFixed(2) || "1.98"}
               </div>
             </button>
-            <button className="bg-[#5dade2] hover:bg-[#4a9fd6] text-white py-6 px-4 rounded">
-              <div className="text-sm font-medium mb-1">Player B</div>
-              <div className="text-3xl font-bold">
+            <button className="bg-[#5dade2] hover:bg-[#4a9fd6] text-white py-4 px-3 rounded">
+              <div className="text-xs font-medium mb-1">Player B</div>
+              <div className="text-2xl font-bold">
                 {odds?.markets?.[0]?.runners?.[1]?.odds?.toFixed(2) || "1.98"}
               </div>
             </button>

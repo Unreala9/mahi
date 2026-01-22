@@ -2,12 +2,14 @@
 import { CasinoGame } from "@/types/casino";
 
 const API_HOST =
-  import.meta.env.VITE_DIAMOND_API_HOST || "130.250.191.174:3009";
-const API_PROTOCOL = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "http";
+  import.meta.env.VITE_DIAMOND_API_HOST || "/api/diamond";
+const API_PROTOCOL = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "";
 const WS_PROTOCOL = API_PROTOCOL === "https" ? "wss" : "ws";
 const BASE_URL = API_HOST.startsWith("/")
   ? API_HOST
-  : `${API_PROTOCOL}://${API_HOST}`;
+  : API_PROTOCOL
+  ? `${API_PROTOCOL}://${API_HOST}`
+  : `http://${API_HOST}`;
 const WS_BASE_URL = API_HOST.startsWith("/")
   ? `${WS_PROTOCOL}://${window.location.host}${API_HOST}`
   : `${WS_PROTOCOL}://${API_HOST}`;
@@ -67,9 +69,11 @@ class CasinoWebSocketService {
   private reconnectTimers: Map<string, NodeJS.Timeout> = new Map();
   private reconnectAttempts: Map<string, number> = new Map();
   private pollingTimers: Map<string, NodeJS.Timeout> = new Map();
-  private maxReconnectAttempts = 5;
-  private reconnectDelay = 3000;
+  private maxReconnectAttempts = 3; // Reduced from 5
+  private reconnectDelay = 5000; // Increased from 3000
   private usePolling = true; // Fallback to polling if WebSocket fails
+  private maxConnections = 10; // Limit simultaneous connections
+  private pollingInterval = 4000; // Increased from 2000ms to 4000ms
 
   /**
    * Subscribe to real-time updates for a specific casino game
@@ -113,6 +117,13 @@ class CasinoWebSocketService {
    * Connect to WebSocket or start polling for a game
    */
   private connect(gmid: string) {
+    // Check connection limit
+    if (this.connections.size >= this.maxConnections) {
+      console.warn(`[Casino WS] Connection limit reached (${this.maxConnections}), using polling for ${gmid}`);
+      this.startPolling(gmid);
+      return;
+    }
+
     // Don't reconnect if already connected
     const ws = this.connections.get(gmid);
     if (ws && ws.readyState === WebSocket.OPEN) {
@@ -214,6 +225,24 @@ class CasinoWebSocketService {
 
     const poll = async () => {
       try {
+        // Fetch actual casino data from API
+        const response = await fetch(
+          `${BASE_URL}/casinoDetail?gmid=${gmid}&key=${API_KEY}`,
+          {
+            signal: AbortSignal.timeout(3000), // Increased to 3s
+            keepalive: true,
+            headers: {
+              'Connection': 'keep-alive',
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const apiData = await response.json();
+
         // Generate round ID
         const roundId = `R${Date.now().toString().slice(-6)}`;
 
@@ -223,8 +252,8 @@ class CasinoWebSocketService {
           gmid,
           data: {
             gmid,
-            gname: gmid,
-            status: "active",
+            gname: apiData?.data?.gname || gmid,
+            status: apiData?.data?.status || "active",
             timer: Math.floor(Math.random() * 30) + 10,
             roundId,
             timestamp: Date.now(),
@@ -273,9 +302,9 @@ class CasinoWebSocketService {
       }
     };
 
-    // Poll immediately and then every 2 seconds
+    // Poll immediately and then every 3 seconds (reduced from 1s to improve performance)
     poll();
-    const timer = setInterval(poll, 2000);
+    const timer = setInterval(poll, this.pollingInterval);
     this.pollingTimers.set(gmid, timer);
   }
 
