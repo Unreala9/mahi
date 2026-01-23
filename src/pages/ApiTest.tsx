@@ -120,8 +120,15 @@ export default function ApiTest() {
         name: "Diamond API - Sports List (Configured URL) Error",
         status: "error",
         error: error.message,
-        request: { url: `${baseUrl}/tree` },
-        response: null,
+        request: { 
+          url: `${baseUrl}/tree`,
+          method: "GET"
+        },
+        response: {
+          errorType: error.name,
+          errorStack: error.stack,
+          mixedContentBlocked: window.location.protocol === 'https:' && baseUrl.startsWith('http://'),
+        },
       });
     }
 
@@ -153,9 +160,16 @@ export default function ApiTest() {
         addResult({
           name: "Diamond API - Sports List (Direct API) Error",
           status: "error",
-          error: error.message + " - This may be a CORS or network issue",
-          request: null,
-          response: null,
+          error: error.message,
+          request: {
+            url: "http://130.250.191.174:3009/tree",
+            method: "GET"
+          },
+          response: {
+            errorType: error.name,
+            errorStack: error.stack,
+            mixedContentBlocked: true,
+          },
         });
       }
     }
@@ -192,8 +206,15 @@ export default function ApiTest() {
         name: "Casino API - Table List",
         status: "error",
         error: error.message,
-        request: { url, method: "GET" },
-        response: null,
+        request: { 
+          url, 
+          method: "GET"
+        },
+        response: {
+          errorType: error.name,
+          errorStack: error.stack,
+          mixedContentBlocked: window.location.protocol === 'https:' && url.startsWith('http://'),
+        },
       });
     }
   };
@@ -385,23 +406,6 @@ export default function ApiTest() {
                 {import.meta.env.VITE_DIAMOND_API_KEY ? "Set" : "Using default"}
               </span>
             </div>
-          </div>
-        </Card>
-
-        <Card className="p-4 bg-yellow-900/20 border-yellow-600">
-          <h3 className="text-sm font-bold mb-2 text-yellow-200">⚠️ Production Configuration Required</h3>
-          <p className="text-xs text-yellow-200 mb-2">
-            On localhost, the app uses Vite's proxy (<code>/api/diamond</code>) which works fine.
-            In production, you need to either:
-          </p>
-          <ol className="text-xs text-yellow-200 list-decimal list-inside space-y-1">
-            <li>Set environment variables in your hosting platform (Vercel/Netlify)</li>
-            <li>Configure a proxy on your production server</li>
-          </ol>
-          <div className="mt-2 p-2 bg-black/30 rounded font-mono text-[10px] text-yellow-100">
-            VITE_DIAMOND_API_HOST=130.250.191.174:3009<br/>
-            VITE_DIAMOND_API_PROTOCOL=http<br/>
-            VITE_DIAMOND_API_KEY=mahi4449839dbabkadbakwq1qqd
           </div>
         </Card>
 
