@@ -1,15 +1,14 @@
 // Casino WebSocket Service for Real-time Game Data
 import { CasinoGame } from "@/types/casino";
 
-const API_HOST =
-  import.meta.env.VITE_DIAMOND_API_HOST || "/api/diamond";
+const API_HOST = import.meta.env.VITE_DIAMOND_API_HOST || "/api/diamond";
 const API_PROTOCOL = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "";
 const WS_PROTOCOL = API_PROTOCOL === "https" ? "wss" : "ws";
 const BASE_URL = API_HOST.startsWith("/")
   ? API_HOST
   : API_PROTOCOL
-  ? `${API_PROTOCOL}://${API_HOST}`
-  : `http://${API_HOST}`;
+    ? `${API_PROTOCOL}://${API_HOST}`
+    : `http://${API_HOST}`;
 const WS_BASE_URL = API_HOST.startsWith("/")
   ? `${WS_PROTOCOL}://${window.location.host}${API_HOST}`
   : `${WS_PROTOCOL}://${API_HOST}`;
@@ -119,7 +118,9 @@ class CasinoWebSocketService {
   private connect(gmid: string) {
     // Check connection limit
     if (this.connections.size >= this.maxConnections) {
-      console.warn(`[Casino WS] Connection limit reached (${this.maxConnections}), using polling for ${gmid}`);
+      console.warn(
+        `[Casino WS] Connection limit reached (${this.maxConnections}), using polling for ${gmid}`,
+      );
       this.startPolling(gmid);
       return;
     }
@@ -232,9 +233,9 @@ class CasinoWebSocketService {
             signal: AbortSignal.timeout(3000), // Increased to 3s
             keepalive: true,
             headers: {
-              'Connection': 'keep-alive',
+              Connection: "keep-alive",
             },
-          }
+          },
         );
 
         if (!response.ok) {
@@ -264,8 +265,8 @@ class CasinoWebSocketService {
         this.notifySubscribers(gmid, dataMessage);
 
         // Generate live odds with slight variations
-        const baseOdds = 1.90 + Math.random() * 0.20; // 1.90 to 2.10
-        const oddsVariation = Math.random() * 0.10 - 0.05; // -0.05 to +0.05
+        const baseOdds = 1.9 + Math.random() * 0.2; // 1.90 to 2.10
+        const oddsVariation = Math.random() * 0.1 - 0.05; // -0.05 to +0.05
 
         const oddsMessage: CasinoWebSocketMessage = {
           type: "casino_odds",

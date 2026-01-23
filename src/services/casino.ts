@@ -135,3 +135,89 @@ export function inferCategory(game: CasinoGame): string {
   if (name.includes("cricket")) return "Cricket";
   return "Other";
 }
+
+// Fetch live game data with odds
+export async function fetchCasinoGameData(type: string): Promise<any> {
+  try {
+    const url = `${BASE_API_URL}/casino/data?type=${type}&key=${API_KEY}`;
+    const res = await fetch(url, {
+      headers: { Accept: "*/*" },
+    });
+
+    if (!res.ok) {
+      throw new Error(`API returned ${res.status}`);
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error(`[Casino] Failed to fetch game data for ${type}:`, error);
+    throw error;
+  }
+}
+
+// Fetch last round result
+export async function fetchCasinoResult(type: string): Promise<any> {
+  try {
+    const url = `${BASE_API_URL}/casino/result?type=${type}&key=${API_KEY}`;
+    const res = await fetch(url, {
+      headers: { Accept: "*/*" },
+    });
+
+    if (!res.ok) {
+      throw new Error(`API returned ${res.status}`);
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error(`[Casino] Failed to fetch result for ${type}:`, error);
+    throw error;
+  }
+}
+
+// Fetch detailed result for a specific match
+export async function fetchCasinoDetailResult(type: string, mid: string): Promise<any> {
+  try {
+    const url = `${BASE_API_URL}/casino/detail_result?type=${type}&mid=${mid}&key=${API_KEY}`;
+    const res = await fetch(url, {
+      headers: { Accept: "*/*" },
+    });
+
+    if (!res.ok) {
+      throw new Error(`API returned ${res.status}`);
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error(`[Casino] Failed to fetch detail result for ${type}:`, error);
+    throw error;
+  }
+}
+
+// Place bet
+export async function placeCasinoBet(betData: {
+  type: string;
+  mid: string;
+  sid: number;
+  stake: number;
+}): Promise<any> {
+  try {
+    const url = `${BASE_API_URL}/casino/placebet?key=${API_KEY}`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "*/*",
+      },
+      body: JSON.stringify(betData),
+    });
+
+    if (!res.ok) {
+      throw new Error(`API returned ${res.status}`);
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("[Casino] Failed to place bet:", error);
+    throw error;
+  }
+}
