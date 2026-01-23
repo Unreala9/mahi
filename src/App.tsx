@@ -16,6 +16,7 @@ import Wallet from "./pages/Wallet";
 import Bets from "./pages/Bets";
 import Profile from "./pages/Profile";
 import DiamondMatch from "./pages/DiamondMatch";
+import ApiTest from "./pages/ApiTest";
 
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
@@ -72,6 +73,7 @@ const App = () => {
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/responsible-gaming" element={<ResponsibleGaming />} />
+            <Route path="/api-test" element={<ApiTest />} />
 
             {/* Protected User Routes */}
             <Route
