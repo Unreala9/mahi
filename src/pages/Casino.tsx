@@ -124,7 +124,7 @@ export default function Casino() {
 
   return (
     <MainLayout>
-      <div className="w-full max-w-7xl mx-auto">
+      <div className="w-full mx-auto">
         {/* Category Tabs (wrap, no horizontal scroll) */}
         <div className="mb-3 flex flex-wrap gap-2">
           {CASINO_CATEGORIES.map((category) => (
