@@ -80,7 +80,7 @@ export function BetButton({
 
 interface BetButtonGridProps {
   markets: BetMarket[];
-  onBet?: (market: BetMarket) => void;
+  onBet?: (market: BetMarket, selection: BetMarket) => void;
   columns?: 2 | 3 | 4;
 }
 
@@ -101,7 +101,7 @@ export function BetButtonGrid({
         <BetButton
           key={market.sid}
           market={market}
-          onClick={() => onBet?.(market)}
+          onClick={() => onBet?.(market, market)}
         />
       ))}
     </div>
