@@ -36,11 +36,11 @@ class DiamondWebSocketService {
     odds: Map<number, any>; // gmid -> odds data
     lastUpdate: number;
   } = {
-      sports: [],
-      matches: [],
-      odds: new Map(),
-      lastUpdate: 0,
-    };
+    sports: [],
+    matches: [],
+    odds: new Map(),
+    lastUpdate: 0,
+  };
 
   // Track which matches we're actively polling for odds
   private activeOddsPolling: Map<number, { gmid: number; sid: number }> =
@@ -161,8 +161,8 @@ class DiamondWebSocketService {
       const base = apiHost.startsWith("/")
         ? apiHost
         : protocol
-        ? `${protocol}://${apiHost}`
-        : `http://${apiHost}`;
+          ? `${protocol}://${apiHost}`
+          : `http://${apiHost}`;
 
       // Add timeout and keepalive for faster requests
       const controller = new AbortController();
@@ -172,7 +172,7 @@ class DiamondWebSocketService {
         signal: controller.signal,
         keepalive: true, // Reuse connections
         headers: {
-          'Connection': 'keep-alive',
+          Connection: "keep-alive",
         },
       });
 
@@ -221,8 +221,8 @@ class DiamondWebSocketService {
       const base = apiHost.startsWith("/")
         ? apiHost
         : protocol
-        ? `${protocol}://${apiHost}`
-        : `http://${apiHost}`;
+          ? `${protocol}://${apiHost}`
+          : `http://${apiHost}`;
 
       // Add timeout and keepalive for faster requests
       const controller = new AbortController();
@@ -232,7 +232,7 @@ class DiamondWebSocketService {
         signal: controller.signal,
         keepalive: true, // Reuse connections
         headers: {
-          'Connection': 'keep-alive',
+          Connection: "keep-alive",
         },
       });
 
@@ -292,14 +292,13 @@ class DiamondWebSocketService {
 
     // Filter out blacklisted matches
     const availableMatches = trackedMatches.filter(
-      (m) => !this.oddsBlacklist.has(m.gmid)
+      (m) => !this.oddsBlacklist.has(m.gmid),
     );
 
     // Fetch odds for each tracked match (up to 50 for better throughput)
     const oddsPromises = availableMatches.slice(0, 50).map(async (match) => {
       try {
-        const apiHost =
-          import.meta.env.VITE_DIAMOND_API_HOST || "/api/diamond";
+        const apiHost = import.meta.env.VITE_DIAMOND_API_HOST || "/api/diamond";
         const protocol = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "";
         const apiKey =
           import.meta.env.VITE_DIAMOND_API_KEY || "mahi4449839dbabkadbakwq1qqd";
@@ -309,8 +308,8 @@ class DiamondWebSocketService {
         const base = apiHost.startsWith("/")
           ? apiHost
           : protocol
-          ? `${protocol}://${apiHost}`
-          : `http://${apiHost}`;
+            ? `${protocol}://${apiHost}`
+            : `http://${apiHost}`;
 
         // Add timeout for faster failure and retry
         const controller = new AbortController();
@@ -322,9 +321,9 @@ class DiamondWebSocketService {
             signal: controller.signal,
             keepalive: true, // Reuse connections
             headers: {
-              'Connection': 'keep-alive',
+              Connection: "keep-alive",
             },
-          }
+          },
         );
 
         clearTimeout(timeoutId);
@@ -332,7 +331,9 @@ class DiamondWebSocketService {
         // If 404, add to blacklist and skip
         if (response.status === 404) {
           this.oddsBlacklist.set(match.gmid, Date.now());
-          console.debug(`[WebSocket] Match ${match.gmid} has no odds - blacklisted for 5 minutes`);
+          console.debug(
+            `[WebSocket] Match ${match.gmid} has no odds - blacklisted for 5 minutes`,
+          );
           return;
         }
 
@@ -625,8 +626,8 @@ class DiamondWebSocketService {
       const base = apiHost.startsWith("/")
         ? apiHost
         : protocol
-        ? `${protocol}://${apiHost}`
-        : `http://${apiHost}`;
+          ? `${protocol}://${apiHost}`
+          : `http://${apiHost}`;
       const response = await fetch(
         `${base}/getPriveteData?gmid=${gmid}&sid=${sid}&key=${apiKey}`,
       );
@@ -650,9 +651,7 @@ class DiamondWebSocketService {
       }
     } catch (error) {
       // Silent fail - odds not available or network error
-      console.debug(
-        `[WebSocket] Odds not available for match ${gmid}`,
-      );
+      console.debug(`[WebSocket] Odds not available for match ${gmid}`);
     }
   }
 

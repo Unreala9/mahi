@@ -24,7 +24,10 @@ const GameCardComponent = ({ game, onClick, onPlay }: GameCardProps) => {
 
   const handleImageError = () => {
     // Try next image URL candidate (max 2 attempts to avoid lag)
-    if (currentImageIndex < 1 && currentImageIndex < imageCandidates.length - 1) {
+    if (
+      currentImageIndex < 1 &&
+      currentImageIndex < imageCandidates.length - 1
+    ) {
       setCurrentImageIndex(currentImageIndex + 1);
     } else {
       // Show fallback after 2 attempts
@@ -46,7 +49,7 @@ const GameCardComponent = ({ game, onClick, onPlay }: GameCardProps) => {
 
   return (
     <Card
-      className="group relative aspect-[3/4] bg-card overflow-hidden cursor-pointer border border-border/50 hover:border-primary/60 hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 hover:-translate-y-1 rounded-xl"
+      className="group relative aspect-[4/5] bg-card overflow-hidden cursor-pointer border border-border/50 hover:border-primary/60 hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 hover:-translate-y-1 rounded-xl"
       onClick={handleClick}
     >
       {!imageError && imageSrc ? (
@@ -59,11 +62,12 @@ const GameCardComponent = ({ game, onClick, onPlay }: GameCardProps) => {
           <img
             src={imageSrc}
             alt={game.gname}
-            className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 group-hover:scale-110 ${!isImageLoaded ? 'opacity-0' : 'opacity-90 group-hover:opacity-100'}`}
+            className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 group-hover:scale-110 ${!isImageLoaded ? "opacity-0" : "opacity-90 group-hover:opacity-100"}`}
             onError={handleImageError}
             onLoad={handleImageLoad}
             loading="lazy"
-          /></>
+          />
+        </>
       ) : (
         <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-purple-900/90 via-pink-900/90 to-red-900/90">
           <div className="text-center px-3">
@@ -80,13 +84,17 @@ const GameCardComponent = ({ game, onClick, onPlay }: GameCardProps) => {
         {game.isLive && (
           <Badge className="bg-red-600/95 text-white border-0 h-6 px-2.5 flex items-center gap-1.5 animate-pulse shadow-lg">
             <Radio className="h-3 w-3" />
-            <span className="text-[10px] font-black uppercase tracking-wide">LIVE</span>
+            <span className="text-[10px] font-black uppercase tracking-wide">
+              LIVE
+            </span>
           </Badge>
         )}
         {game.isFair && (
           <Badge className="bg-green-600/95 text-white border-0 h-6 px-2.5 flex items-center gap-1.5 shadow-lg">
             <CheckCircle2 className="h-3 w-3" />
-            <span className="text-[10px] font-black uppercase tracking-wide">FAIR</span>
+            <span className="text-[10px] font-black uppercase tracking-wide">
+              FAIR
+            </span>
           </Badge>
         )}
       </div>

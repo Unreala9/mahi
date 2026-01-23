@@ -11,6 +11,9 @@ import {
   useSportIds,
 } from "@/hooks/api/useDiamond";
 import { diamondApi } from "@/services/diamondApi";
+import { LiveScoreDisplay } from "@/components/sportsbook/LiveScoreDisplay";
+import { EnhancedOddsDisplay } from "@/components/sportsbook/EnhancedOddsDisplay";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function DiamondMatch() {
   const { gmid, sid } = useParams();
@@ -106,8 +109,12 @@ export default function DiamondMatch() {
                   )}
                 </div>
                 <div className="space-y-1">
-                  <div className="text-foreground font-semibold">{teams.home}</div>
-                  <div className="text-foreground font-semibold">{teams.away}</div>
+                  <div className="text-foreground font-semibold">
+                    {teams.home}
+                  </div>
+                  <div className="text-foreground font-semibold">
+                    {teams.away}
+                  </div>
                 </div>
                 <div className="text-xs text-muted-foreground mt-2">
                   GMID: {gmid} | SID:{" "}
@@ -118,126 +125,65 @@ export default function DiamondMatch() {
           </div>
         </Card>
 
+        {/* Enhanced Live Score Display */}
+        {gmidNum && sidForQueries && details?.is_live && (
+          <LiveScoreDisplay gmid={gmidNum} sid={sidForQueries} />
+        )}
+
         {scoreUrl && (
           <Card className="p-4">
-            <h2 className="text-sm font-bold mb-2">Live Score</h2>
+            <h2 className="text-sm font-bold mb-2">Live TV</h2>
             <div className="w-full h-[360px]">
-              <iframe src={scoreUrl} className="w-full h-full" />
+              <iframe
+                src={scoreUrl}
+                className="w-full h-full"
+                title="Live Match Score"
+              />
             </div>
           </Card>
         )}
 
-        <Card className="p-4">
-          <h2 className="text-sm font-bold mb-3">Odds</h2>
-          {loadingOdds || resolvingSid ? (
-            <div className="text-center text-muted-foreground py-4">
-              Loading odds...
-            </div>
-          ) : !sidForQueries ? (
-            <div className="text-center text-muted-foreground py-4">
-              Waiting for match ID resolution…
-            </div>
-          ) : !oddsData ? (
-            <div className="text-center text-muted-foreground py-4">
-              No odds available
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {oddsData.match_odds && oddsData.match_odds.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-bold mb-2">
-                    Match Odds
-                  </h4>
-                  <div className="grid gap-2">
-                    {oddsData.match_odds.map((odd: any, idx: number) => (
-                      <OddsRow
-                        key={idx}
-                        label={
-                          odd.nation || odd.runner_name || `Runner ${idx + 1}`
-                        }
-                        back={odd.back}
-                        lay={odd.lay}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-              {oddsData.bookmaker && oddsData.bookmaker.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-bold mb-2">
-                    Bookmaker
-                  </h4>
-                  <div className="grid gap-2">
-                    {oddsData.bookmaker.map((book: any, idx: number) => (
-                      <OddsRow
-                        key={idx}
-                        label={
-                          book.nation || book.runner_name || `Runner ${idx + 1}`
-                        }
-                        back={book.back}
-                        lay={book.lay}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-              {oddsData.fancy && oddsData.fancy.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-bold mb-2">Fancy</h4>
-                  <div className="grid gap-2">
-                    {oddsData.fancy.map((fancy: any, idx: number) => (
-                      <OddsRow
-                        key={idx}
-                        label={fancy.runner_name || `Fancy ${idx + 1}`}
-                        back={fancy.back}
-                        lay={fancy.lay}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </Card>
+        {/* Enhanced Odds Display with Betting */}
+        {gmidNum && sidForQueries && !resolvingSid && (
+          <Tabs defaultValue="match_odds" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="match_odds">Match Odds</TabsTrigger>
+              <TabsTrigger value="bookmaker">Bookmaker</TabsTrigger>
+              <TabsTrigger value="fancy">Fancy</TabsTrigger>
+              <TabsTrigger value="toss">Toss</TabsTrigger>
+            </TabsList>
+            <TabsContent value="match_odds">
+              <EnhancedOddsDisplay
+                gmid={gmidNum}
+                sid={sidForQueries}
+                marketType="match_odds"
+              />
+            </TabsContent>
+            <TabsContent value="bookmaker">
+              <EnhancedOddsDisplay
+                gmid={gmidNum}
+                sid={sidForQueries}
+                marketType="bookmaker"
+              />
+            </TabsContent>
+            <TabsContent value="fancy">
+              <EnhancedOddsDisplay
+                gmid={gmidNum}
+                sid={sidForQueries}
+                marketType="fancy"
+              />
+            </TabsContent>
+            <TabsContent value="toss">
+              <EnhancedOddsDisplay
+                gmid={gmidNum}
+                sid={sidForQueries}
+                marketType="toss"
+              />
+            </TabsContent>
+          </Tabs>
+        )}
       </div>
     </MainLayout>
-  );
-}
-
-function OddsRow({ label, back, lay }: { label: string; back: any; lay: any }) {
-  const backOdds = Array.isArray(back) ? back[0] : back;
-  const layOdds = Array.isArray(lay) ? lay[0] : lay;
-
-  return (
-    <div className="flex items-center gap-2 bg-muted/30 p-2 rounded border border-border">
-      <div className="flex-1 text-sm text-foreground">{label}</div>
-      <div className="flex gap-2">
-        <Button
-          size="sm"
-          disabled={!backOdds || !backOdds.price}
-          className="bg-sky-300 hover:bg-sky-400 text-black px-3 py-1 min-w-[60px] disabled:opacity-30"
-        >
-          <div className="text-center">
-            <div className="font-bold">{backOdds?.price || "-"}</div>
-            {backOdds?.size && (
-              <div className="text-xs opacity-80">{backOdds.size}</div>
-            )}
-          </div>
-        </Button>
-        <Button
-          size="sm"
-          disabled={!layOdds || !layOdds.price}
-          className="bg-rose-300 hover:bg-rose-400 text-black px-3 py-1 min-w-[60px] disabled:opacity-30"
-        >
-          <div className="text-center">
-            <div className="font-bold">{layOdds?.price || "-"}</div>
-            {layOdds?.size && (
-              <div className="text-xs opacity-80">{layOdds.size}</div>
-            )}
-          </div>
-        </Button>
-      </div>
-    </div>
   );
 }
 
@@ -249,5 +195,5 @@ function parseTeamNames(matchName: string): { home: string; away: string } {
       return { home: home.trim(), away: away.trim() };
     }
   }
-  return { home: matchName || "Team 1", away: "Team 2" };
+  return { home: matchName || "Home Team", away: "Away Team" };
 }

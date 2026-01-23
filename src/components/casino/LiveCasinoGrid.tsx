@@ -20,7 +20,7 @@ export function LiveCasinoGrid({
   const { getData } = useCasinoLiveMultiple(gmids);
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
       {games.slice(0, maxDisplay).map((game) => {
         const liveData = getData(game.gmid);
 
@@ -41,7 +41,7 @@ function LiveGameCard({ game, liveData }: { game: CasinoGame; liveData: any }) {
   const imageUrl = getImageCandidates(game.imgpath)[0];
 
   return (
-    <Card className="group relative aspect-square bg-slate-900 overflow-hidden cursor-pointer border-2 border-white/10 hover:border-primary/60 hover:shadow-xl hover:shadow-primary/20 transition-all duration-200 rounded-sm">
+    <Card className="group relative aspect-[4/5] bg-slate-900 overflow-hidden cursor-pointer border-2 border-white/10 hover:border-primary/60 hover:shadow-xl hover:shadow-primary/20 transition-all duration-200 rounded-sm">
       {/* Live Badge */}
       <div className="absolute top-2 right-2 z-10">
         <Badge className="bg-red-600 text-white border-0 h-5 px-2 text-[10px] font-black uppercase shadow-lg animate-pulse">

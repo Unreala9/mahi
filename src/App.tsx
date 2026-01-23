@@ -134,6 +134,7 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
+          
             <Route
               path="/wallet"
               element={
