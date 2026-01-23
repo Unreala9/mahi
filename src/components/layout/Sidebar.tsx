@@ -110,11 +110,11 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     { label: "Our Casino", path: "/casino" },
     { label: "Our VIP Casino", path: "/casino" },
     { label: "Our Premium Casino", path: "/casino" },
-    { label: "Our Virtual", path: "/games" },
+    { label: "Our Virtual", path: "/casino" },
     { label: "Tembo", path: "/casino" },
     { label: "Live Casino", path: "/casino-live" },
     { label: "Slot Game", path: "/casino" },
-    { label: "Fantasy Game", path: "/games" },
+    { label: "Fantasy Game", path: "/casino" },
   ];
 
   const toggleSport = (sportId: number) => {
@@ -205,8 +205,8 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       onClick={onToggle}
       className="w-full flex items-center justify-between px-3 py-2 bg-primary text-primary-foreground font-semibold text-sm border-b border-border"
     >
-      <span>{title}</span>
-      <span className="text-xs">{open ? "▴" : "▾"}</span>
+      <span className="truncate min-w-0 text-left">{title}</span>
+      <span className="text-xs flex-shrink-0">{open ? "▴" : "▾"}</span>
     </button>
   );
 
@@ -225,12 +225,12 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       type="button"
       onClick={onClick}
       className={
-        "w-full flex items-center gap-2 px-3 py-2 text-sm border-b border-border text-foreground " +
+        "w-full flex items-center gap-2 px-3 py-2 text-sm border-b border-border text-foreground min-w-0 overflow-hidden " +
         (active ? "bg-muted" : "bg-muted/60 hover:bg-muted")
       }
     >
       {left}
-      <span className="truncate">{label}</span>
+      <span className="truncate min-w-0">{label}</span>
     </button>
   );
 
@@ -243,7 +243,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   return (
     <>
       {/* Desktop Sidebar (no internal scroll; grows with content) */}
-      <aside className="hidden md:flex w-64 bg-background border-r border-border flex-col overflow-visible">
+      <aside className="hidden md:flex w-64 bg-background border-r border-border flex-col overflow-x-hidden">
         {/* Brand Header */}
         <div className="h-16 flex items-center px-6 border-b border-border flex-shrink-0">
           <img src="/mahiex.png" alt="" />
@@ -407,7 +407,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           onClick={onClose}
         >
           <aside
-            className="w-64 bg-background border-r border-border flex flex-col overflow-visible animate-in slide-in-from-left duration-200"
+            className="w-64 bg-background border-r border-border flex flex-col overflow-x-hidden animate-in slide-in-from-left duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Brand Header */}
@@ -507,12 +507,12 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                                       <button
                                         type="button"
                                         onClick={() => toggleCompetition(comp.name)}
-                                        className="w-full flex items-center justify-between gap-2 px-7 py-2 text-xs bg-muted/40 hover:bg-muted border-b border-border"
+                                        className="w-full flex items-center justify-between gap-2 px-7 py-2 text-xs bg-muted/40 hover:bg-muted border-b border-border min-w-0 overflow-hidden"
                                       >
-                                        <span className="truncate">
+                                        <span className="truncate min-w-0 flex-1 text-left">
                                           {isCompExpanded ? "-" : "+"} {comp.name}
                                         </span>
-                                        <span className="text-[11px] text-muted-foreground">
+                                        <span className="text-[11px] text-muted-foreground flex-shrink-0">
                                           {comp.matches.length}
                                         </span>
                                       </button>
@@ -528,9 +528,9 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                                                   `/match/${match.gmid}/${sport.sid}`,
                                                 )
                                               }
-                                              className="w-full px-10 py-2 text-xs text-left bg-background hover:bg-muted border-b border-border"
+                                              className="w-full px-10 py-2 text-xs text-left bg-background hover:bg-muted border-b border-border min-w-0 overflow-hidden"
                                             >
-                                              <span className="truncate">
+                                              <span className="truncate min-w-0 block">
                                                 {match.name}
                                               </span>
                                             </button>
