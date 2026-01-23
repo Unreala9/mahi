@@ -62,7 +62,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
     <div className="min-h-screen bg-background text-foreground flex overflow-x-hidden">
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-      <main className="flex-1 min-w-0 min-h-screen flex flex-col relative overflow-x-hidden">
+      <main className="flex-1 min-w-0 min-h-screen flex flex-col relative">
         <MainHeader
           session={session}
           handleLogout={handleLogout}
@@ -70,7 +70,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
         />
 
         {/* Content Area */}
-        <div className="flex-1 w-full px-3 md:px-4 py-4 relative overflow-x-hidden">
+        <div className="flex-1 w-full px-3 md:px-4 py-4 relative overflow-x-visible">
           {children}
         </div>
       </main>
