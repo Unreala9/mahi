@@ -344,7 +344,7 @@ export function BettingModal({
                 </div>
               )}
 
-              {/* Live Score - Always show for all matches */}
+              {/* Live Score */}
               <div className="bg-[#0a0a0a] rounded-lg overflow-hidden">
                 <div className="bg-[#2d3748] px-4 py-2 flex items-center justify-between">
                   <h3 className="text-xs font-bold text-white uppercase">
@@ -360,7 +360,7 @@ export function BettingModal({
                   <iframe
                     src={`https://score.akamaized.uk/diamond-live-score?gmid=${match.gmid}`}
                     title="Live Score"
-                    className="w-full h-64 md:h-80 rounded border border-gray-700"
+                    className="w-full h-64 md:h-80 rounded border border-gray-700 bg-black"
                     allow="autoplay"
                     loading="lazy"
                   />
