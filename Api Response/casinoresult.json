@@ -1,0 +1,17 @@
+{
+  "success": true,
+  "msg": "Success",
+  "status": 200,
+  "data": {
+    "t1": {
+      "rid": "116260123112554",
+      "mtime": "1/23/2026 11:25:54 AM",
+      "ename": "20-20 Dragon Tiger",
+      "rdesc": "Tiger#No#D : Even  |  T : Even#D : Black  |  T : Black#D : 2  |  T : Q",
+      "card": "2CC,QCC",
+      "winnat": "Tiger",
+      "win": "2"
+    },
+    "t2": null
+  }
+}
