@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { GameCard } from "@/components/casino/GameCard";
 import { CASINO_CATEGORIES } from "@/data/casinoCategories";
+import type { CasinoCategoryId } from "@/data/casinoCategories";
 import { fetchCasinoGames } from "@/services/casino";
 import type { CasinoGame } from "@/types/casino";
 import { Button } from "@/components/ui/button";
@@ -12,15 +13,50 @@ export default function Casino() {
   const navigate = useNavigate();
   const location = useLocation();
   const [activeCategory, setActiveCategory] = useState("all");
+  const [tagFilter, setTagFilter] = useState<string | null>(null);
+  // Keep the UI clean: show only important categories and tags
+  const CATEGORY_WHITELIST: CasinoCategoryId[] = [
+    "all",
+    "teenpatti",
+    "baccarat",
+    "andar-bahar",
+    "dragon-tiger",
+    "matka",
+    "others",
+  ];
+  const DISPLAYED_CATEGORIES = CASINO_CATEGORIES.filter((c) =>
+    CATEGORY_WHITELIST.includes(c.id as CasinoCategoryId),
+  );
+  const TAGS: Array<{ id: string; label: string }> = [
+    { id: "vip", label: "VIP" },
+    { id: "premium", label: "Premium" },
+    { id: "virtual", label: "Virtual" },
+    { id: "tembo", label: "Tembo" },
+  ];
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const cat = params.get("cat");
-    if (!cat) return;
-    if (CASINO_CATEGORIES.some((c) => c.id === cat)) {
+    const tag = params.get("tag");
+    if (cat && CATEGORY_WHITELIST.includes(cat as CasinoCategoryId)) {
       setActiveCategory(cat);
     }
+    setTagFilter(tag ? tag.toLowerCase() : null);
   }, [location.search]);
+
+  const handleSetTag = (tag: string | null) => {
+    const params = new URLSearchParams(location.search);
+    if (tag) {
+      params.set("tag", tag);
+    } else {
+      params.delete("tag");
+    }
+    // preserve selected category in URL too
+    if (!params.get("cat")) {
+      params.set("cat", activeCategory);
+    }
+    navigate({ pathname: "/casino", search: params.toString() });
+  };
 
   // Fetch casino games
   const {
@@ -95,7 +131,45 @@ export default function Casino() {
     return categorized;
   }, [apiGames]);
 
-  const filteredGames = gamesByCategory[activeCategory] || [];
+  const filteredGames = useMemo(() => {
+    const base = gamesByCategory[activeCategory] || [];
+    if (!tagFilter) return base;
+    const tag = tagFilter.toLowerCase();
+    return base.filter((game) => {
+      const name = game.gname?.toLowerCase() || "";
+      const provider = (game.provider as any)?.toString()?.toLowerCase?.() || "";
+      const id = game.gmid?.toLowerCase() || "";
+      // generic contains check
+      if (name.includes(tag) || provider.includes(tag) || id.includes(tag)) return true;
+      // friendly synonyms mapping
+      if (tag === "vip") return name.includes("v vip") || name.includes("vip ");
+      if (tag === "premium") return name.includes("premium");
+      if (tag === "virtual") return name.includes("virtual");
+      if (tag === "tembo") return name.includes("tembo");
+      if (tag === "slot") return name.includes("slot");
+      if (tag === "fantasy") return name.includes("fantasy");
+      return false;
+    });
+  }, [gamesByCategory, activeCategory, tagFilter]);
+
+  // Determine which tag chips should be visible based on available games in current category
+  const availableTags = useMemo(() => {
+    const base = gamesByCategory[activeCategory] || [];
+    const matchesTag = (tag: string, game: CasinoGame) => {
+      const name = game.gname?.toLowerCase() || "";
+      const provider = (game.provider as any)?.toString()?.toLowerCase?.() || "";
+      const id = game.gmid?.toLowerCase() || "";
+      if (name.includes(tag) || provider.includes(tag) || id.includes(tag)) return true;
+      if (tag === "vip") return name.includes("v vip") || name.includes("vip ");
+      if (tag === "premium") return name.includes("premium");
+      if (tag === "virtual") return name.includes("virtual");
+      if (tag === "tembo") return name.includes("tembo");
+      if (tag === "slot") return name.includes("slot");
+      if (tag === "fantasy") return name.includes("fantasy");
+      return false;
+    };
+    return TAGS.filter((t) => base.some((g) => matchesTag(t.id, g)));
+  }, [gamesByCategory, activeCategory]);
 
   const handlePlay = (game: CasinoGame) => {
     navigate(`/casino/${game.gmid}`);
@@ -125,9 +199,9 @@ export default function Casino() {
   return (
     <MainLayout>
       <div className="w-full mx-auto">
-        {/* Category Tabs (wrap, no horizontal scroll) */}
-        <div className="mb-3 flex flex-wrap gap-2">
-          {CASINO_CATEGORIES.map((category) => (
+        {/* Unified Filters: Categories + Tags in one row */}
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          {DISPLAYED_CATEGORIES.map((category) => (
             <button
               key={category.id}
               onClick={() => setActiveCategory(category.id)}
@@ -143,6 +217,32 @@ export default function Casino() {
               </span>
             </button>
           ))}
+
+          {/* Divider */}
+          <span className="hidden sm:inline-block w-px h-5 bg-border mx-1" />
+
+          {/* Tag pills */}
+          {availableTags.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => handleSetTag(t.id)}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+                tagFilter === t.id
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-muted text-foreground border-border hover:bg-muted/80"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+          {tagFilter && (
+            <button
+              onClick={() => handleSetTag(null)}
+              className="px-3 py-1.5 rounded-full text-xs font-semibold border bg-transparent hover:bg-muted"
+            >
+              Clear
+            </button>
+          )}
         </div>
 
       {/* Games Grid */}

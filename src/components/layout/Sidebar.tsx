@@ -108,13 +108,13 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
   const othersLinks: Array<{ label: string; path: string }> = [
     { label: "Our Casino", path: "/casino" },
-    { label: "Our VIP Casino", path: "/casino" },
-    { label: "Our Premium Casino", path: "/casino" },
-    { label: "Our Virtual", path: "/casino" },
-    { label: "Tembo", path: "/casino" },
+    { label: "Our VIP Casino", path: "/casino?tag=vip" },
+    { label: "Our Premium Casino", path: "/casino?tag=premium" },
+    { label: "Our Virtual", path: "/casino?tag=virtual" },
+    { label: "Tembo", path: "/casino?tag=tembo" },
     { label: "Live Casino", path: "/casino-live" },
-    { label: "Slot Game", path: "/casino" },
-    { label: "Fantasy Game", path: "/casino" },
+    { label: "Slot Game", path: "/casino?tag=slot" },
+    { label: "Fantasy Game", path: "/casino?tag=fantasy" },
   ];
 
   const toggleSport = (sportId: number) => {
@@ -136,6 +136,19 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const handleNavigate = (path: string) => {
     navigate(path);
     onClose();
+  };
+
+  const isActivePath = (target: string) => {
+    if (!target) return false;
+    const [pathname, query] = target.split("?");
+    if (location.pathname !== pathname) return false;
+    if (!query) return true;
+    const current = new URLSearchParams(location.search);
+    const wanted = new URLSearchParams(query);
+    for (const [k, v] of wanted.entries()) {
+      if (current.get(k) !== v) return false;
+    }
+    return true;
   };
 
   // Group matches by sport and competition
@@ -283,7 +296,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                     key={item.label}
                     label={item.label}
                     onClick={() => handleNavigate(item.path)}
-                    active={location.pathname === item.path}
+                    active={isActivePath(item.path)}
                   />
                 ))}
                 <RowButton
@@ -449,7 +462,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                         key={item.label}
                         label={item.label}
                         onClick={() => handleNavigate(item.path)}
-                        active={location.pathname === item.path}
+                        active={isActivePath(item.path)}
                       />
                     ))}
                     <RowButton
