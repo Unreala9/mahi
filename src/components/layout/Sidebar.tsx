@@ -108,8 +108,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
   const othersLinks: Array<{ label: string; path: string }> = [
     { label: "Our Casino", path: "/casino" },
-    { label: "Live Casino", path: "/casino-live" },
-    { label: "Slot Game", path: "/casino" },
+
   ];
 
   const toggleSport = (sportId: number) => {
@@ -131,6 +130,19 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const handleNavigate = (path: string) => {
     navigate(path);
     onClose();
+  };
+
+  const isActivePath = (target: string) => {
+    if (!target) return false;
+    const [pathname, query] = target.split("?");
+    if (location.pathname !== pathname) return false;
+    if (!query) return true;
+    const current = new URLSearchParams(location.search);
+    const wanted = new URLSearchParams(query);
+    for (const [k, v] of wanted.entries()) {
+      if (current.get(k) !== v) return false;
+    }
+    return true;
   };
 
   // Group matches by sport and competition
@@ -292,7 +304,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                     key={item.label}
                     label={item.label}
                     onClick={() => handleNavigate(item.path)}
-                    active={location.pathname === item.path}
+                    active={isActivePath(item.path)}
                   />
                 ))}
                 <RowButton
@@ -458,7 +470,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                         key={item.label}
                         label={item.label}
                         onClick={() => handleNavigate(item.path)}
-                        active={location.pathname === item.path}
+                        active={isActivePath(item.path)}
                       />
                     ))}
                     <RowButton
