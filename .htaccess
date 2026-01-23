@@ -2,21 +2,9 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
   
-  # Proxy API requests to Diamond API
-  RewriteCond %{REQUEST_URI} ^/api/diamond(.*)$
-  RewriteRule ^api/diamond(.*)$ http://130.250.191.174:3009$1 [P,L]
-  
-  # CORS Headers for API requests
-  <IfModule mod_headers.c>
-    Header set Access-Control-Allow-Origin "*"
-    Header set Access-Control-Allow-Methods "GET, POST, OPTIONS"
-    Header set Access-Control-Allow-Headers "Content-Type, Authorization"
-  </IfModule>
-  
   # Handle client-side routing (React Router)
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteCond %{REQUEST_URI} !^/api/
   RewriteRule . /index.html [L]
 </IfModule>
 
