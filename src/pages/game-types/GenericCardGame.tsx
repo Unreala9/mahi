@@ -6,7 +6,14 @@ import { placeCasinoBet } from "@/services/casino";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import { Wifi, WifiOff, TrendingUp, Clock, DollarSign, Target } from "lucide-react";
+import {
+  Wifi,
+  WifiOff,
+  TrendingUp,
+  Clock,
+  DollarSign,
+  Target,
+} from "lucide-react";
 
 interface GenericCardGameProps {
   game: CasinoGame;
@@ -23,7 +30,9 @@ export function GenericCardGame({ game }: GenericCardGameProps) {
   const [bets, setBets] = useState<Bet[]>([]);
   const [selectedChip, setSelectedChip] = useState(100);
   const [pulseTimer, setPulseTimer] = useState(false);
-  const { gameData, resultData, isConnected, error } = useCasinoWebSocket(game.gmid);
+  const { gameData, resultData, isConnected, error } = useCasinoWebSocket(
+    game.gmid,
+  );
 
   const chips = [100, 500, 1000, 5000, 10000, 25000];
 
@@ -35,30 +44,35 @@ export function GenericCardGame({ game }: GenericCardGameProps) {
 
   const handleMarketClick = (market: any) => {
     if (market.gstatus === "SUSPENDED") {
-      toast({ 
-        title: "⚠️ Market Suspended", 
+      toast({
+        title: "⚠️ Market Suspended",
         description: "This market is currently not accepting bets",
-        variant: "destructive" 
+        variant: "destructive",
       });
       return;
     }
 
     const existingBet = bets.find((b) => b.sid === market.sid);
     if (existingBet) {
-      setBets(bets.map((b) =>
-        b.sid === market.sid ? { ...b, stake: b.stake + selectedChip } : b
-      ));
+      setBets(
+        bets.map((b) =>
+          b.sid === market.sid ? { ...b, stake: b.stake + selectedChip } : b,
+        ),
+      );
       toast({
         title: "✅ Bet Updated",
         description: `${market.nat}: ₹${existingBet.stake + selectedChip}`,
       });
     } else {
-      setBets([...bets, {
-        sid: market.sid,
-        nat: market.nat,
-        stake: selectedChip,
-        odds: market.b || market.bs || 0,
-      }]);
+      setBets([
+        ...bets,
+        {
+          sid: market.sid,
+          nat: market.nat,
+          stake: selectedChip,
+          odds: market.b || market.bs || 0,
+        },
+      ]);
       toast({
         title: "✅ Bet Added",
         description: `${market.nat}: ₹${selectedChip}`,
@@ -71,8 +85,11 @@ export function GenericCardGame({ game }: GenericCardGameProps) {
 
     try {
       const totalStake = bets.reduce((sum, bet) => sum + bet.stake, 0);
-      const potentialWin = bets.reduce((sum, bet) => sum + bet.stake * bet.odds, 0);
-      
+      const potentialWin = bets.reduce(
+        (sum, bet) => sum + bet.stake * bet.odds,
+        0,
+      );
+
       for (const bet of bets) {
         await placeCasinoBet({
           type: game.gmid,
@@ -81,18 +98,18 @@ export function GenericCardGame({ game }: GenericCardGameProps) {
           stake: bet.stake,
         });
       }
-      
-      toast({ 
+
+      toast({
         title: "🎉 Bets Placed Successfully!",
         description: `${bets.length} bet(s) • ₹${totalStake} stake • Potential: ₹${potentialWin.toFixed(2)}`,
         duration: 5000,
       });
       setBets([]);
     } catch (error) {
-      toast({ 
-        title: "❌ Error placing bets", 
+      toast({
+        title: "❌ Error placing bets",
         description: "Please try again or contact support",
-        variant: "destructive" 
+        variant: "destructive",
       });
     }
   };
@@ -112,26 +129,34 @@ export function GenericCardGame({ game }: GenericCardGameProps) {
                   <Target className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-white font-bold text-xl uppercase tracking-wide">{game.gname}</h1>
+                  <h1 className="text-white font-bold text-xl uppercase tracking-wide">
+                    {game.gname}
+                  </h1>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-slate-400 text-sm">Round ID:</span>
-                    <span className="text-purple-400 font-mono font-semibold">{gameData?.mid || "---"}</span>
+                    <span className="text-purple-400 font-mono font-semibold">
+                      {gameData?.mid || "---"}
+                    </span>
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-6">
                 {/* Connection Status */}
                 <div className="flex items-center gap-2">
                   {isConnected ? (
                     <>
                       <Wifi className="w-5 h-5 text-green-400 animate-pulse" />
-                      <span className="text-green-400 text-sm font-semibold">Live</span>
+                      <span className="text-green-400 text-sm font-semibold">
+                        Live
+                      </span>
                     </>
                   ) : (
                     <>
                       <WifiOff className="w-5 h-5 text-red-400" />
-                      <span className="text-red-400 text-sm font-semibold">Disconnected</span>
+                      <span className="text-red-400 text-sm font-semibold">
+                        Disconnected
+                      </span>
                     </>
                   )}
                 </div>
@@ -142,7 +167,9 @@ export function GenericCardGame({ game }: GenericCardGameProps) {
                     <Clock className="w-4 h-4 text-slate-400" />
                     <p className="text-slate-400 text-xs">Time Left</p>
                   </div>
-                  <p className={`text-3xl font-bold ${pulseTimer ? 'text-red-400 animate-pulse' : 'text-yellow-400'} transition-colors`}>
+                  <p
+                    className={`text-3xl font-bold ${pulseTimer ? "text-red-400 animate-pulse" : "text-yellow-400"} transition-colors`}
+                  >
                     {gameData?.lt || 0}s
                   </p>
                 </div>
@@ -151,8 +178,8 @@ export function GenericCardGame({ game }: GenericCardGameProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px]">`
-          {/* Main Game Area */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px]">
+          `{/* Main Game Area */}
           <div className="p-6 space-y-6">
             {/* Cards Display with Enhanced Animation */}
             {cards.length > 0 && (
@@ -164,10 +191,12 @@ export function GenericCardGame({ game }: GenericCardGameProps) {
                 <Card className="bg-gradient-to-br from-slate-800 via-slate-850 to-slate-800 border-slate-700 p-6 shadow-2xl">
                   <div className="flex justify-center gap-4 flex-wrap">
                     {cards.map((card, i) => (
-                      <div 
-                        key={i} 
+                      <div
+                        key={i}
                         className="w-20 h-28 bg-gradient-to-br from-white to-gray-100 rounded-xl shadow-2xl flex items-center justify-center text-3xl font-bold transform hover:scale-110 transition-all duration-300 border-4 border-white hover:shadow-purple-500/50"
-                        style={{ animation: `fadeIn 0.5s ease-out ${i * 0.1}s both` }}
+                        style={{
+                          animation: `fadeIn 0.5s ease-out ${i * 0.1}s both`,
+                        }}
                       >
                         <span className="bg-gradient-to-br from-slate-800 to-slate-900 bg-clip-text text-transparent">
                           {card}
@@ -187,7 +216,9 @@ export function GenericCardGame({ game }: GenericCardGameProps) {
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {markets.map((market: any) => {
-                  const betOnThisMarket = bets.find(b => b.sid === market.sid);
+                  const betOnThisMarket = bets.find(
+                    (b) => b.sid === market.sid,
+                  );
                   return (
                     <Button
                       key={market.sid}
@@ -202,15 +233,19 @@ export function GenericCardGame({ game }: GenericCardGameProps) {
                     >
                       {/* Shimmer Effect */}
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent transform -skew-x-12 group-hover:translate-x-full transition-transform duration-1000"></div>
-                      
-                      <span className="text-white font-bold text-sm text-center z-10">{market.nat}</span>
-                      <span className="text-yellow-300 text-lg font-bold mt-1 z-10">{market.b || market.bs || "0.00"}</span>
+
+                      <span className="text-white font-bold text-sm text-center z-10">
+                        {market.nat}
+                      </span>
+                      <span className="text-yellow-300 text-lg font-bold mt-1 z-10">
+                        {market.b || market.bs || "0.00"}
+                      </span>
                       {betOnThisMarket && (
                         <span className="text-white text-xs mt-1 bg-black/30 px-2 py-0.5 rounded-full z-10">
                           ₹{betOnThisMarket.stake}
                         </span>
                       )}
-                      
+
                       {/* Active Badge */}
                       {betOnThisMarket && (
                         <div className="absolute top-2 right-2 w-2 h-2 bg-green-400 rounded-full animate-pulse z-10"></div>
@@ -229,16 +264,20 @@ export function GenericCardGame({ game }: GenericCardGameProps) {
               </h4>
               <Card className="bg-slate-800 border-slate-700 p-4">
                 <div className="flex gap-3 flex-wrap">
-                  {resultData?.res?.slice(0, 15).map((result: any, index: number) => (
-                    <div
-                      key={index}
-                      className="w-12 h-12 rounded-full flex items-center justify-center font-bold bg-gradient-to-br from-purple-600 to-purple-700 text-white text-sm shadow-lg hover:scale-110 transition-transform duration-200 cursor-pointer"
-                      title={`Mid: ${result.mid}, Win: ${result.win}`}
-                      style={{ animation: `slideIn 0.3s ease-out ${index * 0.05}s both` }}
-                    >
-                      {result.win}
-                    </div>
-                  ))}
+                  {resultData?.res
+                    ?.slice(0, 15)
+                    .map((result: any, index: number) => (
+                      <div
+                        key={index}
+                        className="w-12 h-12 rounded-full flex items-center justify-center font-bold bg-gradient-to-br from-purple-600 to-purple-700 text-white text-sm shadow-lg hover:scale-110 transition-transform duration-200 cursor-pointer"
+                        title={`Mid: ${result.mid}, Win: ${result.win}`}
+                        style={{
+                          animation: `slideIn 0.3s ease-out ${index * 0.05}s both`,
+                        }}
+                      >
+                        {result.win}
+                      </div>
+                    ))}
                 </div>
               </Card>
             </div>
@@ -258,11 +297,13 @@ export function GenericCardGame({ game }: GenericCardGameProps) {
                       </div>
                       <div>
                         <p className="text-slate-400 text-sm">Total Markets</p>
-                        <p className="text-white font-bold text-2xl">{markets.length}</p>
+                        <p className="text-white font-bold text-2xl">
+                          {markets.length}
+                        </p>
                       </div>
                     </div>
                   </Card>
-                  
+
                   <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 p-4 hover:shadow-xl transition-shadow duration-300">
                     <div className="flex items-center gap-3">
                       <div className="bg-green-600/20 p-3 rounded-lg">
@@ -271,12 +312,15 @@ export function GenericCardGame({ game }: GenericCardGameProps) {
                       <div>
                         <p className="text-slate-400 text-sm">Active</p>
                         <p className="text-green-400 font-bold text-2xl">
-                          {markets.filter((m: any) => m.gstatus === "ACTIVE").length}
+                          {
+                            markets.filter((m: any) => m.gstatus === "ACTIVE")
+                              .length
+                          }
                         </p>
                       </div>
                     </div>
                   </Card>
-                  
+
                   <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 p-4 hover:shadow-xl transition-shadow duration-300">
                     <div className="flex items-center gap-3">
                       <div className="bg-red-600/20 p-3 rounded-lg">
@@ -285,7 +329,11 @@ export function GenericCardGame({ game }: GenericCardGameProps) {
                       <div>
                         <p className="text-slate-400 text-sm">Suspended</p>
                         <p className="text-red-400 font-bold text-2xl">
-                          {markets.filter((m: any) => m.gstatus === "SUSPENDED").length}
+                          {
+                            markets.filter(
+                              (m: any) => m.gstatus === "SUSPENDED",
+                            ).length
+                          }
                         </p>
                       </div>
                     </div>
@@ -294,7 +342,6 @@ export function GenericCardGame({ game }: GenericCardGameProps) {
               </div>
             )}
           </div>
-
           {/* Enhanced Bet Slip Sidebar */}
           <div className="bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 border-l border-slate-700 p-6 shadow-2xl">
             <div className="flex items-center gap-3 mb-6">
@@ -306,7 +353,9 @@ export function GenericCardGame({ game }: GenericCardGameProps) {
 
             {/* Enhanced Chip Selection */}
             <div className="mb-6">
-              <p className="text-slate-300 text-sm mb-3 font-semibold">Select Chip Value</p>
+              <p className="text-slate-300 text-sm mb-3 font-semibold">
+                Select Chip Value
+              </p>
               <div className="grid grid-cols-3 gap-3">
                 {chips.map((chip) => (
                   <Button
@@ -337,22 +386,30 @@ export function GenericCardGame({ game }: GenericCardGameProps) {
                       <Target className="w-8 h-8 text-slate-500" />
                     </div>
                     <p className="text-slate-400">No bets selected</p>
-                    <p className="text-slate-500 text-xs">Click on markets to add bets</p>
+                    <p className="text-slate-500 text-xs">
+                      Click on markets to add bets
+                    </p>
                   </div>
                 </Card>
               ) : (
                 bets.map((bet, index) => (
-                  <Card 
-                    key={index} 
+                  <Card
+                    key={index}
                     className="p-4 bg-gradient-to-br from-slate-800 to-slate-850 border-slate-600 hover:border-slate-500 transition-all duration-300 hover:shadow-lg"
-                    style={{ animation: `slideIn 0.3s ease-out ${index * 0.1}s both` }}
+                    style={{
+                      animation: `slideIn 0.3s ease-out ${index * 0.1}s both`,
+                    }}
                   >
                     <div className="flex justify-between items-start mb-3">
-                      <span className="text-white font-bold text-sm">{bet.nat}</span>
+                      <span className="text-white font-bold text-sm">
+                        {bet.nat}
+                      </span>
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => setBets(bets.filter((_, i) => i !== index))}
+                        onClick={() =>
+                          setBets(bets.filter((_, i) => i !== index))
+                        }
                         className="h-7 w-7 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-full"
                       >
                         ×
@@ -361,15 +418,21 @@ export function GenericCardGame({ game }: GenericCardGameProps) {
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-400">Odds:</span>
-                        <span className="text-yellow-400 font-bold">{bet.odds}</span>
+                        <span className="text-yellow-400 font-bold">
+                          {bet.odds}
+                        </span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-400">Stake:</span>
-                        <span className="text-white font-semibold">₹{bet.stake}</span>
+                        <span className="text-white font-semibold">
+                          ₹{bet.stake}
+                        </span>
                       </div>
                       <div className="flex justify-between text-sm font-bold pt-2 border-t border-slate-600">
                         <span className="text-slate-400">Potential Win:</span>
-                        <span className="text-green-400">₹{(bet.stake * bet.odds).toFixed(2)}</span>
+                        <span className="text-green-400">
+                          ₹{(bet.stake * bet.odds).toFixed(2)}
+                        </span>
                       </div>
                     </div>
                   </Card>
@@ -382,20 +445,29 @@ export function GenericCardGame({ game }: GenericCardGameProps) {
               <Card className="p-4 bg-gradient-to-br from-slate-950 to-slate-900 border-slate-600 mb-4 shadow-xl">
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-300 font-semibold">Total Stake:</span>
+                    <span className="text-slate-300 font-semibold">
+                      Total Stake:
+                    </span>
                     <span className="text-yellow-400 font-bold text-xl">
                       ₹{bets.reduce((sum, bet) => sum + bet.stake, 0)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center pt-3 border-t border-slate-700">
-                    <span className="text-slate-300 font-semibold">Potential Win:</span>
+                    <span className="text-slate-300 font-semibold">
+                      Potential Win:
+                    </span>
                     <span className="text-green-400 font-bold text-xl">
-                      ₹{bets.reduce((sum, bet) => sum + bet.stake * bet.odds, 0).toFixed(2)}
+                      ₹
+                      {bets
+                        .reduce((sum, bet) => sum + bet.stake * bet.odds, 0)
+                        .toFixed(2)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-slate-400">Number of Bets:</span>
-                    <span className="text-white font-semibold">{bets.length}</span>
+                    <span className="text-white font-semibold">
+                      {bets.length}
+                    </span>
                   </div>
                 </div>
               </Card>
@@ -414,7 +486,9 @@ export function GenericCardGame({ game }: GenericCardGameProps) {
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 group-hover:translate-x-full transition-transform duration-1000"></div>
                 <span className="relative z-10">
-                  {!isConnected ? "🔌 Connecting..." : `🎯 Place Bet${bets.length > 1 ? "s" : ""}`}
+                  {!isConnected
+                    ? "🔌 Connecting..."
+                    : `🎯 Place Bet${bets.length > 1 ? "s" : ""}`}
                 </span>
               </Button>
 
@@ -435,35 +509,35 @@ export function GenericCardGame({ game }: GenericCardGameProps) {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
           }
-          
+
           @keyframes slideIn {
             from { opacity: 0; transform: translateX(-20px); }
             to { opacity: 1; transform: translateX(0); }
           }
-          
+
           @keyframes shimmer {
             0% { transform: translateX(-100%); }
             100% { transform: translateX(100%); }
           }
-          
+
           .animate-shimmer {
             animation: shimmer 2s infinite;
           }
-          
+
           .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
           }
-          
+
           .custom-scrollbar::-webkit-scrollbar-track {
             background: rgb(30, 41, 59);
             border-radius: 3px;
           }
-          
+
           .custom-scrollbar::-webkit-scrollbar-thumb {
             background: rgb(71, 85, 105);
             border-radius: 3px;
           }
-          
+
           .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: rgb(100, 116, 139);
           }

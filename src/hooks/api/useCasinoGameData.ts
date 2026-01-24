@@ -2,7 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchCasinoGameData, fetchCasinoResult } from "@/services/casino";
 
 export function useCasinoGameData(gameType: string) {
-  const { data: gameData, isLoading: isLoadingData, error: dataError } = useQuery({
+  const {
+    data: gameData,
+    isLoading: isLoadingData,
+    error: dataError,
+  } = useQuery({
     queryKey: ["casino-game-data", gameType],
     queryFn: () => fetchCasinoGameData(gameType),
     refetchInterval: 2000, // Refresh every 2 seconds for live data

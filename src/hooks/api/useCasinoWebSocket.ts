@@ -37,7 +37,7 @@ export function useCasinoWebSocket(gameType: string) {
   const [resultData, setResultData] = useState<CasinoResultData | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
   const dataIntervalRef = useRef<NodeJS.Timeout>();
@@ -52,7 +52,9 @@ export function useCasinoWebSocket(gameType: string) {
     // Fetch game data via HTTP polling (since WebSocket might not be available)
     const fetchGameData = async () => {
       try {
-        const response = await fetch(`${API_BASE}/casino/data?type=${gameType}&key=${API_KEY}`);
+        const response = await fetch(
+          `${API_BASE}/casino/data?type=${gameType}&key=${API_KEY}`,
+        );
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.data) {
@@ -69,7 +71,9 @@ export function useCasinoWebSocket(gameType: string) {
 
     const fetchResultData = async () => {
       try {
-        const response = await fetch(`${API_BASE}/casino/result?type=${gameType}&key=${API_KEY}`);
+        const response = await fetch(
+          `${API_BASE}/casino/result?type=${gameType}&key=${API_KEY}`,
+        );
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.data) {
@@ -87,7 +91,7 @@ export function useCasinoWebSocket(gameType: string) {
 
     // Poll every 1 second for game data (live odds)
     dataIntervalRef.current = setInterval(fetchGameData, 1000);
-    
+
     // Poll every 3 seconds for results
     resultIntervalRef.current = setInterval(fetchResultData, 3000);
 

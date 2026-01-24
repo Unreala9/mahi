@@ -1,7 +1,6 @@
 import { CasinoResponse, CasinoGame } from "@/types/casino";
 
-const API_HOST =
-  import.meta.env.VITE_DIAMOND_API_HOST || "/api/diamond";
+const API_HOST = import.meta.env.VITE_DIAMOND_API_HOST || "/api/diamond";
 const API_PROTOCOL = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "";
 const API_KEY =
   import.meta.env.VITE_DIAMOND_API_KEY || "mahi4449839dbabkadbakwq1qqd";
@@ -10,13 +9,12 @@ const API_KEY =
 const BASE_API_URL = API_HOST.startsWith("/")
   ? API_HOST
   : API_PROTOCOL
-  ? `${API_PROTOCOL}://${API_HOST}`
-  : `http://${API_HOST}`;
+    ? `${API_PROTOCOL}://${API_HOST}`
+    : `http://${API_HOST}`;
 
 const DEFAULT_API = `${BASE_API_URL}/casino/tableid?key=${API_KEY}`;
 const API_URL = import.meta.env.VITE_CASINO_API_URL || DEFAULT_API;
-const IMAGE_BASE =
-  import.meta.env.VITE_CASINO_IMAGE_BASE || BASE_API_URL; // Use API host as base
+const IMAGE_BASE = import.meta.env.VITE_CASINO_IMAGE_BASE || BASE_API_URL; // Use API host as base
 
 export async function fetchCasinoGames(): Promise<CasinoGame[]> {
   try {
@@ -47,7 +45,10 @@ export async function fetchCasinoGames(): Promise<CasinoGame[]> {
 
     // Debug: Check first game's imgpath (only in dev)
     if (import.meta.env.DEV && json.data.t1.length > 0) {
-      console.log("[Casino] API loaded successfully, games:", json.data.t1.length);
+      console.log(
+        "[Casino] API loaded successfully, games:",
+        json.data.t1.length,
+      );
       console.log("[Casino] Sample game data:", json.data.t1[0]);
     }
 
@@ -62,7 +63,10 @@ export async function fetchCasinoGames(): Promise<CasinoGame[]> {
 
       const fallbackJson = (await fallbackRes.json()) as CasinoResponse;
       if (import.meta.env.DEV) {
-        console.log("[Casino] Fallback loaded successfully, games:", fallbackJson.data.t1.length);
+        console.log(
+          "[Casino] Fallback loaded successfully, games:",
+          fallbackJson.data.t1.length,
+        );
       }
 
       return fallbackJson.data.t1;
@@ -175,7 +179,10 @@ export async function fetchCasinoResult(type: string): Promise<any> {
 }
 
 // Fetch detailed result for a specific match
-export async function fetchCasinoDetailResult(type: string, mid: string): Promise<any> {
+export async function fetchCasinoDetailResult(
+  type: string,
+  mid: string,
+): Promise<any> {
   try {
     const url = `${BASE_API_URL}/casino/detail_result?type=${type}&mid=${mid}&key=${API_KEY}`;
     const res = await fetch(url, {

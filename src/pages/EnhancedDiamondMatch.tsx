@@ -1,8 +1,14 @@
+/**
+ * Enhanced Diamond Match Page
+ * Full betting interface with real-time odds, score updates, and bet slip
+ */
+
 import { useMemo, useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MainLayout } from "@/components/layout/MainLayout";
 import {
   useMatchDetails,
@@ -11,7 +17,6 @@ import {
 } from "@/hooks/api/useDiamond";
 import { diamondApi } from "@/services/diamondApi";
 import { LiveScoreDisplay } from "@/components/sportsbook/LiveScoreDisplay";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MarketOddsDisplay } from "@/components/sportsbook/MarketOddsDisplay";
 import { EnhancedBetSlip } from "@/components/sportsbook/EnhancedBetSlip";
 import { enhancedSportsWebSocket } from "@/services/enhancedSportsWebSocket";
@@ -22,14 +27,17 @@ import type {
   MarketType,
   BetType,
 } from "@/types/sports-betting";
+import { toast } from "@/hooks/use-toast";
 
-export default function DiamondMatch() {
+export default function EnhancedDiamondMatch() {
   const { gmid, sid } = useParams();
   const gmidNum = useMemo(() => (gmid ? parseInt(gmid, 10) : null), [gmid]);
+
   // Resolve sid from all matches if not provided in URL
   const { data: allMatches } = useAllMatches();
   const [fallbackSid, setFallbackSid] = useState<number | null>(null);
   const [resolvingSid, setResolvingSid] = useState(false);
+
   const resolvedSid = useMemo(() => {
     if (sid) return parseInt(sid, 10);
     if (!allMatches || !gmidNum) return null;
@@ -37,17 +45,16 @@ export default function DiamondMatch() {
     return m ? m.sid : null;
   }, [sid, allMatches, gmidNum]);
 
-  // Fallback: if sid couldn't be resolved from /tree, scan sports and their matches
+  // Fallback: scan sports for sid
   const { data: sports } = useSportIds();
   useEffect(() => {
     let cancelled = false;
     async function resolveSidFallback() {
       if (resolvedSid || fallbackSid || !gmidNum) return;
-      // Build a list of sports to scan; if API didn't return any, try common sids
       const sportIdsToScan: number[] =
         sports && sports.length > 0
           ? sports.map((s: any) => s.sid)
-          : [4, 1, 2, 5, 6, 7, 8, 9, 10]; // cricket, soccer, tennis, etc.
+          : [4, 1, 2, 5, 6, 7, 8, 9, 10];
       setResolvingSid(true);
       try {
         for (const sidCandidate of sportIdsToScan) {
@@ -69,14 +76,10 @@ export default function DiamondMatch() {
   }, [resolvedSid, fallbackSid, gmidNum, sports]);
 
   const sidForQueries = resolvedSid ?? fallbackSid;
-  const { data: details, isLoading: loadingDetails } = useMatchDetails(
-    gmidNum,
-    sidForQueries,
-  );
+  const { data: details } = useMatchDetails(gmidNum, sidForQueries);
 
   // Real-time odds state
   const [oddsData, setOddsData] = useState<MatchOddsData>({});
-  const [oddsLoading, setOddsLoading] = useState(true);
 
   // Betting logic hook
   const {
@@ -97,8 +100,6 @@ export default function DiamondMatch() {
   useEffect(() => {
     if (!gmidNum || !sidForQueries) return;
 
-    setOddsLoading(true);
-
     const handleMessage = (message: SportsBettingMessage) => {
       if (message.type === "odds_update") {
         setOddsData((prev) => {
@@ -112,7 +113,8 @@ export default function DiamondMatch() {
           }
           return updated;
         });
-        setOddsLoading(false);
+      } else if (message.type === "score_update") {
+        // Score updates handled by LiveScoreDisplay
       }
     };
 
@@ -134,19 +136,10 @@ export default function DiamondMatch() {
     [details?.name],
   );
 
-  // Live Score URL (using score.akamaized.uk)
-  const liveScoreUrl = useMemo(() => {
-    if (!gmidNum) return null;
-    return `https://score.akamaized.uk/diamond-live-score?gmid=${gmidNum}`;
-  }, [gmidNum]);
-
-  // Live Stream URL (using cricketid.xyz)
-  const liveStreamUrl = useMemo(() => {
-    if (!gmidNum) return null;
-    const API_KEY =
-      import.meta.env.VITE_DIAMOND_API_KEY || "mahi4449839dbabkadbakwq1qqd";
-    return `https://live.cricketid.xyz/directStream?gmid=${gmidNum}&key=${API_KEY}`;
-  }, [gmidNum]);
+  const scoreUrl = useMemo(() => {
+    if (!details?.gtv || !sidForQueries) return null;
+    return diamondApi.getScoreUrl(details.gtv, sidForQueries);
+  }, [details?.gtv, sidForQueries]);
 
   // Handle bet click
   const handleBetClick = useCallback(
@@ -223,60 +216,27 @@ export default function DiamondMatch() {
               <LiveScoreDisplay gmid={gmidNum} sid={sidForQueries} />
             )}
 
-            {/* Live TV & Stream */}
-            {(liveScoreUrl || liveStreamUrl) && (
-              <Card className="overflow-hidden">
-                <Tabs defaultValue="stream" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 rounded-none">
-                    <TabsTrigger value="stream">Live Stream</TabsTrigger>
-                    <TabsTrigger value="score">Live Score</TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="stream" className="m-0">
-                    {liveStreamUrl ? (
-                      <div className="w-full h-[400px]">
-                        <iframe
-                          src={liveStreamUrl}
-                          className="w-full h-full border-0"
-                          title="Live Match Stream"
-                          allow="autoplay; fullscreen"
-                          allowFullScreen
-                        />
-                      </div>
-                    ) : (
-                      <div className="p-6 text-center text-muted-foreground">
-                        Live stream not available
-                      </div>
-                    )}
-                  </TabsContent>
-
-                  <TabsContent value="score" className="m-0">
-                    {liveScoreUrl ? (
-                      <div className="w-full h-[400px]">
-                        <iframe
-                          src={liveScoreUrl}
-                          className="w-full h-full border-0"
-                          title="Live Match Score"
-                        />
-                      </div>
-                    ) : (
-                      <div className="p-6 text-center text-muted-foreground">
-                        Live score not available
-                      </div>
-                    )}
-                  </TabsContent>
-                </Tabs>
+            {/* Live TV */}
+            {scoreUrl && (
+              <Card className="p-4">
+                <h2 className="text-sm font-bold mb-2">Live TV</h2>
+                <div className="w-full h-[360px]">
+                  <iframe
+                    src={scoreUrl}
+                    className="w-full h-full"
+                    title="Live Match Score"
+                  />
+                </div>
               </Card>
             )}
 
             {/* Markets Tabs */}
             {gmidNum && sidForQueries && !resolvingSid && (
               <Tabs defaultValue="match_odds" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="match_odds">Match Odds</TabsTrigger>
                   <TabsTrigger value="bookmaker">Bookmaker</TabsTrigger>
                   <TabsTrigger value="fancy">Fancy</TabsTrigger>
-                  <TabsTrigger value="toss">Toss</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="match_odds" className="space-y-4">
@@ -285,12 +245,7 @@ export default function DiamondMatch() {
                     <p className="text-xs text-muted-foreground mb-3">
                       Max: 1.00 | Min: 100.00 | Max: 25K
                     </p>
-                    {oddsLoading ? (
-                      <p className="text-sm text-muted-foreground text-center py-4">
-                        Loading odds...
-                      </p>
-                    ) : oddsData.match_odds &&
-                      oddsData.match_odds.length > 0 ? (
+                    {oddsData.match_odds && oddsData.match_odds.length > 0 ? (
                       <MarketOddsDisplay
                         marketType="MATCH_ODDS"
                         runners={oddsData.match_odds}
@@ -308,7 +263,7 @@ export default function DiamondMatch() {
                       />
                     ) : (
                       <p className="text-sm text-muted-foreground text-center py-4">
-                        No odds available for this market
+                        Loading odds...
                       </p>
                     )}
                   </Card>
@@ -320,11 +275,7 @@ export default function DiamondMatch() {
                     <p className="text-xs text-muted-foreground mb-3">
                       Max: 1.00 | Min: 100.00 | Max: 25K
                     </p>
-                    {oddsLoading ? (
-                      <p className="text-sm text-muted-foreground text-center py-4">
-                        Loading odds...
-                      </p>
-                    ) : oddsData.bookmaker && oddsData.bookmaker.length > 0 ? (
+                    {oddsData.bookmaker && oddsData.bookmaker.length > 0 ? (
                       <MarketOddsDisplay
                         marketType="BOOKMAKER"
                         runners={oddsData.bookmaker}
@@ -351,11 +302,7 @@ export default function DiamondMatch() {
                 <TabsContent value="fancy" className="space-y-4">
                   <Card className="p-4">
                     <h3 className="font-semibold mb-3">Normal Markets</h3>
-                    {oddsLoading ? (
-                      <p className="text-sm text-muted-foreground text-center py-4">
-                        Loading odds...
-                      </p>
-                    ) : oddsData.fancy && oddsData.fancy.length > 0 ? (
+                    {oddsData.fancy && oddsData.fancy.length > 0 ? (
                       <div className="space-y-4">
                         {oddsData.fancy.map((runner, index) => (
                           <Card key={index} className="p-3">
@@ -395,40 +342,6 @@ export default function DiamondMatch() {
                     )}
                   </Card>
                 </TabsContent>
-
-                <TabsContent value="toss" className="space-y-4">
-                  <Card className="p-4">
-                    <h3 className="font-semibold mb-3">Toss</h3>
-                    <p className="text-xs text-muted-foreground mb-3">
-                      Max: 1.00 | Min: 100.00 | Max: 10K
-                    </p>
-                    {oddsLoading ? (
-                      <p className="text-sm text-muted-foreground text-center py-4">
-                        Loading odds...
-                      </p>
-                    ) : oddsData.toss && oddsData.toss.length > 0 ? (
-                      <MarketOddsDisplay
-                        marketType="TOSS"
-                        runners={oddsData.toss}
-                        onBetClick={(selection, odds, betType, selectionId) =>
-                          handleBetClick(
-                            "TOSS",
-                            `${gmidNum}_toss`,
-                            "Toss",
-                            selection,
-                            odds,
-                            betType,
-                            selectionId,
-                          )
-                        }
-                      />
-                    ) : (
-                      <p className="text-sm text-muted-foreground text-center py-4">
-                        No toss market available
-                      </p>
-                    )}
-                  </Card>
-                </TabsContent>
               </Tabs>
             )}
           </div>
@@ -456,13 +369,11 @@ export default function DiamondMatch() {
   );
 }
 
+// Helper function to parse team names
 function parseTeamNames(matchName: string): { home: string; away: string } {
-  const separators = [" vs ", " v ", " VS ", " V "];
-  for (const sep of separators) {
-    if (matchName.includes(sep)) {
-      const [home, away] = matchName.split(sep);
-      return { home: home.trim(), away: away.trim() };
-    }
+  const parts = matchName.split(" vs ");
+  if (parts.length === 2) {
+    return { home: parts[0].trim(), away: parts[1].trim() };
   }
-  return { home: matchName || "Home Team", away: "Away Team" };
+  return { home: matchName, away: "" };
 }
