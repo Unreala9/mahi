@@ -9,29 +9,42 @@ import { supabase } from "./supabase";
 export async function callEdgeFunction<T = any>(
   functionName: string,
   body: any = {},
-  options: { method?: "POST" | "GET" | "PUT" | "DELETE" } = {}
+  options: { method?: "POST" | "GET" | "PUT" | "DELETE" } = {},
 ): Promise<T> {
-  const { data: sessionData } = await supabase.auth.getSession();
-  const token = sessionData.session?.access_token;
+  try {
+    const { data: sessionData, error: sessionError } =
+      await supabase.auth.getSession();
 
-  if (!token) {
-    console.warn(
-      "No active session found. Call might fail if auth is required."
-    );
-  }
+    if (sessionError) {
+      console.error(`Session error for ${functionName}:`, sessionError);
+      throw new Error("Authentication session error");
+    }
 
-  const { data, error } = await supabase.functions.invoke(functionName, {
-    body,
-    headers: {
-      Authorization: token ? `Bearer ${token}` : "",
-    },
-    method: options.method || "POST",
-  });
+    const token = sessionData.session?.access_token;
 
-  if (error) {
-    console.error(`Error calling function ${functionName}:`, error);
+    if (!token) {
+      console.error(
+        `[callEdgeFunction] No active session found for ${functionName}. User must be logged in.`,
+      );
+      throw new Error("Please login to continue");
+    }
+
+    console.log(`[callEdgeFunction] Calling ${functionName} with auth token`);
+
+    // supabase.functions.invoke automatically adds Authorization header
+    // No need to manually add it
+    const { data, error } = await supabase.functions.invoke(functionName, {
+      body: options.method === "GET" ? undefined : body,
+    });
+
+    if (error) {
+      console.error(`Error calling function ${functionName}:`, error);
+      throw error;
+    }
+
+    return data as T;
+  } catch (error) {
+    console.error(`[callEdgeFunction] ${functionName} failed:`, error);
     throw error;
   }
-
-  return data as T;
 }

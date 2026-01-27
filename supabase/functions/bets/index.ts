@@ -19,7 +19,7 @@ serve(async (req) => {
         global: {
           headers: { Authorization: req.headers.get("Authorization")! },
         },
-      }
+      },
     );
 
     const {
@@ -38,12 +38,52 @@ serve(async (req) => {
 
     const serviceClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
 
     if (action === "place" && req.method === "POST") {
       const body = await req.json();
-      const { sportId, eventId, marketId, selectionId, odds, stake } = body;
+      const {
+        sportId,
+        eventId,
+        marketId,
+        selectionId,
+        odds,
+        stake,
+        eventName,
+        marketName,
+        selectionName,
+      } = body;
+
+      // Check wallet balance first
+      const { data: transactions } = await serviceClient
+        .from("wallet_transactions")
+        .select("amount, type")
+        .eq("user_id", user.id)
+        .eq("status", "completed");
+
+      let balance = 0;
+      transactions?.forEach((tx) => {
+        if (["deposit", "win", "bonus"].includes(tx.type)) {
+          balance += Number(tx.amount);
+        } else if (["withdraw", "bet"].includes(tx.type)) {
+          balance -= Number(tx.amount);
+        }
+      });
+
+      if (balance < stake) {
+        return new Response(
+          JSON.stringify({
+            error: "Insufficient balance",
+            balance,
+            required: stake,
+          }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 400,
+          },
+        );
+      }
 
       // In real scenario, call provider API here to place bet
       // For now, allow everything
@@ -61,13 +101,24 @@ serve(async (req) => {
           odds: odds,
           stake: stake,
           status: "pending",
+          event_name: eventName,
+          market_name: marketName,
+          selection_name: selectionName,
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      // Log transaction too? Maybe later
+      // Deduct from wallet
+      await serviceClient.from("wallet_transactions").insert({
+        user_id: user.id,
+        type: "bet",
+        amount: stake,
+        status: "completed",
+        reference: providerBetId,
+        description: `Bet on ${selectionName || selectionId} @ ${odds}`,
+      });
 
       await serviceClient.from("api_logs").insert({
         user_id: user.id,
@@ -79,10 +130,13 @@ serve(async (req) => {
         latency_ms: 50,
       });
 
-      return new Response(JSON.stringify(data), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
+      return new Response(
+        JSON.stringify({ success: true, bet: data, balance: balance - stake }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        },
+      );
     } else if (action === "my") {
       const { data, error } = await supabaseClient
         .from("bets")

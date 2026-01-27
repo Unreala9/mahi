@@ -44,22 +44,25 @@ export function DragonTigerGame({ game }: DragonTigerGameProps) {
 
     const existingBet = bets.find((b) => b.sid === market.sid);
     if (existingBet) {
-      setBets(bets.map((b) =>
-        b.sid === market.sid
-          ? { ...b, stake: b.stake + selectedChip }
-          : b
-      ));
+      setBets(
+        bets.map((b) =>
+          b.sid === market.sid ? { ...b, stake: b.stake + selectedChip } : b,
+        ),
+      );
       toast({
         title: "✅ Bet Updated",
         description: `${market.nat}: ₹${existingBet.stake + selectedChip}`,
       });
     } else {
-      setBets([...bets, {
-        sid: market.sid,
-        nat: market.nat,
-        stake: selectedChip,
-        odds: market.b || market.bs || 0,
-      }]);
+      setBets([
+        ...bets,
+        {
+          sid: market.sid,
+          nat: market.nat,
+          stake: selectedChip,
+          odds: market.b || market.bs || 0,
+        },
+      ]);
       toast({
         title: "✅ Bet Added",
         description: `${market.nat}: ₹${selectedChip}`,
@@ -88,7 +91,10 @@ export function DragonTigerGame({ game }: DragonTigerGameProps) {
       }
 
       const totalStake = bets.reduce((sum, bet) => sum + bet.stake, 0);
-      const potentialWin = bets.reduce((sum, bet) => sum + bet.stake * bet.odds, 0);
+      const potentialWin = bets.reduce(
+        (sum, bet) => sum + bet.stake * bet.odds,
+        0,
+      );
 
       toast({
         title: "🎉 Bets Placed Successfully!",
@@ -110,17 +116,20 @@ export function DragonTigerGame({ game }: DragonTigerGameProps) {
   const dragonCard = cards[0];
   const tigerCard = cards[1];
 
-  const mainMarkets = gameData?.sub?.filter((m: any) =>
-    ["Dragon", "Tiger", "Tie", "Pair"].includes(m.nat)
-  ) || [];
+  const mainMarkets =
+    gameData?.sub?.filter((m: any) =>
+      ["Dragon", "Tiger", "Tie", "Pair"].includes(m.nat),
+    ) || [];
 
-  const dragonSideMarkets = gameData?.sub?.filter((m: any) =>
-    m.nat.includes("Dragon") && !["Dragon"].includes(m.nat)
-  ) || [];
+  const dragonSideMarkets =
+    gameData?.sub?.filter(
+      (m: any) => m.nat.includes("Dragon") && !["Dragon"].includes(m.nat),
+    ) || [];
 
-  const tigerSideMarkets = gameData?.sub?.filter((m: any) =>
-    m.nat.includes("Tiger") && !["Tiger"].includes(m.nat)
-  ) || [];
+  const tigerSideMarkets =
+    gameData?.sub?.filter(
+      (m: any) => m.nat.includes("Tiger") && !["Tiger"].includes(m.nat),
+    ) || [];
 
   const timer = gameData?.lt || 0;
 
@@ -132,7 +141,9 @@ export function DragonTigerGame({ game }: DragonTigerGameProps) {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-white font-bold text-lg">{game.gname}</h1>
-              <p className="text-slate-400 text-sm">Round ID: {gameData?.mid || "---"}</p>
+              <p className="text-slate-400 text-sm">
+                Round ID: {gameData?.mid || "---"}
+              </p>
             </div>
             <div className="flex items-center gap-4">
               <div className="text-right">
@@ -150,7 +161,9 @@ export function DragonTigerGame({ game }: DragonTigerGameProps) {
             <div className="grid grid-cols-2 gap-6 mb-6">
               {/* Dragon */}
               <Card className="bg-gradient-to-br from-red-900 to-red-950 border-red-700 p-6">
-                <h3 className="text-white text-xl font-bold mb-4 text-center">DRAGON</h3>
+                <h3 className="text-white text-xl font-bold mb-4 text-center">
+                  DRAGON
+                </h3>
                 <div className="flex justify-center">
                   {dragonCard ? (
                     <div className="w-24 h-32 bg-white rounded-lg shadow-xl flex items-center justify-center text-4xl">
@@ -166,7 +179,9 @@ export function DragonTigerGame({ game }: DragonTigerGameProps) {
 
               {/* Tiger */}
               <Card className="bg-gradient-to-br from-blue-900 to-blue-950 border-blue-700 p-6">
-                <h3 className="text-white text-xl font-bold mb-4 text-center">TIGER</h3>
+                <h3 className="text-white text-xl font-bold mb-4 text-center">
+                  TIGER
+                </h3>
                 <div className="flex justify-center">
                   {tigerCard ? (
                     <div className="w-24 h-32 bg-white rounded-lg shadow-xl flex items-center justify-center text-4xl">
@@ -192,14 +207,16 @@ export function DragonTigerGame({ game }: DragonTigerGameProps) {
                     market.nat === "Dragon"
                       ? "bg-gradient-to-br from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
                       : market.nat === "Tiger"
-                      ? "bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
-                      : market.nat === "Tie"
-                      ? "bg-gradient-to-br from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
-                      : "bg-gradient-to-br from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800"
+                        ? "bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
+                        : market.nat === "Tie"
+                          ? "bg-gradient-to-br from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
+                          : "bg-gradient-to-br from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800"
                   } ${market.gstatus === "SUSPENDED" ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   <span className="text-white">{market.nat}</span>
-                  <span className="text-yellow-300 text-sm mt-1">{market.b || market.bs || "0.00"}</span>
+                  <span className="text-yellow-300 text-sm mt-1">
+                    {market.b || market.bs || "0.00"}
+                  </span>
                   {bets.find((b) => b.sid === market.sid) && (
                     <span className="text-white text-xs mt-1">
                       ₹{bets.find((b) => b.sid === market.sid)?.stake}
@@ -213,7 +230,9 @@ export function DragonTigerGame({ game }: DragonTigerGameProps) {
             <div className="grid grid-cols-2 gap-6">
               {/* Dragon Side Markets */}
               <div>
-                <h4 className="text-white font-semibold mb-3">Dragon Markets</h4>
+                <h4 className="text-white font-semibold mb-3">
+                  Dragon Markets
+                </h4>
                 <div className="grid grid-cols-2 gap-2">
                   {dragonSideMarkets.map((market: any) => (
                     <Button
@@ -223,8 +242,12 @@ export function DragonTigerGame({ game }: DragonTigerGameProps) {
                       className="h-16 flex flex-col items-center justify-center bg-red-900 hover:bg-red-800"
                       variant="outline"
                     >
-                      <span className="text-white text-sm">{market.nat.replace("Dragon ", "")}</span>
-                      <span className="text-yellow-300 text-xs">{market.b || market.bs || "0.00"}</span>
+                      <span className="text-white text-sm">
+                        {market.nat.replace("Dragon ", "")}
+                      </span>
+                      <span className="text-yellow-300 text-xs">
+                        {market.b || market.bs || "0.00"}
+                      </span>
                     </Button>
                   ))}
                 </div>
@@ -242,8 +265,12 @@ export function DragonTigerGame({ game }: DragonTigerGameProps) {
                       className="h-16 flex flex-col items-center justify-center bg-blue-900 hover:bg-blue-800"
                       variant="outline"
                     >
-                      <span className="text-white text-sm">{market.nat.replace("Tiger ", "")}</span>
-                      <span className="text-yellow-300 text-xs">{market.b || market.bs || "0.00"}</span>
+                      <span className="text-white text-sm">
+                        {market.nat.replace("Tiger ", "")}
+                      </span>
+                      <span className="text-yellow-300 text-xs">
+                        {market.b || market.bs || "0.00"}
+                      </span>
                     </Button>
                   ))}
                 </div>
@@ -254,20 +281,26 @@ export function DragonTigerGame({ game }: DragonTigerGameProps) {
             <div className="mt-6">
               <h4 className="text-white font-semibold mb-3">Last Results</h4>
               <div className="flex gap-2">
-                {resultData?.res?.slice(0, 10).map((result: any, index: number) => (
-                  <div
-                    key={index}
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                      result.win === "1"
-                        ? "bg-red-600 text-white"
+                {resultData?.res
+                  ?.slice(0, 10)
+                  .map((result: any, index: number) => (
+                    <div
+                      key={index}
+                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                        result.win === "1"
+                          ? "bg-red-600 text-white"
+                          : result.win === "2"
+                            ? "bg-blue-600 text-white"
+                            : "bg-green-600 text-white"
+                      }`}
+                    >
+                      {result.win === "1"
+                        ? "D"
                         : result.win === "2"
-                        ? "bg-blue-600 text-white"
-                        : "bg-green-600 text-white"
-                    }`}
-                  >
-                    {result.win === "1" ? "D" : result.win === "2" ? "T" : "T"}
-                  </div>
-                ))}
+                          ? "T"
+                          : "T"}
+                    </div>
+                  ))}
               </div>
             </div>
           </div>
@@ -296,16 +329,25 @@ export function DragonTigerGame({ game }: DragonTigerGameProps) {
             {/* Bets List */}
             <div className="space-y-2 mb-4">
               {bets.length === 0 ? (
-                <p className="text-slate-400 text-center py-8">No bets selected</p>
+                <p className="text-slate-400 text-center py-8">
+                  No bets selected
+                </p>
               ) : (
                 bets.map((bet, index) => (
-                  <Card key={index} className="p-3 bg-slate-700 border-slate-600">
+                  <Card
+                    key={index}
+                    className="p-3 bg-slate-700 border-slate-600"
+                  >
                     <div className="flex justify-between items-start mb-2">
-                      <span className="text-white font-semibold">{bet.nat}</span>
+                      <span className="text-white font-semibold">
+                        {bet.nat}
+                      </span>
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => setBets(bets.filter((_, i) => i !== index))}
+                        onClick={() =>
+                          setBets(bets.filter((_, i) => i !== index))
+                        }
                         className="h-6 w-6 p-0 text-red-400 hover:text-red-300"
                       >
                         ×
@@ -321,7 +363,9 @@ export function DragonTigerGame({ game }: DragonTigerGameProps) {
                     </div>
                     <div className="flex justify-between text-sm font-semibold mt-2 pt-2 border-t border-slate-600">
                       <span className="text-slate-400">Returns:</span>
-                      <span className="text-green-400">₹{(bet.stake * bet.odds).toFixed(2)}</span>
+                      <span className="text-green-400">
+                        ₹{(bet.stake * bet.odds).toFixed(2)}
+                      </span>
                     </div>
                   </Card>
                 ))
@@ -340,7 +384,10 @@ export function DragonTigerGame({ game }: DragonTigerGameProps) {
                 <div className="flex justify-between text-sm text-slate-400 mt-1">
                   <span>Potential Win:</span>
                   <span className="text-green-400">
-                    ₹{bets.reduce((sum, bet) => sum + bet.stake * bet.odds, 0).toFixed(2)}
+                    ₹
+                    {bets
+                      .reduce((sum, bet) => sum + bet.stake * bet.odds, 0)
+                      .toFixed(2)}
                   </span>
                 </div>
               </Card>

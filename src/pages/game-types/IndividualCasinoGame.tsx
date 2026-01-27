@@ -77,14 +77,20 @@ export function IndividualCasinoGame() {
   const gameIdentifier = params.gmid || params.gameType;
 
   // Fetch all casino games from API
-  const { data: apiGames, isLoading, isError } = useQuery({
+  const {
+    data: apiGames,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["casino-games"],
     queryFn: fetchCasinoGames,
     staleTime: 10 * 60 * 1000,
   });
 
   // Find game from API data
-  const apiGame = Array.isArray(apiGames) ? apiGames.find((g) => g.gmid === gameIdentifier) : undefined;
+  const apiGame = Array.isArray(apiGames)
+    ? apiGames.find((g) => g.gmid === gameIdentifier)
+    : undefined;
 
   if (isLoading) {
     return (
@@ -100,8 +106,12 @@ export function IndividualCasinoGame() {
     return (
       <MainLayout>
         <div className="flex flex-col items-center justify-center h-96 p-8">
-          <h2 className="text-2xl font-bold mb-4 text-destructive">Error Loading Game</h2>
-          <p className="text-muted-foreground">Failed to load game data. Please try again.</p>
+          <h2 className="text-2xl font-bold mb-4 text-destructive">
+            Error Loading Game
+          </h2>
+          <p className="text-muted-foreground">
+            Failed to load game data. Please try again.
+          </p>
         </div>
       </MainLayout>
     );
@@ -113,7 +123,9 @@ export function IndividualCasinoGame() {
       <MainLayout>
         <div className="flex flex-col items-center justify-center h-96 p-8">
           <h2 className="text-2xl font-bold mb-4">Game Not Found</h2>
-          <p className="text-muted-foreground">The game "{gameIdentifier}" is not available.</p>
+          <p className="text-muted-foreground">
+            The game "{gameIdentifier}" is not available.
+          </p>
         </div>
       </MainLayout>
     );
@@ -366,7 +378,10 @@ export function IndividualCasinoGame() {
     return <MogamboGame game={game} />;
   }
 
-  if (gmidLower.startsWith("c") && (gmidLower.includes("meter") || gmidLower.includes("match"))) {
+  if (
+    gmidLower.startsWith("c") &&
+    (gmidLower.includes("meter") || gmidLower.includes("match"))
+  ) {
     return <MogamboGame game={game} />;
   }
 
