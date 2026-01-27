@@ -132,7 +132,9 @@ export const MainHeader = ({
             <div className="flex items-center gap-2 whitespace-nowrap font-semibold">
               <span>
                 Balance:{" "}
-                <span className="font-mono">₹{Number(balance).toLocaleString()}</span>
+                <span className="font-mono">
+                  ₹{Number(balance).toLocaleString()}
+                </span>
               </span>
               <Button
                 variant="secondary"
