@@ -10,11 +10,11 @@ export default defineConfig(({ mode }) => ({
     // LAN IPs (e.g. 192.168.x.x) work in browsers
     host: true,
     port: 8080,
-    hmr: {
-      protocol: "ws",
-      host: "localhost",
-      port: 8080,
-    },
+    allowedHosts: [
+      "pushy-maryanne-snoopily.ngrok-free.dev",
+      ".ngrok-free.dev",
+      ".ngrok.io",
+    ],
     // Proxy for Diamond API to avoid CORS and mixed content issues
     proxy: {
       "/api/diamond": {
