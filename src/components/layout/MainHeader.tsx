@@ -44,8 +44,10 @@ export const MainHeader = ({
 
   const walletQuery = useWalletBalance({
     enabled: !isDemo && Boolean(session?.user),
-    staleTime: 5000,
+    staleTime: 30000,
     refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    retry: 1,
   });
 
   const [demoBalance, setDemoBalance] = useState<number>(() =>
@@ -130,7 +132,9 @@ export const MainHeader = ({
             <div className="flex items-center gap-2 whitespace-nowrap font-semibold">
               <span>
                 Balance:{" "}
-                <span className="font-mono">₹{Number(balance).toLocaleString()}</span>
+                <span className="font-mono">
+                  ₹{Number(balance).toLocaleString()}
+                </span>
               </span>
               <Button
                 variant="secondary"

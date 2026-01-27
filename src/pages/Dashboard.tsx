@@ -36,13 +36,19 @@ const Dashboard = () => {
 
   async function fetchWalletData(userId: string) {
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("wallets")
         .select("*")
         .eq("user_id", userId)
         .maybeSingle();
+
+      if (error) {
+        console.warn('[Dashboard] Wallet fetch error:', error.message);
+      }
+
       setWalletBalance((data as any)?.balance ?? 0);
     } catch (e) {
+      console.warn('[Dashboard] Failed to fetch wallet:', e);
       setWalletBalance(0);
     }
   }
