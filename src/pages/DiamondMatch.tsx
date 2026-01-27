@@ -219,7 +219,7 @@ export default function DiamondMatch() {
             </Card>
 
             {/* Live Score */}
-            {gmidNum && sidForQueries && details?.is_live && (
+            {gmidNum && sidForQueries && (
               <LiveScoreDisplay gmid={gmidNum} sid={sidForQueries} />
             )}
 
@@ -234,14 +234,26 @@ export default function DiamondMatch() {
 
                   <TabsContent value="stream" className="m-0">
                     {liveStreamUrl ? (
-                      <div className="w-full h-[400px]">
+                      <div className="w-full h-[400px] relative">
                         <iframe
                           src={liveStreamUrl}
                           className="w-full h-full border-0"
                           title="Live Match Stream"
                           allow="autoplay; fullscreen"
                           allowFullScreen
+                          onError={(e) => {
+                            console.warn(
+                              "[DiamondMatch] Stream iframe failed to load",
+                            );
+                            e.currentTarget.style.display = "none";
+                          }}
                         />
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <p className="text-xs text-muted-foreground bg-background/80 px-3 py-2 rounded">
+                            If stream doesn't load, it may not be available for
+                            this match
+                          </p>
+                        </div>
                       </div>
                     ) : (
                       <div className="p-6 text-center text-muted-foreground">
@@ -257,6 +269,11 @@ export default function DiamondMatch() {
                           src={liveScoreUrl}
                           className="w-full h-full border-0"
                           title="Live Match Score"
+                          onError={(e) => {
+                            console.warn(
+                              "[DiamondMatch] Score iframe failed to load",
+                            );
+                          }}
                         />
                       </div>
                     ) : (

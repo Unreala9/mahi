@@ -212,7 +212,7 @@ export default function EnhancedDiamondMatch() {
             </Card>
 
             {/* Live Score */}
-            {gmidNum && sidForQueries && details?.is_live && (
+            {gmidNum && sidForQueries && (
               <LiveScoreDisplay gmid={gmidNum} sid={sidForQueries} />
             )}
 

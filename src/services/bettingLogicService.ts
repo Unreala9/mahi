@@ -16,6 +16,8 @@ import type {
 } from "@/types/sports-betting";
 import { enhancedPlacedBetsService } from "./enhancedPlacedBetsService";
 import { toast } from "@/hooks/use-toast";
+import { useWalletBalance } from "@/hooks/api/useWallet";
+import { placeBetSlipWithWallet } from "./sportsBettingService";
 
 // Betting limits and rules
 export const BETTING_RULES = {
@@ -124,8 +126,10 @@ export function useBettingLogic(userId?: string) {
   const [betSlip, setBetSlip] = useState<BetSlipItem[]>([]);
   const [placedBets, setPlacedBets] = useState<PlacedBet[]>([]);
   const [isPlacingBet, setIsPlacingBet] = useState(false);
-  const [balance, setBalance] = useState(10000); // Mock balance
   const [exposure, setExposure] = useState(0);
+
+  // Use real wallet balance
+  const { data: balance = 0, isLoading: isLoadingBalance } = useWalletBalance();
 
   /**
    * Add bet to slip
@@ -248,6 +252,15 @@ export function useBettingLogic(userId?: string) {
       return;
     }
 
+    if (!userId) {
+      toast({
+        title: "Not Authenticated",
+        description: "Please log in to place bets",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Calculate total stake
     const totalStake = betSlip.reduce((sum, bet) => sum + bet.stake, 0);
 
@@ -263,51 +276,30 @@ export function useBettingLogic(userId?: string) {
     setIsPlacingBet(true);
 
     try {
-      const results: PlaceBetResponse[] = [];
+      // Use new sports betting service with wallet integration
+      const result = await placeBetSlipWithWallet(betSlip, userId);
 
-      for (const bet of betSlip) {
-        const betPlacement: BetPlacement = {
-          event_id: bet.event_id,
-          event_name: bet.event_name,
-          market_id: bet.market_id,
-          market_name: bet.market_name,
-          market_type: bet.market_type,
-          selection: bet.selection,
-          selection_id: bet.selection_id,
-          stake: bet.stake,
-          odds: bet.odds,
-          bet_type: bet.bet_type,
-          user_id: userId,
-        };
-
-        const result = await enhancedPlacedBetsService.placeBet(betPlacement);
-        results.push(result);
-
-        if (result.success && result.bet) {
-          setPlacedBets((prev) => [...prev, result.bet!]);
-        }
-      }
-
-      const successCount = results.filter((r) => r.success).length;
-      const failCount = results.length - successCount;
-
-      if (successCount > 0) {
+      if (result.success > 0) {
         toast({
           title: "Bets Placed",
-          description: `${successCount} bet(s) placed successfully`,
+          description: `${result.success} bet(s) placed successfully`,
         });
 
-        // Update balance (mock)
-        setBalance((prev) => prev - totalStake);
+        // Update placed bets with successful ones
+        result.results.forEach((res) => {
+          if (res.success && res.bet) {
+            setPlacedBets((prev) => [...prev, res.bet!]);
+          }
+        });
 
         // Clear bet slip
         clearBetSlip();
       }
 
-      if (failCount > 0) {
+      if (result.failed > 0) {
         toast({
-          title: "Some Bets Failed",
-          description: `${failCount} bet(s) failed to place`,
+          title: result.success > 0 ? "Some Bets Failed" : "All Bets Failed",
+          description: `${result.failed} bet(s) failed to place`,
           variant: "destructive",
         });
       }

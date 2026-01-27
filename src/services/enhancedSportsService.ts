@@ -12,8 +12,9 @@ const BASE_URL = API_HOST.startsWith("/")
 const API_KEY =
   import.meta.env.VITE_DIAMOND_API_KEY || "mahi4449839dbabkadbakwq1qqd";
 
-// Score API
-export const SCORE_API_BASE = "https://score.akamaized.uk/diamond-live-score";
+// Score API - Multiple endpoints for redundancy
+export const SCORE_API_BASE = "https://score.akamaized.uk";
+export const SCORE_API_PATH = "/diamond-live-score";
 export const LIVE_STREAM_BASE = "https://live.cricketid.xyz/directStream";
 
 export interface SportEvent {
@@ -357,26 +358,96 @@ class EnhancedSportsService {
    */
   async getLiveScore(gmid: number): Promise<LiveScore | null> {
     try {
-      const url = `${SCORE_API_BASE}?gmid=${gmid}`;
+      // Try primary score API
+      const url = `${SCORE_API_BASE}${SCORE_API_PATH}?gmid=${gmid}`;
       console.log(`[Enhanced Sports] Fetching live score for match: ${gmid}`);
 
       const response = await fetch(url, {
         headers: {
-          Accept: "*/*",
+          Accept: "application/json",
         },
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        console.warn(
+          `[Enhanced Sports] Score API returned ${response.status}, trying fallback`,
+        );
+        return await this.getFallbackScore(gmid);
+      }
+
+      const result = await response.json();
+      console.log(`[Enhanced Sports] Score API response:`, result);
+
+      if (result.success && result.data) {
+        return this.transformScoreData(gmid, result.data);
+      }
+
+      // Try fallback if no data
+      return await this.getFallbackScore(gmid);
+    } catch (error) {
+      console.error(`[Enhanced Sports] Error fetching live score:`, error);
+      return await this.getFallbackScore(gmid);
+    }
+  }
+
+  /**
+   * Get fallback score from match details API
+   */
+  private async getFallbackScore(gmid: number): Promise<LiveScore | null> {
+    try {
+      console.log(
+        `[Enhanced Sports] Using fallback score source for match: ${gmid}`,
+      );
+
+      // Try to get match details which might have score info
+      const url = `${BASE_URL}/matchDetails?gmid=${gmid}&key=${API_KEY}`;
+      const response = await fetch(url, {
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        console.warn(
+          `[Enhanced Sports] Fallback score failed: ${response.status} ${response.statusText}`,
+        );
+        return null;
+      }
+
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        console.warn(`[Enhanced Sports] Expected JSON but got: ${contentType}`);
+        return null;
       }
 
       const result = await response.json();
 
-      if (!result.data) return null;
+      if (result.success && result.data && result.data.length > 0) {
+        const match = result.data[0];
 
-      return this.transformScoreData(gmid, result.data);
+        // Create a basic score structure from match details
+        return {
+          gmid,
+          score: {
+            home: {
+              name: match.ename?.split(" v ")[0] || "Team 1",
+              score: "0",
+              overs: undefined,
+            },
+            away: {
+              name: match.ename?.split(" v ")[1] || "Team 2",
+              score: "0",
+              overs: undefined,
+            },
+          },
+          status: match.iplay ? "Live" : "Scheduled",
+          timestamp: Date.now(),
+        };
+      }
+
+      return null;
     } catch (error) {
-      console.error(`[Enhanced Sports] Error fetching live score:`, error);
+      console.error(`[Enhanced Sports] Fallback score also failed:`, error);
       return null;
     }
   }
@@ -385,18 +456,40 @@ class EnhancedSportsService {
    * Transform score data
    */
   private transformScoreData(gmid: number, data: any): LiveScore {
+    // Handle various response formats
+    const homeTeam =
+      data.team1 || data.home_team || data.t1 || data.home || "Team 1";
+    const awayTeam =
+      data.team2 || data.away_team || data.t2 || data.away || "Team 2";
+    const homeScore =
+      data.team1_score ||
+      data.home_score ||
+      data.t1_score ||
+      data.score1 ||
+      "0";
+    const awayScore =
+      data.team2_score ||
+      data.away_score ||
+      data.t2_score ||
+      data.score2 ||
+      "0";
+    const homeOvers =
+      data.team1_overs || data.home_overs || data.t1_overs || data.overs1;
+    const awayOvers =
+      data.team2_overs || data.away_overs || data.t2_overs || data.overs2;
+
     return {
       gmid,
       score: {
         home: {
-          name: data.team1 || data.home_team || "Home",
-          score: data.team1_score || data.home_score || "0",
-          overs: data.team1_overs || data.home_overs,
+          name: String(homeTeam),
+          score: String(homeScore),
+          overs: homeOvers ? String(homeOvers) : undefined,
         },
         away: {
-          name: data.team2 || data.away_team || "Away",
-          score: data.team2_score || data.away_score || "0",
-          overs: data.team2_overs || data.away_overs,
+          name: String(awayTeam),
+          score: String(awayScore),
+          overs: awayOvers ? String(awayOvers) : undefined,
         },
       },
       status: data.status || data.match_status || "In Progress",
@@ -453,14 +546,24 @@ class EnhancedSportsService {
     if (this.scoreIntervals.has(gmid)) return;
 
     const poll = async () => {
-      const score = await this.getLiveScore(gmid);
-      if (score) {
-        this.notifyScoreSubscribers(gmid, score);
+      try {
+        const score = await this.getLiveScore(gmid);
+        if (score) {
+          this.notifyScoreSubscribers(gmid, score);
+        }
+      } catch (error) {
+        console.error(
+          `[Enhanced Sports] Score polling error for ${gmid}:`,
+          error,
+        );
       }
     };
 
+    // Initial fetch
     poll();
-    const interval = setInterval(poll, 3000); // Poll every 3 seconds
+
+    // Poll every 5 seconds (reduced from 3 to avoid rate limiting)
+    const interval = setInterval(poll, 5000);
     this.scoreIntervals.set(gmid, interval);
   }
 

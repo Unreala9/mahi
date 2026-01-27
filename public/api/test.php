@@ -72,7 +72,7 @@ if ($response === false) {
     echo json_encode([
         'status' => 'error',
         'message' => 'Cannot connect to Diamond API from this server',
-        'reason' => $curlErrno == 28 
+        'reason' => $curlErrno == 28
             ? 'Connection timeout - Hostinger may be blocking port 3009'
             : ($curlErrno == 7 ? 'Connection refused - API server may be blocking your server IP' : $curlError),
         'error_code' => $curlErrno,

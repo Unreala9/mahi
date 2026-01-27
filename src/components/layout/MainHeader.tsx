@@ -44,8 +44,10 @@ export const MainHeader = ({
 
   const walletQuery = useWalletBalance({
     enabled: !isDemo && Boolean(session?.user),
-    staleTime: 5000,
+    staleTime: 30000,
     refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    retry: 1,
   });
 
   const [demoBalance, setDemoBalance] = useState<number>(() =>

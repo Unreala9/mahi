@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useCasinoWebSocket } from "@/hooks/api/useCasinoWebSocket";
 import { CasinoGame } from "@/types/casino";
-import { placeCasinoBet } from "@/services/casino";
+import { useCasinoBetting } from "@/services/casinoBettingService";
+import { useWalletBalance } from "@/hooks/api/useWallet";
+import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -30,11 +32,64 @@ export function GenericCardGame({ game }: GenericCardGameProps) {
   const [bets, setBets] = useState<Bet[]>([]);
   const [selectedChip, setSelectedChip] = useState(100);
   const [pulseTimer, setPulseTimer] = useState(false);
+  const [userId, setUserId] = useState<string | undefined>();
+  const [isDemo, setIsDemo] = useState(false);
+  const [demoBalance, setDemoBalance] = useState(0);
+
   const { gameData, resultData, isConnected, error } = useCasinoWebSocket(
     game.gmid,
   );
+  const { placeBet } = useCasinoBetting();
+  const {
+    data: walletBalance = 0,
+    isLoading: isLoadingBalance,
+    refetch: refetchBalance,
+  } = useWalletBalance({
+    enabled: true,
+  });
 
   const chips = [100, 500, 1000, 5000, 10000, 25000];
+
+  // Get user ID and check demo mode
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUserId(session?.user?.id);
+      console.log("[Casino] User ID:", session?.user?.id);
+      console.log("[Casino] Is authenticated:", !!session?.user?.id);
+    });
+
+    // Check for demo mode
+    const demoSession = localStorage.getItem("demo_session") === "true";
+    setIsDemo(demoSession);
+    console.log("[Casino] Is demo mode:", demoSession);
+
+    if (demoSession) {
+      // Get demo balance from localStorage
+      try {
+        const stored = localStorage.getItem("demo_state");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          setDemoBalance(Number(parsed?.balance ?? 10000));
+          console.log("[Casino] Demo balance:", parsed?.balance);
+        } else {
+          setDemoBalance(10000);
+        }
+      } catch {
+        setDemoBalance(10000);
+      }
+    }
+  }, []);
+
+  // Debug wallet balance
+  useEffect(() => {
+    console.log("[Casino] Wallet balance:", walletBalance);
+    console.log("[Casino] Is loading balance:", isLoadingBalance);
+  }, [walletBalance, isLoadingBalance]);
+
+  // Use demo balance if in demo mode, otherwise use wallet balance
+  const balance = isDemo ? demoBalance : walletBalance;
+
+  console.log("[Casino] Final balance used:", balance, "Demo:", isDemo);
 
   // Pulse animation for timer
   useEffect(() => {
@@ -52,18 +107,19 @@ export function GenericCardGame({ game }: GenericCardGameProps) {
       return;
     }
 
-    const existingBet = bets.find((b) => b.sid === market.sid);
-    if (existingBet) {
-      setBets(
-        bets.map((b) =>
-          b.sid === market.sid ? { ...b, stake: b.stake + selectedChip } : b,
-        ),
-      );
+    // Check if bet already exists
+    const existingBetIndex = bets.findIndex((b) => b.sid === market.sid);
+
+    if (existingBetIndex !== -1) {
+      // Remove the bet if clicking on it again (toggle off)
+      const updatedBets = bets.filter((b) => b.sid !== market.sid);
+      setBets(updatedBets);
       toast({
-        title: "✅ Bet Updated",
-        description: `${market.nat}: ₹${existingBet.stake + selectedChip}`,
+        title: "❌ Bet Removed",
+        description: `${market.nat} removed from bet slip`,
       });
     } else {
+      // Add new bet
       setBets([
         ...bets,
         {
@@ -81,34 +137,127 @@ export function GenericCardGame({ game }: GenericCardGameProps) {
   };
 
   const handlePlaceBets = async () => {
-    if (bets.length === 0) return;
+    if (bets.length === 0) {
+      toast({
+        title: "No Bets",
+        description: "Please add bets before placing",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!isDemo && !userId) {
+      toast({
+        title: "Not Authenticated",
+        description: "Please log in to place bets",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       const totalStake = bets.reduce((sum, bet) => sum + bet.stake, 0);
+
+      // Check balance
+      if (totalStake > balance) {
+        toast({
+          title: "Insufficient Balance",
+          description: `You need ₹${totalStake} but have ₹${balance.toFixed(2)}`,
+          variant: "destructive",
+        });
+        return;
+      }
+
       const potentialWin = bets.reduce(
         (sum, bet) => sum + bet.stake * bet.odds,
         0,
       );
 
-      for (const bet of bets) {
-        await placeCasinoBet({
-          type: game.gmid,
-          mid: gameData?.mid,
-          sid: bet.sid,
-          stake: bet.stake,
+      // Handle demo mode
+      if (isDemo) {
+        const { demoStore } = await import("@/services/demoStore");
+
+        for (const bet of bets) {
+          demoStore.placeBet({
+            fixtureName: game.gname,
+            marketName: bet.nat,
+            outcomeName: bet.nat,
+            odds: bet.odds,
+            stake: bet.stake,
+            potentialReturn: bet.stake * bet.odds,
+          });
+        }
+
+        toast({
+          title: "🎉 Demo Bets Placed!",
+          description: `${bets.length} bet(s) placed • ₹${totalStake} stake • Potential: ₹${potentialWin.toFixed(2)}`,
+          duration: 5000,
         });
+        setBets([]);
+        return;
       }
 
-      toast({
-        title: "🎉 Bets Placed Successfully!",
-        description: `${bets.length} bet(s) • ₹${totalStake} stake • Potential: ₹${potentialWin.toFixed(2)}`,
-        duration: 5000,
-      });
-      setBets([]);
+      // Real betting with wallet integration
+      if (!userId) {
+        toast({
+          title: "❌ Not Authenticated",
+          description: "Please login to place bets",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      let successCount = 0;
+      let failCount = 0;
+
+      for (const bet of bets) {
+        const result = await placeBet(
+          {
+            gameId: game.gmid,
+            gameName: game.gname,
+            roundId: gameData?.mid || "unknown",
+            marketId: gameData?.mid || "unknown",
+            marketName: bet.nat,
+            selection: bet.nat,
+            odds: bet.odds,
+            stake: bet.stake,
+            betType: "BACK",
+          },
+          userId,
+        );
+
+        if (result) {
+          successCount++;
+        } else {
+          failCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        toast({
+          title: "🎉 Bets Placed Successfully!",
+          description: `${successCount} bet(s) placed • ₹${totalStake} stake • Potential: ₹${potentialWin.toFixed(2)}`,
+          duration: 5000,
+        });
+        setBets([]);
+        // Refetch balance to show updated amount
+        refetchBalance();
+      }
+
+      if (failCount > 0) {
+        toast({
+          title: "Some Bets Failed",
+          description: `${failCount} bet(s) could not be placed`,
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       toast({
         title: "❌ Error placing bets",
-        description: "Please try again or contact support",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Please try again or contact support",
         variant: "destructive",
       });
     }
@@ -215,13 +364,16 @@ export function GenericCardGame({ game }: GenericCardGameProps) {
                 Available Markets
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {markets.map((market: any) => {
+                {markets.map((market: any, index: number) => {
+                  // Skip invalid markets
+                  if (!market || !market.sid || !market.nat) return null;
+                  
                   const betOnThisMarket = bets.find(
                     (b) => b.sid === market.sid,
                   );
                   return (
                     <Button
-                      key={market.sid}
+                      key={`market-${market.sid}-${index}`}
                       onClick={() => handleMarketClick(market)}
                       disabled={market.gstatus === "SUSPENDED"}
                       className={`h-24 flex flex-col items-center justify-center relative overflow-hidden group transition-all duration-300 transform hover:scale-105 ${

@@ -71,7 +71,7 @@ switch ($method) {
     case 'PUT':
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
         $postData = file_get_contents('php://input');
-        
+
         if (!empty($postData)) {
             curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
             curl_setopt($ch, CURLOPT_HTTPHEADER, [
@@ -80,11 +80,11 @@ switch ($method) {
             ]);
         }
         break;
-        
+
     case 'DELETE':
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
         break;
-        
+
     case 'GET':
     default:
         // Default GET request

@@ -16,7 +16,7 @@ export type BetSelection = {
   outcomeId?: string;
   outcomeName?: string;
   price?: number;
-  
+
   // New format (Diamond API)
   id?: string;
   matchId?: number;
@@ -60,7 +60,10 @@ export const BetSlip = ({
     return 1;
   };
 
-  const totalOdds = selections.reduce((acc, sel) => acc * getSelectionPrice(sel), 1);
+  const totalOdds = selections.reduce(
+    (acc, sel) => acc * getSelectionPrice(sel),
+    1,
+  );
   const potentialReturn = parseFloat(stake || "0") * totalOdds;
 
   const handlePlaceBet = async () => {
@@ -77,7 +80,8 @@ export const BetSlip = ({
         const stakePerBet = parseFloat(stake) / selections.length;
 
         selections.forEach((sel) => {
-          const fixtureName = sel.matchName || sel.fixtureName || "Unknown Match";
+          const fixtureName =
+            sel.matchName || sel.fixtureName || "Unknown Match";
           const marketName = sel.outcomeType || sel.marketName || "Market";
           const outcomeName = sel.outcomeName || "Selection";
           const odds = getSelectionPrice(sel);
@@ -105,14 +109,37 @@ export const BetSlip = ({
 
     // Real Betting Logic
     selections.forEach((sel) => {
-      placeBet({
-        sportId: "unknown",
-        eventId: sel.matchId?.toString() || sel.fixtureId || "0",
-        marketId: sel.marketId || "0",
-        selectionId: sel.outcomeId || sel.id || "0",
-        odds: getSelectionPrice(sel),
-        stake: parseFloat(stake) / selections.length,
-      });
+      const stakePerBet = parseFloat(stake) / selections.length;
+      placeBet(
+        {
+          sportId: "unknown",
+          eventId: sel.matchId?.toString() || sel.fixtureId || "0",
+          marketId: sel.marketId || "0",
+          selectionId: sel.outcomeId || sel.id || "0",
+          eventName: sel.matchName || sel.fixtureName || "Unknown Event",
+          marketName: sel.outcomeType || sel.marketName || "Unknown Market",
+          selectionName: sel.outcomeName || "Unknown Selection",
+          odds: getSelectionPrice(sel),
+          stake: stakePerBet,
+        },
+        {
+          onSuccess: (data: any) => {
+            if (data?.balance !== undefined) {
+              // Update wallet balance in cache
+              console.log("[BetSlip] New balance:", data.balance);
+            }
+          },
+          onError: (error: any) => {
+            if (error?.balance !== undefined) {
+              toast.error(
+                `Insufficient balance: ₹${error.balance} available, ₹${stakePerBet} required`,
+              );
+            } else {
+              toast.error(error?.message || "Failed to place bet");
+            }
+          },
+        },
+      );
     });
 
     setTimeout(() => {

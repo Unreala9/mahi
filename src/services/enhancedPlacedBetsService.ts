@@ -18,20 +18,21 @@ import type {
 // Use proxy in production, direct API in development
 const API_HOST = import.meta.env.VITE_DIAMOND_API_HOST || "/api/diamond";
 const API_PROTOCOL = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "";
-const IS_PHP_PROXY = API_HOST.includes('proxy.php');
+const IS_PHP_PROXY = API_HOST.includes("proxy.php");
 const BASE_URL = API_HOST.startsWith("/")
   ? API_HOST
   : API_PROTOCOL
     ? `${API_PROTOCOL}://${API_HOST}`
     : `http://${API_HOST}`;
-const API_KEY = import.meta.env.VITE_DIAMOND_API_KEY || "mahi4449839dbabkadbakwq1qqd";
+const API_KEY =
+  import.meta.env.VITE_DIAMOND_API_KEY || "mahi4449839dbabkadbakwq1qqd";
 
 // Helper to build URL (handles PHP proxy path parameter)
 function buildApiUrl(endpoint: string, params: Record<string, string>): string {
   const queryParams = new URLSearchParams({ key: API_KEY, ...params });
 
   if (IS_PHP_PROXY) {
-    queryParams.set('path', endpoint);
+    queryParams.set("path", endpoint);
     return `${BASE_URL}?${queryParams.toString()}`;
   }
 
@@ -65,7 +66,7 @@ class EnhancedPlacedBetsService {
    */
   async placeBet(bet: BetPlacement): Promise<PlaceBetResponse> {
     try {
-      const url = buildApiUrl('placed_bets', {});
+      const url = buildApiUrl("placed_bets", {});
 
       const response = await fetch(url, {
         method: "POST",
@@ -125,7 +126,7 @@ class EnhancedPlacedBetsService {
     market_name: string;
   }): Promise<GetResultResponse> {
     try {
-      const url = buildApiUrl('get-result', {});
+      const url = buildApiUrl("get-result", {});
 
       const response = await fetch(url, {
         method: "POST",
@@ -155,7 +156,9 @@ class EnhancedPlacedBetsService {
    */
   async getPlacedBets(eventId: number): Promise<GetPlacedBetsResponse> {
     try {
-      const url = buildApiUrl('get_placed_bets', { event_id: eventId.toString() });
+      const url = buildApiUrl("get_placed_bets", {
+        event_id: eventId.toString(),
+      });
 
       const response = await fetch(url, {
         method: "GET",

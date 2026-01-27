@@ -17,20 +17,21 @@ import type {
 // Use proxy in production, direct API in development
 const API_HOST = import.meta.env.VITE_DIAMOND_API_HOST || "/api/diamond";
 const API_PROTOCOL = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "";
-const IS_PHP_PROXY = API_HOST.includes('proxy.php');
+const IS_PHP_PROXY = API_HOST.includes("proxy.php");
 const BASE_URL = API_HOST.startsWith("/")
   ? API_HOST
   : API_PROTOCOL
     ? `${API_PROTOCOL}://${API_HOST}`
     : `http://${API_HOST}`;
-const API_KEY = import.meta.env.VITE_DIAMOND_API_KEY || "mahi4449839dbabkadbakwq1qqd";
+const API_KEY =
+  import.meta.env.VITE_DIAMOND_API_KEY || "mahi4449839dbabkadbakwq1qqd";
 
 // Helper to build URL (handles PHP proxy path parameter)
 function buildApiUrl(endpoint: string, params: Record<string, string>): string {
   const queryParams = new URLSearchParams({ key: API_KEY, ...params });
 
   if (IS_PHP_PROXY) {
-    queryParams.set('path', endpoint);
+    queryParams.set("path", endpoint);
     return `${BASE_URL}?${queryParams.toString()}`;
   }
 
@@ -201,7 +202,7 @@ class EnhancedSportsWebSocketService {
     config: SubscriptionConfig,
   ): Promise<void> {
     try {
-      const url = buildApiUrl('getPriveteData', {
+      const url = buildApiUrl("getPriveteData", {
         gmid: eventId.toString(),
         sid: config.sid.toString(),
       });

@@ -1,237 +1,247 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Proxy Test - Diamond API</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 1200px;
-            margin: 50px auto;
-            padding: 20px;
-            background: #f5f5f5;
-        }
-        h1 {
-            color: #333;
-        }
-        .test-section {
-            background: white;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        button {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 5px;
-        }
-        button:hover {
-            background: #0056b3;
-        }
-        .result {
-            margin-top: 15px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-left: 4px solid #007bff;
-            border-radius: 4px;
-            white-space: pre-wrap;
-            font-family: monospace;
-            font-size: 12px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .error {
-            border-left-color: #dc3545;
-            background: #fff5f5;
-        }
-        .success {
-            border-left-color: #28a745;
-            background: #f0fff4;
-        }
-        .info {
-            background: #e7f3ff;
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-        }
-        code {
-            background: #e9ecef;
-            padding: 2px 6px;
-            border-radius: 3px;
-        }
-    </style>
-</head>
-<body>
-    <h1>🧪 Diamond API Proxy Test</h1>
-    
-    <div class="info">
-        <strong>Test URL:</strong> <code id="proxy-url">Loading...</code><br>
-        <strong>Instructions:</strong> Click buttons below to test proxy endpoints
-    </div>
-
-    <div class="test-section">
-        <h3>1. Health Check</h3>
-        <button onclick="testHealth()">Test Proxy Connection</button>
-        <div id="health-result" class="result" style="display: none;"></div>
-    </div>
-
-    <div class="test-section">
-        <h3>2. All Sports</h3>
-        <button onclick="testAllSports()">Get All Sports</button>
-        <div id="sports-result" class="result" style="display: none;"></div>
-    </div>
-
-    <div class="test-section">
-        <h3>3. Match Details</h3>
-        <input type="text" id="event-id" placeholder="Event ID (e.g., 33595173)" style="padding: 8px; width: 200px; margin-right: 10px;">
-        <input type="text" id="sid" placeholder="Sport ID (e.g., 4)" style="padding: 8px; width: 100px; margin-right: 10px;">
-        <button onclick="testMatchDetails()">Get Match Odds</button>
-        <div id="match-result" class="result" style="display: none;"></div>
-    </div>
-
-    <div class="test-section">
-        <h3>4. Test Direct vs Proxy</h3>
-        <button onclick="compareRequests()">Compare Direct vs Proxy</button>
-        <div id="compare-result" class="result" style="display: none;"></div>
-    </div>
-
-    <script>
-        // Get proxy URL from current domain
-        const PROXY_URL = window.location.origin + '/api/proxy.php';
-        const DIRECT_API = 'http://130.250.191.174:3009';
-        const API_KEY = 'mahi4449839dbabkadbakwq1qqd';
-
-        document.getElementById('proxy-url').textContent = PROXY_URL;
-
-        async function testHealth() {
-            const resultDiv = document.getElementById('health-result');
-            resultDiv.style.display = 'block';
-            resultDiv.className = 'result';
-            resultDiv.textContent = '⏳ Testing connection...';
-
-            try {
-                const response = await fetch(`${window.location.origin}/api/test.php`);
-                const data = await response.json();
-                
-                resultDiv.className = 'result ' + (data.status === 'success' ? 'success' : 'error');
-                resultDiv.textContent = JSON.stringify(data, null, 2);
-            } catch (error) {
-                resultDiv.className = 'result error';
-                resultDiv.textContent = `❌ Error: ${error.message}\n\nMake sure proxy.php and test.php are uploaded to /api/ folder`;
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Proxy Test - Diamond API</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                max-width: 1200px;
+                margin: 50px auto;
+                padding: 20px;
+                background: #f5f5f5;
             }
-        }
-
-        async function testAllSports() {
-            const resultDiv = document.getElementById('sports-result');
-            resultDiv.style.display = 'block';
-            resultDiv.className = 'result';
-            resultDiv.textContent = '⏳ Fetching all sports...';
-
-            try {
-                const url = `${PROXY_URL}?path=allSportid&key=${API_KEY}`;
-                console.log('Requesting:', url);
-
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                resultDiv.className = 'result success';
-                resultDiv.textContent = '✅ Success!\n\n' + JSON.stringify(data, null, 2);
-            } catch (error) {
-                resultDiv.className = 'result error';
-                resultDiv.textContent = `❌ Error: ${error.message}\n\nCheck browser console for details`;
-                console.error('Full error:', error);
+            h1 {
+                color: #333;
             }
-        }
-
-        async function testMatchDetails() {
-            const eventId = document.getElementById('event-id').value || '33595173';
-            const sid = document.getElementById('sid').value || '4';
-            const resultDiv = document.getElementById('match-result');
-            
-            resultDiv.style.display = 'block';
-            resultDiv.className = 'result';
-            resultDiv.textContent = `⏳ Fetching match details for event ${eventId}...`;
-
-            try {
-                const url = `${PROXY_URL}?path=getPriveteData&gmid=${eventId}&sid=${sid}&key=${API_KEY}`;
-                console.log('Requesting:', url);
-
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                resultDiv.className = 'result success';
-                resultDiv.textContent = '✅ Success!\n\n' + JSON.stringify(data, null, 2);
-            } catch (error) {
-                resultDiv.className = 'result error';
-                resultDiv.textContent = `❌ Error: ${error.message}`;
-                console.error('Full error:', error);
+            .test-section {
+                background: white;
+                padding: 20px;
+                margin: 20px 0;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             }
-        }
+            button {
+                background: #007bff;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 4px;
+                cursor: pointer;
+                margin: 5px;
+            }
+            button:hover {
+                background: #0056b3;
+            }
+            .result {
+                margin-top: 15px;
+                padding: 15px;
+                background: #f8f9fa;
+                border-left: 4px solid #007bff;
+                border-radius: 4px;
+                white-space: pre-wrap;
+                font-family: monospace;
+                font-size: 12px;
+                max-height: 400px;
+                overflow-y: auto;
+            }
+            .error {
+                border-left-color: #dc3545;
+                background: #fff5f5;
+            }
+            .success {
+                border-left-color: #28a745;
+                background: #f0fff4;
+            }
+            .info {
+                background: #e7f3ff;
+                padding: 15px;
+                border-radius: 4px;
+                margin-bottom: 20px;
+            }
+            code {
+                background: #e9ecef;
+                padding: 2px 6px;
+                border-radius: 3px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>🧪 Diamond API Proxy Test</h1>
 
-        async function compareRequests() {
-            const resultDiv = document.getElementById('compare-result');
-            resultDiv.style.display = 'block';
-            resultDiv.className = 'result';
-            resultDiv.textContent = '⏳ Comparing direct API vs proxy...';
+        <div class="info">
+            <strong>Test URL:</strong> <code id="proxy-url">Loading...</code><br />
+            <strong>Instructions:</strong> Click buttons below to test proxy endpoints
+        </div>
 
-            const results = {
-                direct: null,
-                proxy: null
-            };
+        <div class="test-section">
+            <h3>1. Health Check</h3>
+            <button onclick="testHealth()">Test Proxy Connection</button>
+            <div id="health-result" class="result" style="display: none"></div>
+        </div>
 
-            // Test Direct API (will fail from HTTPS site)
-            try {
-                const directUrl = `${DIRECT_API}/allSportid?key=${API_KEY}`;
-                console.log('Testing direct:', directUrl);
-                
-                const response = await fetch(directUrl);
-                results.direct = {
-                    status: response.status,
-                    ok: response.ok,
-                    data: await response.json()
+        <div class="test-section">
+            <h3>2. All Sports</h3>
+            <button onclick="testAllSports()">Get All Sports</button>
+            <div id="sports-result" class="result" style="display: none"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Match Details</h3>
+            <input
+                type="text"
+                id="event-id"
+                placeholder="Event ID (e.g., 33595173)"
+                style="padding: 8px; width: 200px; margin-right: 10px"
+            />
+            <input
+                type="text"
+                id="sid"
+                placeholder="Sport ID (e.g., 4)"
+                style="padding: 8px; width: 100px; margin-right: 10px"
+            />
+            <button onclick="testMatchDetails()">Get Match Odds</button>
+            <div id="match-result" class="result" style="display: none"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Test Direct vs Proxy</h3>
+            <button onclick="compareRequests()">Compare Direct vs Proxy</button>
+            <div id="compare-result" class="result" style="display: none"></div>
+        </div>
+
+        <script>
+            // Get proxy URL from current domain
+            const PROXY_URL = window.location.origin + "/api/proxy.php";
+            const DIRECT_API = "http://130.250.191.174:3009";
+            const API_KEY = "mahi4449839dbabkadbakwq1qqd";
+
+            document.getElementById("proxy-url").textContent = PROXY_URL;
+
+            async function testHealth() {
+                const resultDiv = document.getElementById("health-result");
+                resultDiv.style.display = "block";
+                resultDiv.className = "result";
+                resultDiv.textContent = "⏳ Testing connection...";
+
+                try {
+                    const response = await fetch(`${window.location.origin}/api/test.php`);
+                    const data = await response.json();
+
+                    resultDiv.className = "result " + (data.status === "success" ? "success" : "error");
+                    resultDiv.textContent = JSON.stringify(data, null, 2);
+                } catch (error) {
+                    resultDiv.className = "result error";
+                    resultDiv.textContent = `❌ Error: ${error.message}\n\nMake sure proxy.php and test.php are uploaded to /api/ folder`;
+                }
+            }
+
+            async function testAllSports() {
+                const resultDiv = document.getElementById("sports-result");
+                resultDiv.style.display = "block";
+                resultDiv.className = "result";
+                resultDiv.textContent = "⏳ Fetching all sports...";
+
+                try {
+                    const url = `${PROXY_URL}?path=allSportid&key=${API_KEY}`;
+                    console.log("Requesting:", url);
+
+                    const response = await fetch(url);
+                    const data = await response.json();
+
+                    resultDiv.className = "result success";
+                    resultDiv.textContent = "✅ Success!\n\n" + JSON.stringify(data, null, 2);
+                } catch (error) {
+                    resultDiv.className = "result error";
+                    resultDiv.textContent = `❌ Error: ${error.message}\n\nCheck browser console for details`;
+                    console.error("Full error:", error);
+                }
+            }
+
+            async function testMatchDetails() {
+                const eventId = document.getElementById("event-id").value || "33595173";
+                const sid = document.getElementById("sid").value || "4";
+                const resultDiv = document.getElementById("match-result");
+
+                resultDiv.style.display = "block";
+                resultDiv.className = "result";
+                resultDiv.textContent = `⏳ Fetching match details for event ${eventId}...`;
+
+                try {
+                    const url = `${PROXY_URL}?path=getPriveteData&gmid=${eventId}&sid=${sid}&key=${API_KEY}`;
+                    console.log("Requesting:", url);
+
+                    const response = await fetch(url);
+                    const data = await response.json();
+
+                    resultDiv.className = "result success";
+                    resultDiv.textContent = "✅ Success!\n\n" + JSON.stringify(data, null, 2);
+                } catch (error) {
+                    resultDiv.className = "result error";
+                    resultDiv.textContent = `❌ Error: ${error.message}`;
+                    console.error("Full error:", error);
+                }
+            }
+
+            async function compareRequests() {
+                const resultDiv = document.getElementById("compare-result");
+                resultDiv.style.display = "block";
+                resultDiv.className = "result";
+                resultDiv.textContent = "⏳ Comparing direct API vs proxy...";
+
+                const results = {
+                    direct: null,
+                    proxy: null,
                 };
-            } catch (error) {
-                results.direct = {
-                    error: error.message,
-                    note: 'Expected to fail due to CORS/Mixed Content'
-                };
+
+                // Test Direct API (will fail from HTTPS site)
+                try {
+                    const directUrl = `${DIRECT_API}/allSportid?key=${API_KEY}`;
+                    console.log("Testing direct:", directUrl);
+
+                    const response = await fetch(directUrl);
+                    results.direct = {
+                        status: response.status,
+                        ok: response.ok,
+                        data: await response.json(),
+                    };
+                } catch (error) {
+                    results.direct = {
+                        error: error.message,
+                        note: "Expected to fail due to CORS/Mixed Content",
+                    };
+                }
+
+                // Test Proxy
+                try {
+                    const proxyUrl = `${PROXY_URL}?path=allSportid&key=${API_KEY}`;
+                    console.log("Testing proxy:", proxyUrl);
+
+                    const response = await fetch(proxyUrl);
+                    results.proxy = {
+                        status: response.status,
+                        ok: response.ok,
+                        dataPreview: "Success! (See console for full data)",
+                    };
+                    console.log("Proxy data:", await response.json());
+                } catch (error) {
+                    results.proxy = {
+                        error: error.message,
+                    };
+                }
+
+                resultDiv.className = "result";
+                resultDiv.textContent =
+                    "🔍 Comparison Results:\n\n" +
+                    "--- Direct API (Expected to Fail) ---\n" +
+                    JSON.stringify(results.direct, null, 2) +
+                    "\n\n--- Proxy (Should Work) ---\n" +
+                    JSON.stringify(results.proxy, null, 2);
             }
 
-            // Test Proxy
-            try {
-                const proxyUrl = `${PROXY_URL}?path=allSportid&key=${API_KEY}`;
-                console.log('Testing proxy:', proxyUrl);
-                
-                const response = await fetch(proxyUrl);
-                results.proxy = {
-                    status: response.status,
-                    ok: response.ok,
-                    dataPreview: 'Success! (See console for full data)'
-                };
-                console.log('Proxy data:', await response.json());
-            } catch (error) {
-                results.proxy = {
-                    error: error.message
-                };
-            }
-
-            resultDiv.className = 'result';
-            resultDiv.textContent = 
-                '🔍 Comparison Results:\n\n' +
-                '--- Direct API (Expected to Fail) ---\n' +
-                JSON.stringify(results.direct, null, 2) +
-                '\n\n--- Proxy (Should Work) ---\n' +
-                JSON.stringify(results.proxy, null, 2);
-        }
-
-        // Auto-run health check on load
-        setTimeout(testHealth, 1000);
-    </script>
-</body>
+            // Auto-run health check on load
+            setTimeout(testHealth, 1000);
+        </script>
+    </body>
 </html>

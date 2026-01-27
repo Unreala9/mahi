@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useCasinoWebSocket } from "@/hooks/api/useCasinoWebSocket";
 import { CasinoGame } from "@/types/casino";
-import { placeCasinoBet } from "@/services/casino";
+import { useCasinoBetting } from "@/services/casinoBettingService";
+import { useWalletBalance } from "@/hooks/api/useWallet";
+import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -21,9 +23,19 @@ interface Bet {
 export function TeenpattiGame({ game }: TeenpattiGameProps) {
   const [bets, setBets] = useState<Bet[]>([]);
   const [selectedChip, setSelectedChip] = useState(100);
+  const [userId, setUserId] = useState<string | undefined>();
   const { gameData, resultData, isConnected } = useCasinoWebSocket(game.gmid);
+  const { placeBet } = useCasinoBetting();
+  const { data: walletBalance = 0, refetch: refetchBalance } = useWalletBalance();
 
   const chips = [100, 500, 1000, 5000, 10000, 25000];
+
+  // Get user ID
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUserId(session?.user?.id);
+    });
+  }, []);
 
   const handleMarketClick = (market: any) => {
     if (market.gstatus === "SUSPENDED") {
@@ -35,14 +47,19 @@ export function TeenpattiGame({ game }: TeenpattiGameProps) {
       return;
     }
 
-    const existingBet = bets.find((b) => b.sid === market.sid);
-    if (existingBet) {
-      setBets(
-        bets.map((b) =>
-          b.sid === market.sid ? { ...b, stake: b.stake + selectedChip } : b,
-        ),
-      );
+    // Toggle bet - remove if already exists
+    const existingBetIndex = bets.findIndex((b) => b.sid === market.sid);
+
+    if (existingBetIndex !== -1) {
+      // Remove bet
+      const updatedBets = bets.filter((b) => b.sid !== market.sid);
+      setBets(updatedBets);
+      toast({
+        title: "❌ Bet Removed",
+        description: `${market.nat} removed from bet slip`,
+      });
     } else {
+      // Add new bet
       setBets([
         ...bets,
         {
@@ -52,32 +69,75 @@ export function TeenpattiGame({ game }: TeenpattiGameProps) {
           odds: market.b || market.bs || 0,
         },
       ]);
+      toast({
+        title: "✅ Bet Added",
+        description: `${market.nat}: ₹${selectedChip}`,
+      });
     }
   };
 
   const handlePlaceBets = async () => {
-    if (bets.length === 0) return;
+    if (bets.length === 0) {
+      toast({
+        title: "No Bets",
+        description: "Please add bets before placing",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!userId) {
+      toast({
+        title: "Not Authenticated",
+        description: "Please login to place bets",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
+      let successCount = 0;
+      let failCount = 0;
+
       for (const bet of bets) {
-        await placeCasinoBet({
-          type: game.gmid,
-          mid: gameData?.mid,
-          sid: bet.sid,
-          stake: bet.stake,
-        });
+        try {
+          await placeBet({
+            gameType: game.gmid,
+            roundId: gameData?.mid || "",
+            marketId: bet.sid.toString(),
+            marketName: bet.nat,
+            stake: bet.stake,
+            odds: bet.odds,
+            userId: userId,
+          });
+          successCount++;
+        } catch (error) {
+          console.error("[TeenpattiGame] Bet failed:", error);
+          failCount++;
+        }
       }
 
-      toast({
-        title: "Bets Placed",
-        description: `${bets.length} bet(s) placed successfully`,
-      });
+      if (successCount > 0) {
+        toast({
+          title: "✅ Bets Placed",
+          description: `${successCount} bet(s) placed successfully`,
+          duration: 5000,
+        });
+        setBets([]);
+        refetchBalance();
+      }
 
-      setBets([]);
+      if (failCount > 0) {
+        toast({
+          title: "Some Bets Failed",
+          description: `${failCount} bet(s) could not be placed`,
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to place bets. Please try again.",
+        title: "❌ Error placing bets",
+        description: error instanceof Error ? error.message : "Please try again",
         variant: "destructive",
       });
     }

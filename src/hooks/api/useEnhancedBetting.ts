@@ -93,32 +93,44 @@ export function useSportsMatch(gmid: number, sid: number) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!gmid || !sid) return;
+    console.log('[useSportsMatch] Effect triggered with gmid:', gmid, 'sid:', sid);
+
+    if (!gmid || !sid) {
+      console.warn('[useSportsMatch] Missing gmid or sid:', { gmid, sid });
+      setLoadingScore(false);
+      setLoadingOdds(false);
+      return;
+    }
 
     setLoadingScore(true);
     setLoadingOdds(true);
     setError(null);
 
     // Subscribe to live score updates
+    console.log('[useSportsMatch] Subscribing to score updates for gmid:', gmid);
     const unsubscribeScore = enhancedSportsService.subscribeToScore(
       gmid,
       (scoreData) => {
+        console.log('[useSportsMatch] Score data received:', scoreData);
         setScore(scoreData);
         setLoadingScore(false);
       },
     );
 
     // Subscribe to odds updates
+    console.log('[useSportsMatch] Subscribing to odds updates for gmid:', gmid, 'sid:', sid);
     const unsubscribeOdds = enhancedSportsService.subscribeToOdds(
       gmid,
       sid,
       (oddsData) => {
+        console.log('[useSportsMatch] Odds data received:', oddsData);
         setOdds(oddsData);
         setLoadingOdds(false);
       },
     );
 
     return () => {
+      console.log('[useSportsMatch] Cleaning up subscriptions');
       unsubscribeScore();
       unsubscribeOdds();
     };

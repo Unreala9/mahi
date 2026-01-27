@@ -1,6 +1,7 @@
 # Hostinger .htaccess for API proxy
 
 # Enable CORS
+
 <IfModule mod_headers.c>
     Header set Access-Control-Allow-Origin "*"
     Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
@@ -8,21 +9,25 @@
 </IfModule>
 
 # Allow PHP execution
+
 <FilesMatch "\.php$">
-    SetHandler application/x-httpd-php
+SetHandler application/x-httpd-php
 </FilesMatch>
 
 # Security headers
+
 <IfModule mod_headers.c>
     Header set X-Content-Type-Options "nosniff"
     Header set X-Frame-Options "SAMEORIGIN"
 </IfModule>
 
 # Error handling
+
 php_flag display_errors Off
 php_flag log_errors On
 
 # Cache control for API responses
+
 <IfModule mod_headers.c>
     Header set Cache-Control "no-cache, no-store, must-revalidate"
     Header set Pragma "no-cache"
