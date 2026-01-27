@@ -46,8 +46,10 @@ export function useCasinoWebSocket(gameType: string) {
   useEffect(() => {
     if (!gameType) return;
 
-    const API_BASE = "http://130.250.191.174:3009";
-    const API_KEY = "mahi4449839dbabkadbakwq1qqd";
+    const API_BASE = import.meta.env.VITE_DIAMOND_API_HOST?.startsWith("/")
+      ? `${window.location.origin}${import.meta.env.VITE_DIAMOND_API_HOST}`
+      : import.meta.env.VITE_DIAMOND_API_HOST || `${window.location.origin}/api/diamond`;
+    const API_KEY = import.meta.env.VITE_DIAMOND_API_KEY || "mahi4449839dbabkadbakwq1qqd";
 
     // Fetch game data via HTTP polling (since WebSocket might not be available)
     const fetchGameData = async () => {
