@@ -6,7 +6,9 @@ import { componentTagger } from "lovable-tagger";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "0.0.0.0",
+    // bind to all addresses (IPv4 + IPv6) so both localhost and
+    // LAN IPs (e.g. 192.168.x.x) work in browsers
+    host: true,
     port: 8080,
     allowedHosts: [
       "pushy-maryanne-snoopily.ngrok-free.dev",
