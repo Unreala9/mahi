@@ -36,16 +36,21 @@ export function AndarBaharGame({ game }: AndarBaharGameProps) {
 
     const existingBet = bets.find((b) => b.sid === market.sid);
     if (existingBet) {
-      setBets(bets.map((b) =>
-        b.sid === market.sid ? { ...b, stake: b.stake + selectedChip } : b
-      ));
+      setBets(
+        bets.map((b) =>
+          b.sid === market.sid ? { ...b, stake: b.stake + selectedChip } : b,
+        ),
+      );
     } else {
-      setBets([...bets, {
-        sid: market.sid,
-        nat: market.nat,
-        stake: selectedChip,
-        odds: market.b || market.bs || 0,
-      }]);
+      setBets([
+        ...bets,
+        {
+          sid: market.sid,
+          nat: market.nat,
+          stake: selectedChip,
+          odds: market.b || market.bs || 0,
+        },
+      ]);
     }
   };
 
@@ -69,8 +74,12 @@ export function AndarBaharGame({ game }: AndarBaharGameProps) {
   };
 
   const cards = gameData?.card?.split(",") || [];
-  const andarCards = cards.filter((_:any, i:number) => i % 2 === 0).slice(0, 3);
-  const baharCards = cards.filter((_:any, i:number) => i % 2 !== 0).slice(0, 3);
+  const andarCards = cards
+    .filter((_: any, i: number) => i % 2 === 0)
+    .slice(0, 3);
+  const baharCards = cards
+    .filter((_: any, i: number) => i % 2 !== 0)
+    .slice(0, 3);
   const jokerCard = cards[0];
 
   const markets = gameData?.sub || [];
@@ -84,11 +93,15 @@ export function AndarBaharGame({ game }: AndarBaharGameProps) {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-white font-bold text-lg">{game.gname}</h1>
-              <p className="text-slate-400 text-sm">Round ID: {gameData?.mid || "---"}</p>
+              <p className="text-slate-400 text-sm">
+                Round ID: {gameData?.mid || "---"}
+              </p>
             </div>
             <div className="text-right">
               <p className="text-slate-400 text-xs">Next Card</p>
-              <p className="text-2xl font-bold text-yellow-400">{gameData?.card?.split(",").length || 0} / Bahar</p>
+              <p className="text-2xl font-bold text-yellow-400">
+                {gameData?.card?.split(",").length || 0} / Bahar
+              </p>
             </div>
           </div>
         </div>
@@ -97,7 +110,9 @@ export function AndarBaharGame({ game }: AndarBaharGameProps) {
           <div className="p-6">
             {/* Joker Card */}
             <div className="text-center mb-6">
-              <h3 className="text-yellow-400 font-bold text-xl mb-4">JOKER CARD</h3>
+              <h3 className="text-yellow-400 font-bold text-xl mb-4">
+                JOKER CARD
+              </h3>
               {jokerCard && (
                 <div className="inline-block w-24 h-32 bg-white rounded-lg shadow-2xl flex items-center justify-center text-5xl border-4 border-yellow-400">
                   {jokerCard}
@@ -108,10 +123,15 @@ export function AndarBaharGame({ game }: AndarBaharGameProps) {
             {/* Andar and Bahar */}
             <div className="grid grid-cols-2 gap-6 mb-6">
               <Card className="bg-gradient-to-br from-pink-900 to-pink-950 border-pink-700 p-6">
-                <h3 className="text-white text-xl font-bold mb-4 text-center">ANDAR</h3>
+                <h3 className="text-white text-xl font-bold mb-4 text-center">
+                  ANDAR
+                </h3>
                 <div className="flex justify-center gap-2 flex-wrap">
                   {andarCards.map((card, i) => (
-                    <div key={i} className="w-16 h-24 bg-white rounded-lg shadow-xl flex items-center justify-center text-2xl">
+                    <div
+                      key={i}
+                      className="w-16 h-24 bg-white rounded-lg shadow-xl flex items-center justify-center text-2xl"
+                    >
                       {card}
                     </div>
                   ))}
@@ -119,10 +139,15 @@ export function AndarBaharGame({ game }: AndarBaharGameProps) {
               </Card>
 
               <Card className="bg-gradient-to-br from-yellow-900 to-yellow-950 border-yellow-700 p-6">
-                <h3 className="text-white text-xl font-bold mb-4 text-center">BAHAR</h3>
+                <h3 className="text-white text-xl font-bold mb-4 text-center">
+                  BAHAR
+                </h3>
                 <div className="flex justify-center gap-2 flex-wrap">
                   {baharCards.map((card, i) => (
-                    <div key={i} className="w-16 h-24 bg-white rounded-lg shadow-xl flex items-center justify-center text-2xl">
+                    <div
+                      key={i}
+                      className="w-16 h-24 bg-white rounded-lg shadow-xl flex items-center justify-center text-2xl"
+                    >
                       {card}
                     </div>
                   ))}
@@ -132,23 +157,27 @@ export function AndarBaharGame({ game }: AndarBaharGameProps) {
 
             {/* Main Betting */}
             <div className="grid grid-cols-2 gap-4 mb-6">
-              {markets.filter((m: any) => m.nat === "Andar" || m.nat === "Bahar").map((market: any) => (
-                <Button
-                  key={market.sid}
-                  onClick={() => handleMarketClick(market)}
-                  disabled={market.gstatus === "SUSPENDED"}
-                  className={`h-28 text-2xl font-bold ${
-                    market.nat === "Andar"
-                      ? "bg-gradient-to-br from-pink-600 to-pink-700"
-                      : "bg-gradient-to-br from-yellow-600 to-yellow-700"
-                  }`}
-                >
-                  <div>
-                    <div>{market.nat}</div>
-                    <div className="text-lg text-yellow-200">{market.b || market.bs}</div>
-                  </div>
-                </Button>
-              ))}
+              {markets
+                .filter((m: any) => m.nat === "Andar" || m.nat === "Bahar")
+                .map((market: any) => (
+                  <Button
+                    key={market.sid}
+                    onClick={() => handleMarketClick(market)}
+                    disabled={market.gstatus === "SUSPENDED"}
+                    className={`h-28 text-2xl font-bold ${
+                      market.nat === "Andar"
+                        ? "bg-gradient-to-br from-pink-600 to-pink-700"
+                        : "bg-gradient-to-br from-yellow-600 to-yellow-700"
+                    }`}
+                  >
+                    <div>
+                      <div>{market.nat}</div>
+                      <div className="text-lg text-yellow-200">
+                        {market.b || market.bs}
+                      </div>
+                    </div>
+                  </Button>
+                ))}
             </div>
 
             {/* Card Count Markets */}
@@ -163,7 +192,9 @@ export function AndarBaharGame({ game }: AndarBaharGameProps) {
                 >
                   <div className="text-center">
                     <div className="text-white text-sm">{market.nat}</div>
-                    <div className="text-yellow-400 text-xs">{market.b || market.bs}</div>
+                    <div className="text-yellow-400 text-xs">
+                      {market.b || market.bs}
+                    </div>
                   </div>
                 </Button>
               ))}
@@ -173,16 +204,18 @@ export function AndarBaharGame({ game }: AndarBaharGameProps) {
             <div className="mt-6">
               <h4 className="text-white font-semibold mb-3">Last Results</h4>
               <div className="flex gap-2">
-                {resultData?.res?.slice(0, 10).map((result: any, idx: number) => (
-                  <div
-                    key={idx}
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                      result.win === "1" ? "bg-pink-600" : "bg-yellow-600"
-                    } text-white`}
-                  >
-                    {result.win === "1" ? "A" : "B"}
-                  </div>
-                ))}
+                {resultData?.res
+                  ?.slice(0, 10)
+                  .map((result: any, idx: number) => (
+                    <div
+                      key={idx}
+                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                        result.win === "1" ? "bg-pink-600" : "bg-yellow-600"
+                      } text-white`}
+                    >
+                      {result.win === "1" ? "A" : "B"}
+                    </div>
+                  ))}
               </div>
             </div>
           </div>
@@ -214,11 +247,15 @@ export function AndarBaharGame({ game }: AndarBaharGameProps) {
                 bets.map((bet, idx) => (
                   <Card key={idx} className="p-3 bg-slate-700">
                     <div className="flex justify-between items-start mb-2">
-                      <span className="text-white font-semibold text-sm">{bet.nat}</span>
+                      <span className="text-white font-semibold text-sm">
+                        {bet.nat}
+                      </span>
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => setBets(bets.filter((_, i) => i !== idx))}
+                        onClick={() =>
+                          setBets(bets.filter((_, i) => i !== idx))
+                        }
                         className="h-6 w-6 p-0 text-red-400"
                       >
                         ×
@@ -237,7 +274,9 @@ export function AndarBaharGame({ game }: AndarBaharGameProps) {
               <Card className="p-3 bg-slate-900 mb-4">
                 <div className="flex justify-between font-bold">
                   <span className="text-white">Total:</span>
-                  <span className="text-yellow-400">₹{bets.reduce((s, b) => s + b.stake, 0)}</span>
+                  <span className="text-yellow-400">
+                    ₹{bets.reduce((s, b) => s + b.stake, 0)}
+                  </span>
                 </div>
               </Card>
             )}
@@ -250,7 +289,11 @@ export function AndarBaharGame({ game }: AndarBaharGameProps) {
               Place Bets
             </Button>
 
-            <Button onClick={() => setBets([])} variant="outline" className="w-full mt-2">
+            <Button
+              onClick={() => setBets([])}
+              variant="outline"
+              className="w-full mt-2"
+            >
               Clear All
             </Button>
           </div>

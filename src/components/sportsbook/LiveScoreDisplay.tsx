@@ -24,12 +24,18 @@ export function LiveScoreDisplay({
 }: LiveScoreDisplayProps) {
   const { score, loadingScore } = useSportsMatch(gmid, sid);
 
+  // Debug logging
+  console.log('[LiveScoreDisplay] gmid:', gmid, 'sid:', sid, 'loading:', loadingScore, 'score:', score);
+
   if (loadingScore) {
     return (
       <Card className={cn("p-4 animate-pulse", className)}>
         <div className="space-y-3">
           <div className="h-4 bg-muted rounded w-3/4" />
           <div className="h-4 bg-muted rounded w-1/2" />
+          <p className="text-xs text-muted-foreground text-center mt-2">
+            Loading live score...
+          </p>
         </div>
       </Card>
     );
@@ -38,9 +44,14 @@ export function LiveScoreDisplay({
   if (!score) {
     return (
       <Card className={cn("p-4", className)}>
-        <p className="text-sm text-muted-foreground text-center">
-          No live score available
-        </p>
+        <div className="text-center space-y-2">
+          <p className="text-sm text-muted-foreground">
+            Live score not available for this match
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Match ID: {gmid}
+          </p>
+        </div>
       </Card>
     );
   }

@@ -4,9 +4,11 @@
  */
 
 const API_HOST =
-  import.meta.env.VITE_DIAMOND_API_HOST || "130.250.191.174:3009";
+  import.meta.env.VITE_DIAMOND_API_HOST || "/api/diamond";
 const HTTP_API_HOST =
-  import.meta.env.VITE_DIAMOND_API_HOST || "http://130.250.191.174:3009";
+  import.meta.env.VITE_DIAMOND_API_HOST?.startsWith("/")
+    ? `${window.location.origin}${import.meta.env.VITE_DIAMOND_API_HOST}`
+    : import.meta.env.VITE_DIAMOND_API_HOST || `${window.location.origin}/api/diamond`;
 const WS_PROTOCOL = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "ws";
 const API_KEY = import.meta.env.VITE_DIAMOND_API_KEY || "YOUR_SECRET_TOKEN";
 
@@ -29,12 +31,12 @@ export interface PlacedBetData {
   potential_profit: number;
   bet_type: "BACK" | "LAY";
   status:
-    | "PENDING"
-    | "MATCHED"
-    | "UNMATCHED"
-    | "SETTLED"
-    | "CANCELLED"
-    | "VOID";
+  | "PENDING"
+  | "MATCHED"
+  | "UNMATCHED"
+  | "SETTLED"
+  | "CANCELLED"
+  | "VOID";
   result?: "WON" | "LOST" | "VOID";
   payout?: number;
   placed_at: string;
@@ -45,12 +47,12 @@ export interface PlacedBetData {
 
 export interface PlacedBetsMessage {
   type:
-    | "bet_placed"
-    | "bet_updated"
-    | "bet_settled"
-    | "bet_cancelled"
-    | "connection"
-    | "error";
+  | "bet_placed"
+  | "bet_updated"
+  | "bet_settled"
+  | "bet_cancelled"
+  | "connection"
+  | "error";
   data: PlacedBetData | PlacedBetData[] | { status?: string; message?: string };
   timestamp: number;
   event_id?: number;

@@ -1,37 +1,84 @@
 import { supabase } from "./supabase";
+import {
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY,
+} from "../integrations/supabase/client";
 
-/**
- * Helper to call Supabase Edge Functions with automatic error handling.
- * @param functionName The name of the Edge Function to call.
- * @param body The JSON body to send.
- * @param options Optional fetch options (headers, method, etc.).
- */
+let tokenRefreshPromise: Promise<string | null> | null = null;
+
+async function refreshTokenIfNeeded(): Promise<string | null> {
+  if (tokenRefreshPromise) return await tokenRefreshPromise;
+
+  tokenRefreshPromise = (async () => {
+    try {
+      const { data, error } = await supabase.auth.getSession();
+      if (error || !data.session) return null;
+
+      const token = data.session.access_token;
+      if (!token) return null;
+
+      // Optional: refresh if near expiry (skip heavy decoding if you want)
+      return token;
+    } finally {
+      tokenRefreshPromise = null;
+    }
+  })();
+
+  return await tokenRefreshPromise;
+}
+
 export async function callEdgeFunction<T = any>(
   functionName: string,
   body: any = {},
-  options: { method?: "POST" | "GET" | "PUT" | "DELETE" } = {}
+  options: { method?: "POST" | "GET" | "PUT" | "DELETE" } = {},
 ): Promise<T> {
-  const { data: sessionData } = await supabase.auth.getSession();
-  const token = sessionData.session?.access_token;
+  const method = options.method ?? "POST";
+  const token = await refreshTokenIfNeeded();
 
   if (!token) {
-    console.warn(
-      "No active session found. Call might fail if auth is required."
+    throw new Error("No session token found. Please login again.");
+  }
+
+  const url = `${SUPABASE_URL}/functions/v1/${functionName}`;
+
+  const resp = await fetch(url, {
+    method,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      apikey: SUPABASE_ANON_KEY,
+      "Content-Type": "application/json",
+    },
+    body: method === "GET" ? undefined : JSON.stringify(body),
+  });
+
+  const text = await resp.text();
+
+  let parsed: any = null;
+  try {
+    parsed = text ? JSON.parse(text) : null;
+  } catch {
+    parsed = { raw: text };
+  }
+
+  if (!resp.ok) {
+    const errorBody =
+      typeof parsed === "object" ? JSON.stringify(parsed) : parsed;
+    console.error("[EdgeInvokeError]", {
+      fn: functionName,
+      status: resp.status,
+      statusText: resp.statusText,
+      body: errorBody,
+    });
+
+    throw new Error(
+      JSON.stringify({
+        name: "EdgeInvokeError",
+        status: resp.status,
+        statusText: resp.statusText,
+        body: parsed,
+      }),
     );
   }
 
-  const { data, error } = await supabase.functions.invoke(functionName, {
-    body,
-    headers: {
-      Authorization: token ? `Bearer ${token}` : "",
-    },
-    method: options.method || "POST",
-  });
-
-  if (error) {
-    console.error(`Error calling function ${functionName}:`, error);
-    throw error;
-  }
-
-  return data as T;
+  return (parsed ?? text) as T;
 }

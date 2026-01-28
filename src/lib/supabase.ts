@@ -1,14 +1,6 @@
-import { createClient } from "@supabase/supabase-js";
+// Re-use the application's configured Supabase client so that
+// Edge Function calls made via `supabase.functions.invoke` include
+// the authenticated session (Authorization header) when available.
+import { supabase as integrationsSupabase } from "@/integrations/supabase/client";
 
-// These should be in your .env file
-// VITE_SUPABASE_URL=https://your-project.supabase.co
-// VITE_SUPABASE_ANON_KEY=your-anon-key
-
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error("Missing Supabase environment variables");
-}
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = integrationsSupabase;

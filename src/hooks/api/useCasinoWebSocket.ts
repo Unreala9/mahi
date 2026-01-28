@@ -37,7 +37,7 @@ export function useCasinoWebSocket(gameType: string) {
   const [resultData, setResultData] = useState<CasinoResultData | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
   const dataIntervalRef = useRef<NodeJS.Timeout>();
@@ -46,13 +46,17 @@ export function useCasinoWebSocket(gameType: string) {
   useEffect(() => {
     if (!gameType) return;
 
-    const API_BASE = "http://130.250.191.174:3009";
-    const API_KEY = "mahi4449839dbabkadbakwq1qqd";
+    const API_BASE = import.meta.env.VITE_DIAMOND_API_HOST?.startsWith("/")
+      ? `${window.location.origin}${import.meta.env.VITE_DIAMOND_API_HOST}`
+      : import.meta.env.VITE_DIAMOND_API_HOST || `${window.location.origin}/api/diamond`;
+    const API_KEY = import.meta.env.VITE_DIAMOND_API_KEY || "mahi4449839dbabkadbakwq1qqd";
 
     // Fetch game data via HTTP polling (since WebSocket might not be available)
     const fetchGameData = async () => {
       try {
-        const response = await fetch(`${API_BASE}/casino/data?type=${gameType}&key=${API_KEY}`);
+        const response = await fetch(
+          `${API_BASE}/casino/data?type=${gameType}&key=${API_KEY}`,
+        );
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.data) {
@@ -69,7 +73,9 @@ export function useCasinoWebSocket(gameType: string) {
 
     const fetchResultData = async () => {
       try {
-        const response = await fetch(`${API_BASE}/casino/result?type=${gameType}&key=${API_KEY}`);
+        const response = await fetch(
+          `${API_BASE}/casino/result?type=${gameType}&key=${API_KEY}`,
+        );
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.data) {
@@ -87,7 +93,7 @@ export function useCasinoWebSocket(gameType: string) {
 
     // Poll every 1 second for game data (live odds)
     dataIntervalRef.current = setInterval(fetchGameData, 1000);
-    
+
     // Poll every 3 seconds for results
     resultIntervalRef.current = setInterval(fetchResultData, 3000);
 

@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useState } from "react";
+import { useMemo, useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,14 +6,22 @@ import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
 import {
   useMatchDetails,
-  useMatchOdds,
   useAllMatches,
   useSportIds,
 } from "@/hooks/api/useDiamond";
 import { diamondApi } from "@/services/diamondApi";
 import { LiveScoreDisplay } from "@/components/sportsbook/LiveScoreDisplay";
-import { EnhancedOddsDisplay } from "@/components/sportsbook/EnhancedOddsDisplay";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MarketOddsDisplay } from "@/components/sportsbook/MarketOddsDisplay";
+import { EnhancedBetSlip } from "@/components/sportsbook/EnhancedBetSlip";
+import { enhancedSportsWebSocket } from "@/services/enhancedSportsWebSocket";
+import { useBettingLogic } from "@/services/bettingLogicService";
+import type {
+  SportsBettingMessage,
+  MatchOddsData,
+  MarketType,
+  BetType,
+} from "@/types/sports-betting";
 
 export default function DiamondMatch() {
   const { gmid, sid } = useParams();
@@ -65,123 +73,401 @@ export default function DiamondMatch() {
     gmidNum,
     sidForQueries,
   );
-  // Only fetch odds once we have both gmidNum and sidForQueries
-  const shouldFetchOdds = Boolean(gmidNum && sidForQueries);
-  const { data: oddsData, isLoading: loadingOdds } = useMatchOdds(
-    gmidNum,
-    sidForQueries,
-    shouldFetchOdds,
-  );
+
+  // Real-time odds state
+  const [oddsData, setOddsData] = useState<MatchOddsData>({});
+  const [oddsLoading, setOddsLoading] = useState(true);
+
+  // Betting logic hook
+  const {
+    betSlip,
+    balance,
+    exposure,
+    isPlacingBet,
+    totalStake,
+    totalPotentialProfit,
+    addToBetSlip,
+    removeFromBetSlip,
+    updateStake,
+    clearBetSlip,
+    placeBets,
+  } = useBettingLogic("user123"); // TODO: Get real user ID
+
+  // Subscribe to real-time updates
+  useEffect(() => {
+    if (!gmidNum || !sidForQueries) return;
+
+    setOddsLoading(true);
+
+    const handleMessage = (message: SportsBettingMessage) => {
+      if (message.type === "odds_update") {
+        setOddsData((prev) => {
+          const updated = { ...prev };
+          if (message.market_type === "MATCH_ODDS") {
+            updated.match_odds = message.data;
+          } else if (message.market_type === "BOOKMAKER") {
+            updated.bookmaker = message.data;
+          } else if (message.market_type === "FANCY") {
+            updated.fancy = message.data;
+          }
+          return updated;
+        });
+        setOddsLoading(false);
+      }
+    };
+
+    const unsubscribe = enhancedSportsWebSocket.subscribe(
+      gmidNum,
+      sidForQueries,
+      handleMessage,
+      {
+        markets: ["match_odds", "bookmaker", "fancy"],
+        includeScore: true,
+      },
+    );
+
+    return unsubscribe;
+  }, [gmidNum, sidForQueries]);
 
   const teams = useMemo(
     () => parseTeamNames(details?.name || ""),
     [details?.name],
   );
-  const scoreUrl = useMemo(() => {
-    if (!details?.gtv || !sidForQueries) return null;
-    return diamondApi.getScoreUrl(details.gtv, sidForQueries);
-  }, [details?.gtv, sidForQueries]);
+
+  // Live Score URL (using score.akamaized.uk)
+  const liveScoreUrl = useMemo(() => {
+    if (!gmidNum) return null;
+    return `https://score.akamaized.uk/diamond-live-score?gmid=${gmidNum}`;
+  }, [gmidNum]);
+
+  // Live Stream URL (using cricketid.xyz)
+  const liveStreamUrl = useMemo(() => {
+    if (!gmidNum) return null;
+    const API_KEY =
+      import.meta.env.VITE_DIAMOND_API_KEY || "mahi4449839dbabkadbakwq1qqd";
+    return `https://live.cricketid.xyz/directStream?gmid=${gmidNum}&key=${API_KEY}`;
+  }, [gmidNum]);
+
+  // Handle bet click
+  const handleBetClick = useCallback(
+    (
+      marketType: MarketType,
+      marketId: string | number,
+      marketName: string,
+      selection: string,
+      odds: number,
+      betType: BetType,
+      selectionId?: number,
+    ) => {
+      if (!gmidNum || !details?.name) return;
+
+      addToBetSlip(
+        gmidNum,
+        details.name,
+        marketId,
+        marketName,
+        marketType,
+        selection,
+        odds,
+        betType,
+        selectionId,
+      );
+    },
+    [gmidNum, details?.name, addToBetSlip],
+  );
 
   return (
     <MainLayout>
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold">Match Details</h1>
-          <Button asChild>
-            <Link to="/sports">Back to Sports</Link>
-          </Button>
-        </div>
+      <div className="container mx-auto px-4 py-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Main Content - Left & Center */}
+          <div className="lg:col-span-2 space-y-4">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <h1 className="text-xl font-bold">Match Details</h1>
+              <Button asChild variant="outline">
+                <Link to="/sports">Back to Sports</Link>
+              </Button>
+            </div>
 
-        <Card className="overflow-hidden">
-          <div className="p-4">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  {details?.is_live && (
-                    <Badge className="bg-red-600 text-white animate-pulse">
-                      LIVE
-                    </Badge>
-                  )}
-                  {details?.start_date && !details?.is_live && (
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(details.start_date).toLocaleString()}
-                    </span>
-                  )}
-                </div>
-                <div className="space-y-1">
-                  <div className="text-foreground font-semibold">
-                    {teams.home}
+            {/* Match Info Card */}
+            <Card className="p-4">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    {details?.is_live && (
+                      <Badge className="bg-red-600 text-white animate-pulse">
+                        LIVE
+                      </Badge>
+                    )}
+                    {details?.start_date && !details?.is_live && (
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(details.start_date).toLocaleString()}
+                      </span>
+                    )}
                   </div>
-                  <div className="text-foreground font-semibold">
-                    {teams.away}
+                  <div className="space-y-1">
+                    <div className="text-lg font-semibold">{teams.home}</div>
+                    <div className="text-lg font-semibold">{teams.away}</div>
                   </div>
-                </div>
-                <div className="text-xs text-muted-foreground mt-2">
-                  GMID: {gmid} | SID:{" "}
-                  {sidForQueries ?? (resolvingSid ? "resolving…" : "…")}
+                  <div className="text-xs text-muted-foreground mt-2">
+                    GMID: {gmid} | SID:{" "}
+                    {sidForQueries ?? (resolvingSid ? "resolving…" : "…")}
+                  </div>
                 </div>
               </div>
+            </Card>
+
+            {/* Live Score */}
+            {gmidNum && sidForQueries && (
+              <LiveScoreDisplay gmid={gmidNum} sid={sidForQueries} />
+            )}
+
+            {/* Live TV & Stream */}
+            {(liveScoreUrl || liveStreamUrl) && (
+              <Card className="overflow-hidden">
+                <Tabs defaultValue="stream" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 rounded-none">
+                    <TabsTrigger value="stream">Live Stream</TabsTrigger>
+                    <TabsTrigger value="score">Live Score</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="stream" className="m-0">
+                    {liveStreamUrl ? (
+                      <div className="w-full h-[400px] relative">
+                        <iframe
+                          src={liveStreamUrl}
+                          className="w-full h-full border-0"
+                          title="Live Match Stream"
+                          allow="autoplay; fullscreen"
+                          allowFullScreen
+                          onError={(e) => {
+                            console.warn(
+                              "[DiamondMatch] Stream iframe failed to load",
+                            );
+                            e.currentTarget.style.display = "none";
+                          }}
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <p className="text-xs text-muted-foreground bg-background/80 px-3 py-2 rounded">
+                            If stream doesn't load, it may not be available for
+                            this match
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-6 text-center text-muted-foreground">
+                        Live stream not available
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="score" className="m-0">
+                    {liveScoreUrl ? (
+                      <div className="w-full h-[400px]">
+                        <iframe
+                          src={liveScoreUrl}
+                          className="w-full h-full border-0"
+                          title="Live Match Score"
+                          onError={(e) => {
+                            console.warn(
+                              "[DiamondMatch] Score iframe failed to load",
+                            );
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="p-6 text-center text-muted-foreground">
+                        Live score not available
+                      </div>
+                    )}
+                  </TabsContent>
+                </Tabs>
+              </Card>
+            )}
+
+            {/* Markets Tabs */}
+            {gmidNum && sidForQueries && !resolvingSid && (
+              <Tabs defaultValue="match_odds" className="w-full">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="match_odds">Match Odds</TabsTrigger>
+                  <TabsTrigger value="bookmaker">Bookmaker</TabsTrigger>
+                  <TabsTrigger value="fancy">Fancy</TabsTrigger>
+                  <TabsTrigger value="toss">Toss</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="match_odds" className="space-y-4">
+                  <Card className="p-4">
+                    <h3 className="font-semibold mb-3">Match Odds</h3>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Max: 1.00 | Min: 100.00 | Max: 25K
+                    </p>
+                    {oddsLoading ? (
+                      <p className="text-sm text-muted-foreground text-center py-4">
+                        Loading odds...
+                      </p>
+                    ) : oddsData.match_odds &&
+                      oddsData.match_odds.length > 0 ? (
+                      <MarketOddsDisplay
+                        marketType="MATCH_ODDS"
+                        runners={oddsData.match_odds}
+                        onBetClick={(selection, odds, betType, selectionId) =>
+                          handleBetClick(
+                            "MATCH_ODDS",
+                            `${gmidNum}_match_odds`,
+                            "Match Odds",
+                            selection,
+                            odds,
+                            betType,
+                            selectionId,
+                          )
+                        }
+                      />
+                    ) : (
+                      <p className="text-sm text-muted-foreground text-center py-4">
+                        No odds available for this market
+                      </p>
+                    )}
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="bookmaker" className="space-y-4">
+                  <Card className="p-4">
+                    <h3 className="font-semibold mb-3">Bookmaker</h3>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Max: 1.00 | Min: 100.00 | Max: 25K
+                    </p>
+                    {oddsLoading ? (
+                      <p className="text-sm text-muted-foreground text-center py-4">
+                        Loading odds...
+                      </p>
+                    ) : oddsData.bookmaker && oddsData.bookmaker.length > 0 ? (
+                      <MarketOddsDisplay
+                        marketType="BOOKMAKER"
+                        runners={oddsData.bookmaker}
+                        onBetClick={(selection, odds, betType, selectionId) =>
+                          handleBetClick(
+                            "BOOKMAKER",
+                            `${gmidNum}_bookmaker`,
+                            "Bookmaker",
+                            selection,
+                            odds,
+                            betType,
+                            selectionId,
+                          )
+                        }
+                      />
+                    ) : (
+                      <p className="text-sm text-muted-foreground text-center py-4">
+                        No bookmaker odds available
+                      </p>
+                    )}
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="fancy" className="space-y-4">
+                  <Card className="p-4">
+                    <h3 className="font-semibold mb-3">Normal Markets</h3>
+                    {oddsLoading ? (
+                      <p className="text-sm text-muted-foreground text-center py-4">
+                        Loading odds...
+                      </p>
+                    ) : oddsData.fancy && oddsData.fancy.length > 0 ? (
+                      <div className="space-y-4">
+                        {oddsData.fancy.map((runner, index) => (
+                          <Card key={index} className="p-3">
+                            <h4 className="text-sm font-medium mb-2">
+                              {runner.runner_name}
+                            </h4>
+                            <p className="text-xs text-muted-foreground mb-3">
+                              Min: 100.00 | Max: 25K
+                            </p>
+                            <MarketOddsDisplay
+                              marketType="FANCY"
+                              runners={[runner]}
+                              onBetClick={(
+                                selection,
+                                odds,
+                                betType,
+                                selectionId,
+                              ) =>
+                                handleBetClick(
+                                  "FANCY",
+                                  `${gmidNum}_fancy_${index}`,
+                                  runner.runner_name,
+                                  selection,
+                                  odds,
+                                  betType,
+                                  selectionId,
+                                )
+                              }
+                            />
+                          </Card>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground text-center py-4">
+                        No fancy markets available
+                      </p>
+                    )}
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="toss" className="space-y-4">
+                  <Card className="p-4">
+                    <h3 className="font-semibold mb-3">Toss</h3>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Max: 1.00 | Min: 100.00 | Max: 10K
+                    </p>
+                    {oddsLoading ? (
+                      <p className="text-sm text-muted-foreground text-center py-4">
+                        Loading odds...
+                      </p>
+                    ) : oddsData.toss && oddsData.toss.length > 0 ? (
+                      <MarketOddsDisplay
+                        marketType="TOSS"
+                        runners={oddsData.toss}
+                        onBetClick={(selection, odds, betType, selectionId) =>
+                          handleBetClick(
+                            "TOSS",
+                            `${gmidNum}_toss`,
+                            "Toss",
+                            selection,
+                            odds,
+                            betType,
+                            selectionId,
+                          )
+                        }
+                      />
+                    ) : (
+                      <p className="text-sm text-muted-foreground text-center py-4">
+                        No toss market available
+                      </p>
+                    )}
+                  </Card>
+                </TabsContent>
+              </Tabs>
+            )}
+          </div>
+
+          {/* Bet Slip - Right Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-4">
+              <EnhancedBetSlip
+                betSlip={betSlip}
+                balance={balance}
+                exposure={exposure}
+                isPlacingBet={isPlacingBet}
+                totalStake={totalStake}
+                totalPotentialProfit={totalPotentialProfit}
+                onRemove={removeFromBetSlip}
+                onUpdateStake={updateStake}
+                onPlaceBets={placeBets}
+                onClear={clearBetSlip}
+              />
             </div>
           </div>
-        </Card>
-
-        {/* Enhanced Live Score Display */}
-        {gmidNum && sidForQueries && details?.is_live && (
-          <LiveScoreDisplay gmid={gmidNum} sid={sidForQueries} />
-        )}
-
-        {scoreUrl && (
-          <Card className="p-4">
-            <h2 className="text-sm font-bold mb-2">Live TV</h2>
-            <div className="w-full h-[360px]">
-              <iframe
-                src={scoreUrl}
-                className="w-full h-full"
-                title="Live Match Score"
-              />
-            </div>
-          </Card>
-        )}
-
-        {/* Enhanced Odds Display with Betting */}
-        {gmidNum && sidForQueries && !resolvingSid && (
-          <Tabs defaultValue="match_odds" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="match_odds">Match Odds</TabsTrigger>
-              <TabsTrigger value="bookmaker">Bookmaker</TabsTrigger>
-              <TabsTrigger value="fancy">Fancy</TabsTrigger>
-              <TabsTrigger value="toss">Toss</TabsTrigger>
-            </TabsList>
-            <TabsContent value="match_odds">
-              <EnhancedOddsDisplay
-                gmid={gmidNum}
-                sid={sidForQueries}
-                marketType="match_odds"
-              />
-            </TabsContent>
-            <TabsContent value="bookmaker">
-              <EnhancedOddsDisplay
-                gmid={gmidNum}
-                sid={sidForQueries}
-                marketType="bookmaker"
-              />
-            </TabsContent>
-            <TabsContent value="fancy">
-              <EnhancedOddsDisplay
-                gmid={gmidNum}
-                sid={sidForQueries}
-                marketType="fancy"
-              />
-            </TabsContent>
-            <TabsContent value="toss">
-              <EnhancedOddsDisplay
-                gmid={gmidNum}
-                sid={sidForQueries}
-                marketType="toss"
-              />
-            </TabsContent>
-          </Tabs>
-        )}
+        </div>
       </div>
     </MainLayout>
   );

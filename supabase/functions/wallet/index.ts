@@ -19,7 +19,7 @@ serve(async (req) => {
         global: {
           headers: { Authorization: req.headers.get("Authorization")! },
         },
-      }
+      },
     );
 
     const {
@@ -37,18 +37,27 @@ serve(async (req) => {
     const action = searchParams.get("action");
     const serviceClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
 
     if (action === "balance") {
-      // Calculate balance from transactions
+      // First, check if there's a wallet record with a balance
+      const { data: wallet } = await serviceClient
+        .from("wallets")
+        .select("balance")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      // If wallet record exists with balance, use it as starting point
+      let balance = wallet?.balance ? Number(wallet.balance) : 0;
+
+      // Then add/subtract from transactions
       const { data: transactions } = await serviceClient
         .from("wallet_transactions")
         .select("amount, type")
         .eq("user_id", user.id)
         .eq("status", "completed");
 
-      let balance = 0;
       transactions?.forEach((tx) => {
         if (["deposit", "win", "bonus"].includes(tx.type)) {
           balance += Number(tx.amount);
@@ -113,6 +122,88 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
+    } else if (action === "deduct" && req.method === "POST") {
+      // Deduct bet amount from wallet
+      const { amount, reference, description } = await req.json();
+
+      // Check balance first
+      const { data: transactions } = await serviceClient
+        .from("wallet_transactions")
+        .select("amount, type")
+        .eq("user_id", user.id)
+        .eq("status", "completed");
+
+      let balance = 0;
+      transactions?.forEach((tx) => {
+        if (["deposit", "win", "bonus"].includes(tx.type)) {
+          balance += Number(tx.amount);
+        } else if (["withdraw", "bet"].includes(tx.type)) {
+          balance -= Number(tx.amount);
+        }
+      });
+
+      if (balance < amount) {
+        return new Response(
+          JSON.stringify({ error: "Insufficient balance", balance }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 400,
+          },
+        );
+      }
+
+      const { data, error } = await serviceClient
+        .from("wallet_transactions")
+        .insert({
+          user_id: user.id,
+          type: "bet",
+          amount: amount,
+          status: "completed",
+          reference: reference || `bet_${Date.now()}`,
+          description: description || "Bet placed",
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          transaction: data,
+          balance: balance - amount,
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        },
+      );
+    } else if (action === "credit" && req.method === "POST") {
+      // Credit winnings to wallet
+      const { amount, reference, description } = await req.json();
+
+      const { data, error } = await serviceClient
+        .from("wallet_transactions")
+        .insert({
+          user_id: user.id,
+          type: "win",
+          amount: amount,
+          status: "completed",
+          reference: reference || `win_${Date.now()}`,
+          description: description || "Bet won",
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      return new Response(
+        JSON.stringify({ success: true, transaction: data }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        },
+      );
     }
 
     throw new Error("Invalid action");

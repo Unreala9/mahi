@@ -108,7 +108,8 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
   const othersLinks: Array<{ label: string; path: string }> = [
     { label: "Our Casino", path: "/casino" },
-
+    { label: "Live Casino", path: "/casino-live" },
+    { label: "Slot Game", path: "/casino" },
   ];
 
   const toggleSport = (sportId: number) => {
@@ -130,19 +131,6 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const handleNavigate = (path: string) => {
     navigate(path);
     onClose();
-  };
-
-  const isActivePath = (target: string) => {
-    if (!target) return false;
-    const [pathname, query] = target.split("?");
-    if (location.pathname !== pathname) return false;
-    if (!query) return true;
-    const current = new URLSearchParams(location.search);
-    const wanted = new URLSearchParams(query);
-    for (const [k, v] of wanted.entries()) {
-      if (current.get(k) !== v) return false;
-    }
-    return true;
   };
 
   // Group matches by sport and competition
@@ -172,21 +160,24 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const displaySports = useMemo(() => {
     if (sports && sports.length > 0) {
       const mappedSports = [...sports]
-        .map((s) => ({ sid: Number((s as any).sid), name: String((s as any).name) }))
+        .map((s) => ({
+          sid: Number((s as any).sid),
+          name: String((s as any).name),
+        }))
         .filter((s) => Number.isFinite(s.sid) && Boolean(s.name));
-      
+
       // Sort with Cricket and Football at the top
       return mappedSports.sort((a, b) => {
-        const aIsCricket = a.name.toLowerCase().includes('cricket');
-        const bIsCricket = b.name.toLowerCase().includes('cricket');
-        const aIsFootball = a.name.toLowerCase() === 'football';
-        const bIsFootball = b.name.toLowerCase() === 'football';
-        
+        const aIsCricket = a.name.toLowerCase().includes("cricket");
+        const bIsCricket = b.name.toLowerCase().includes("cricket");
+        const aIsFootball = a.name.toLowerCase() === "football";
+        const bIsFootball = b.name.toLowerCase() === "football";
+
         if (aIsCricket && !bIsCricket) return -1;
         if (!aIsCricket && bIsCricket) return 1;
         if (aIsFootball && !bIsFootball && !bIsCricket) return -1;
         if (!aIsFootball && bIsFootball && !aIsCricket) return 1;
-        
+
         return a.name.localeCompare(b.name);
       });
     }
@@ -304,7 +295,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                     key={item.label}
                     label={item.label}
                     onClick={() => handleNavigate(item.path)}
-                    active={isActivePath(item.path)}
+                    active={location.pathname === item.path}
                   />
                 ))}
                 <RowButton
@@ -398,7 +389,6 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                           )}
                         </div>
                       )}
-
                     </div>
                   );
                 })}
@@ -470,7 +460,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                         key={item.label}
                         label={item.label}
                         onClick={() => handleNavigate(item.path)}
-                        active={isActivePath(item.path)}
+                        active={location.pathname === item.path}
                       />
                     ))}
                     <RowButton
@@ -502,7 +492,9 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                 {isAllSportsOpen && (
                   <div>
                     {displaySports.map((sport) => {
-                      const isSportExpanded = expandedSports.includes(sport.sid);
+                      const isSportExpanded = expandedSports.includes(
+                        sport.sid,
+                      );
                       const competitions = getCompetitionsBySport(sport.sid);
 
                       return (
@@ -527,11 +519,14 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                                     <div key={comp.name}>
                                       <button
                                         type="button"
-                                        onClick={() => toggleCompetition(comp.name)}
+                                        onClick={() =>
+                                          toggleCompetition(comp.name)
+                                        }
                                         className="w-full flex items-center justify-between gap-2 px-7 py-2 text-xs bg-muted/40 hover:bg-muted border-b border-border min-w-0 overflow-hidden"
                                       >
                                         <span className="truncate min-w-0 flex-1 text-left">
-                                          {isCompExpanded ? "-" : "+"} {comp.name}
+                                          {isCompExpanded ? "-" : "+"}{" "}
+                                          {comp.name}
                                         </span>
                                         <span className="text-[11px] text-muted-foreground flex-shrink-0">
                                           {comp.matches.length}

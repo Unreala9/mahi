@@ -12,9 +12,13 @@ const BASE_URL = API_HOST.startsWith("/")
 const API_KEY =
   import.meta.env.VITE_DIAMOND_API_KEY || "mahi4449839dbabkadbakwq1qqd";
 
-// Score API
-export const SCORE_API_BASE = "https://score.akamaized.uk/diamond-live-score";
+// Score API - Multiple endpoints for redundancy
+export const SCORE_API_BASE = "https://score.akamaized.uk";
+export const SCORE_API_PATH = "/diamond-live-score";
 export const LIVE_STREAM_BASE = "https://live.cricketid.xyz/directStream";
+
+// ✅ Default Sport ID (cricket)
+const DEFAULT_SID = Number(import.meta.env.VITE_DIAMOND_DEFAULT_SID || 4);
 
 export interface SportEvent {
   gmid: number;
@@ -62,16 +66,8 @@ export interface OddsValue {
 export interface LiveScore {
   gmid: number;
   score: {
-    home: {
-      name: string;
-      score: string;
-      overs?: string;
-    };
-    away: {
-      name: string;
-      score: string;
-      overs?: string;
-    };
+    home: { name: string; score: string; overs?: string };
+    away: { name: string; score: string; overs?: string };
   };
   status: string;
   current_innings?: string;
@@ -96,32 +92,34 @@ export interface BetRequest {
   is_lay?: boolean;
 }
 
+async function safeJson(response: Response) {
+  const text = await response.text();
+  if (!text || text.trim().startsWith("<")) {
+    return { ok: false, json: null as any, raw: text };
+  }
+  try {
+    return { ok: true, json: JSON.parse(text), raw: text };
+  } catch {
+    return { ok: false, json: null as any, raw: text };
+  }
+}
+
 class EnhancedSportsService {
   private scoreSubscribers: Map<number, Set<(score: LiveScore) => void>> =
     new Map();
   private oddsSubscribers: Map<number, Set<(odds: MatchOdds) => void>> =
     new Map();
-  private scoreIntervals: Map<number, NodeJS.Timeout> = new Map();
-  private oddsIntervals: Map<number, NodeJS.Timeout> = new Map();
 
-  /**
-   * Get all sports
-   */
+  private scoreIntervals: Map<number, ReturnType<typeof setInterval>> =
+    new Map();
+  private oddsIntervals: Map<number, ReturnType<typeof setInterval>> =
+    new Map();
+
   async getAllSports(): Promise<any[]> {
     try {
       const url = `${BASE_URL}/allSportid?key=${API_KEY}`;
-      console.log(`[Enhanced Sports] Fetching all sports`);
-
-      const response = await fetch(url, {
-        headers: {
-          Accept: "*/*",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
+      const response = await fetch(url, { headers: { Accept: "*/*" } });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const result = await response.json();
       return result.data || [];
     } catch (error) {
@@ -130,24 +128,11 @@ class EnhancedSportsService {
     }
   }
 
-  /**
-   * Get all matches (tree structure)
-   */
   async getMatchTree(): Promise<any> {
     try {
       const url = `${BASE_URL}/tree?key=${API_KEY}`;
-      console.log(`[Enhanced Sports] Fetching match tree`);
-
-      const response = await fetch(url, {
-        headers: {
-          Accept: "*/*",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
+      const response = await fetch(url, { headers: { Accept: "*/*" } });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const result = await response.json();
       return result.data || {};
     } catch (error) {
@@ -156,43 +141,26 @@ class EnhancedSportsService {
     }
   }
 
-  /**
-   * Get matches by sport ID
-   */
   async getMatchesBySport(sportId: number): Promise<SportEvent[]> {
     try {
       const url = `${BASE_URL}/esid?sid=${sportId}&key=${API_KEY}`;
-      console.log(`[Enhanced Sports] Fetching matches for sport: ${sportId}`);
-
-      const response = await fetch(url, {
-        headers: {
-          Accept: "*/*",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      const response = await fetch(url, { headers: { Accept: "*/*" } });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
       const result = await response.json();
-
       if (!result.data) return [];
 
-      // Transform the data
-      const matches: SportEvent[] = [];
-
-      // Handle different response structures
       if (Array.isArray(result.data)) {
-        return result.data.map((match: any) =>
-          this.transformMatchData(match, sportId),
-        );
-      } else if (result.data.eventdata) {
-        return result.data.eventdata.map((match: any) =>
-          this.transformMatchData(match, sportId),
+        return result.data.map((m: any) => this.transformMatchData(m, sportId));
+      }
+
+      if (result.data.eventdata) {
+        return result.data.eventdata.map((m: any) =>
+          this.transformMatchData(m, sportId),
         );
       }
 
-      return matches;
+      return [];
     } catch (error) {
       console.error(
         `[Enhanced Sports] Error fetching matches by sport:`,
@@ -202,9 +170,6 @@ class EnhancedSportsService {
     }
   }
 
-  /**
-   * Transform match data to consistent format
-   */
   private transformMatchData(match: any, sportId: number): SportEvent {
     return {
       gmid: match.gmid || match.event_id,
@@ -220,28 +185,13 @@ class EnhancedSportsService {
     };
   }
 
-  /**
-   * Get match odds and data
-   */
   async getMatchOdds(gmid: number, sid: number): Promise<MatchOdds | null> {
     try {
       const url = `${BASE_URL}/getPriveteData?gmid=${gmid}&sid=${sid}&key=${API_KEY}`;
-      console.log(`[Enhanced Sports] Fetching odds for match: ${gmid}`);
-
-      const response = await fetch(url, {
-        headers: {
-          Accept: "*/*",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
+      const response = await fetch(url, { headers: { Accept: "*/*" } });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const result = await response.json();
-
       if (!result.data) return null;
-
       return this.transformOddsData(result.data);
     } catch (error) {
       console.error(`[Enhanced Sports] Error fetching match odds:`, error);
@@ -249,9 +199,6 @@ class EnhancedSportsService {
     }
   }
 
-  /**
-   * Transform odds data to consistent format
-   */
   private transformOddsData(data: any): MatchOdds {
     const odds: MatchOdds = {
       mid: data.mid || data.market_id || "",
@@ -261,22 +208,15 @@ class EnhancedSportsService {
       toss: [],
     };
 
-    // Transform match odds
-    if (data.match_odds && Array.isArray(data.match_odds)) {
-      odds.match_odds = data.match_odds.map((runner: any) =>
-        this.transformRunner(runner),
+    if (Array.isArray(data.match_odds)) {
+      odds.match_odds = data.match_odds.map((r: any) =>
+        this.transformRunner(r),
       );
     }
-
-    // Transform bookmaker
-    if (data.bookmaker && Array.isArray(data.bookmaker)) {
-      odds.bookmaker = data.bookmaker.map((runner: any) =>
-        this.transformRunner(runner),
-      );
+    if (Array.isArray(data.bookmaker)) {
+      odds.bookmaker = data.bookmaker.map((r: any) => this.transformRunner(r));
     }
-
-    // Transform fancy
-    if (data.fancy && Array.isArray(data.fancy)) {
+    if (Array.isArray(data.fancy)) {
       odds.fancy = data.fancy.map((runner: any) => ({
         runner_name: runner.runner_name || runner.nation || runner.nat,
         selectionId: runner.selectionId || runner.sid || 0,
@@ -288,18 +228,13 @@ class EnhancedSportsService {
         max_stake: runner.max || 100000,
       }));
     }
-
-    // Transform toss
-    if (data.toss && Array.isArray(data.toss)) {
-      odds.toss = data.toss.map((runner: any) => this.transformRunner(runner));
+    if (Array.isArray(data.toss)) {
+      odds.toss = data.toss.map((r: any) => this.transformRunner(r));
     }
 
     return odds;
   }
 
-  /**
-   * Transform runner data
-   */
   private transformRunner(runner: any): MarketOdds {
     return {
       runner_name: runner.runner_name || runner.nation || runner.nat,
@@ -310,9 +245,6 @@ class EnhancedSportsService {
     };
   }
 
-  /**
-   * Transform odds array
-   */
   private transformOddsArray(oddsData: any): OddsValue[] {
     if (!oddsData) return [];
 
@@ -325,7 +257,6 @@ class EnhancedSportsService {
         }));
     }
 
-    // Single odds object
     if (oddsData.price || oddsData.rate || oddsData.odds) {
       return [
         {
@@ -340,63 +271,140 @@ class EnhancedSportsService {
     return [];
   }
 
-  /**
-   * Get status from various formats
-   */
   private getStatus(status: any): "ACTIVE" | "SUSPENDED" | "CLOSED" {
-    if (status === "1" || status === "ACTIVE" || status === true) {
+    if (status === "1" || status === "ACTIVE" || status === true)
       return "ACTIVE";
-    } else if (status === "0" || status === "SUSPENDED" || status === false) {
+    if (status === "0" || status === "SUSPENDED" || status === false)
       return "SUSPENDED";
-    }
     return "CLOSED";
   }
 
-  /**
-   * Get live score for a match
-   */
   async getLiveScore(gmid: number): Promise<LiveScore | null> {
     try {
-      const url = `${SCORE_API_BASE}?gmid=${gmid}`;
-      console.log(`[Enhanced Sports] Fetching live score for match: ${gmid}`);
-
+      const url = `${SCORE_API_BASE}${SCORE_API_PATH}?gmid=${gmid}`;
       const response = await fetch(url, {
-        headers: {
-          Accept: "*/*",
-        },
+        headers: { Accept: "application/json" },
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.ok) return await this.getFallbackScore(gmid, DEFAULT_SID);
+
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        return await this.getFallbackScore(gmid, DEFAULT_SID);
       }
 
-      const result = await response.json();
+      const parsed = await safeJson(response);
+      if (!parsed.ok || !parsed.json)
+        return await this.getFallbackScore(gmid, DEFAULT_SID);
 
-      if (!result.data) return null;
+      const result = parsed.json;
+      if (result.success && result.data)
+        return this.transformScoreData(gmid, result.data);
 
-      return this.transformScoreData(gmid, result.data);
+      return await this.getFallbackScore(gmid, DEFAULT_SID);
     } catch (error) {
       console.error(`[Enhanced Sports] Error fetching live score:`, error);
-      return null;
+      return await this.getFallbackScore(gmid, DEFAULT_SID);
     }
   }
 
   /**
-   * Transform score data
+   * ✅ FIX: matchDetails endpoint tumhare BASE_URL me 404 hai
+   * so fallback tries multiple endpoints:
+   * - getDetailsData (most common)
+   * - matchDetails (if exists)
    */
+  private async getFallbackScore(
+    gmid: number,
+    sid: number,
+  ): Promise<LiveScore | null> {
+    const candidates = [
+      `${BASE_URL}/getDetailsData?gmid=${gmid}&sid=${sid}&key=${API_KEY}`,
+      `${BASE_URL}/getDetailsData?gmid=${gmid}&key=${API_KEY}`, // some providers ignore sid
+      `${BASE_URL}/matchDetails?gmid=${gmid}&sid=${sid}&key=${API_KEY}`,
+      `${BASE_URL}/matchDetails?gmid=${gmid}&key=${API_KEY}`,
+    ];
+
+    for (const url of candidates) {
+      try {
+        const resp = await fetch(url, {
+          headers: { Accept: "application/json" },
+        });
+        if (!resp.ok) continue;
+
+        const ct = resp.headers.get("content-type") || "";
+        if (!ct.includes("application/json")) continue;
+
+        const parsed = await safeJson(resp);
+        if (!parsed.ok || !parsed.json) continue;
+
+        const result = parsed.json;
+        const data = result?.data ?? result;
+
+        // try resolve match object in any format
+        const match = Array.isArray(data)
+          ? data[0]
+          : Array.isArray(data?.eventdata)
+            ? data.eventdata[0]
+            : data;
+
+        if (!match) continue;
+
+        const teams = String(match.ename || match.name || "").split(" v ");
+        const team1 = teams[0] || "Team 1";
+        const team2 = teams[1] || "Team 2";
+
+        return {
+          gmid,
+          score: {
+            home: { name: team1, score: "0", overs: undefined },
+            away: { name: team2, score: "0", overs: undefined },
+          },
+          status: match.iplay ? "Live" : "Scheduled",
+          timestamp: Date.now(),
+        };
+      } catch {
+        // try next candidate
+      }
+    }
+
+    return null;
+  }
+
   private transformScoreData(gmid: number, data: any): LiveScore {
+    const homeTeam =
+      data.team1 || data.home_team || data.t1 || data.home || "Team 1";
+    const awayTeam =
+      data.team2 || data.away_team || data.t2 || data.away || "Team 2";
+    const homeScore =
+      data.team1_score ||
+      data.home_score ||
+      data.t1_score ||
+      data.score1 ||
+      "0";
+    const awayScore =
+      data.team2_score ||
+      data.away_score ||
+      data.t2_score ||
+      data.score2 ||
+      "0";
+    const homeOvers =
+      data.team1_overs || data.home_overs || data.t1_overs || data.overs1;
+    const awayOvers =
+      data.team2_overs || data.away_overs || data.t2_overs || data.overs2;
+
     return {
       gmid,
       score: {
         home: {
-          name: data.team1 || data.home_team || "Home",
-          score: data.team1_score || data.home_score || "0",
-          overs: data.team1_overs || data.home_overs,
+          name: String(homeTeam),
+          score: String(homeScore),
+          overs: homeOvers ? String(homeOvers) : undefined,
         },
         away: {
-          name: data.team2 || data.away_team || "Away",
-          score: data.team2_score || data.away_score || "0",
-          overs: data.team2_overs || data.away_overs,
+          name: String(awayTeam),
+          score: String(awayScore),
+          overs: awayOvers ? String(awayOvers) : undefined,
         },
       },
       status: data.status || data.match_status || "In Progress",
@@ -409,266 +417,144 @@ class EnhancedSportsService {
     };
   }
 
-  /**
-   * Subscribe to live score updates
-   */
   subscribeToScore(
     gmid: number,
     callback: (score: LiveScore) => void,
   ): () => void {
-    console.log(`[Enhanced Sports] Subscribing to score updates: ${gmid}`);
-
-    if (!this.scoreSubscribers.has(gmid)) {
+    if (!this.scoreSubscribers.has(gmid))
       this.scoreSubscribers.set(gmid, new Set());
-    }
     this.scoreSubscribers.get(gmid)!.add(callback);
 
     this.startScorePolling(gmid);
-
-    return () => {
-      this.unsubscribeFromScore(gmid, callback);
-    };
+    return () => this.unsubscribeFromScore(gmid, callback);
   }
 
-  /**
-   * Unsubscribe from score updates
-   */
   private unsubscribeFromScore(
     gmid: number,
     callback: (score: LiveScore) => void,
   ) {
     const callbacks = this.scoreSubscribers.get(gmid);
-    if (callbacks) {
-      callbacks.delete(callback);
-      if (callbacks.size === 0) {
-        this.stopScorePolling(gmid);
-      }
-    }
+    if (!callbacks) return;
+
+    callbacks.delete(callback);
+    if (callbacks.size === 0) this.stopScorePolling(gmid);
   }
 
-  /**
-   * Start polling for score updates
-   */
   private startScorePolling(gmid: number) {
     if (this.scoreIntervals.has(gmid)) return;
 
     const poll = async () => {
       const score = await this.getLiveScore(gmid);
-      if (score) {
-        this.notifyScoreSubscribers(gmid, score);
-      }
+      if (score) this.notifyScoreSubscribers(gmid, score);
     };
 
     poll();
-    const interval = setInterval(poll, 3000); // Poll every 3 seconds
+    const interval = setInterval(poll, 5000);
     this.scoreIntervals.set(gmid, interval);
   }
 
-  /**
-   * Stop polling for score updates
-   */
   private stopScorePolling(gmid: number) {
     const interval = this.scoreIntervals.get(gmid);
-    if (interval) {
-      clearInterval(interval);
-      this.scoreIntervals.delete(gmid);
-    }
+    if (!interval) return;
+    clearInterval(interval);
+    this.scoreIntervals.delete(gmid);
   }
 
-  /**
-   * Notify score subscribers
-   */
   private notifyScoreSubscribers(gmid: number, score: LiveScore) {
     const callbacks = this.scoreSubscribers.get(gmid);
-    if (callbacks) {
-      callbacks.forEach((callback) => {
-        try {
-          callback(score);
-        } catch (error) {
-          console.error(`[Enhanced Sports] Error in score callback:`, error);
-        }
-      });
-    }
+    if (!callbacks) return;
+
+    callbacks.forEach((cb) => {
+      try {
+        cb(score);
+      } catch (e) {
+        console.error("[Enhanced Sports] score callback error:", e);
+      }
+    });
   }
 
-  /**
-   * Subscribe to odds updates
-   */
   subscribeToOdds(
     gmid: number,
     sid: number,
     callback: (odds: MatchOdds) => void,
   ): () => void {
-    console.log(`[Enhanced Sports] Subscribing to odds updates: ${gmid}`);
-
-    if (!this.oddsSubscribers.has(gmid)) {
+    if (!this.oddsSubscribers.has(gmid))
       this.oddsSubscribers.set(gmid, new Set());
-    }
     this.oddsSubscribers.get(gmid)!.add(callback);
 
     this.startOddsPolling(gmid, sid);
-
-    return () => {
-      this.unsubscribeFromOdds(gmid, callback);
-    };
+    return () => this.unsubscribeFromOdds(gmid, callback);
   }
 
-  /**
-   * Unsubscribe from odds updates
-   */
   private unsubscribeFromOdds(
     gmid: number,
     callback: (odds: MatchOdds) => void,
   ) {
     const callbacks = this.oddsSubscribers.get(gmid);
-    if (callbacks) {
-      callbacks.delete(callback);
-      if (callbacks.size === 0) {
-        this.stopOddsPolling(gmid);
-      }
-    }
+    if (!callbacks) return;
+
+    callbacks.delete(callback);
+    if (callbacks.size === 0) this.stopOddsPolling(gmid);
   }
 
-  /**
-   * Start polling for odds updates
-   */
   private startOddsPolling(gmid: number, sid: number) {
     if (this.oddsIntervals.has(gmid)) return;
 
     const poll = async () => {
       const odds = await this.getMatchOdds(gmid, sid);
-      if (odds) {
-        this.notifyOddsSubscribers(gmid, odds);
-      }
+      if (odds) this.notifyOddsSubscribers(gmid, odds);
     };
 
     poll();
-    const interval = setInterval(poll, 2000); // Poll every 2 seconds
+    const interval = setInterval(poll, 2000);
     this.oddsIntervals.set(gmid, interval);
   }
 
-  /**
-   * Stop polling for odds updates
-   */
   private stopOddsPolling(gmid: number) {
     const interval = this.oddsIntervals.get(gmid);
-    if (interval) {
-      clearInterval(interval);
-      this.oddsIntervals.delete(gmid);
-    }
+    if (!interval) return;
+    clearInterval(interval);
+    this.oddsIntervals.delete(gmid);
   }
 
-  /**
-   * Notify odds subscribers
-   */
   private notifyOddsSubscribers(gmid: number, odds: MatchOdds) {
     const callbacks = this.oddsSubscribers.get(gmid);
-    if (callbacks) {
-      callbacks.forEach((callback) => {
-        try {
-          callback(odds);
-        } catch (error) {
-          console.error(`[Enhanced Sports] Error in odds callback:`, error);
-        }
-      });
-    }
+    if (!callbacks) return;
+
+    callbacks.forEach((cb) => {
+      try {
+        cb(odds);
+      } catch (e) {
+        console.error("[Enhanced Sports] odds callback error:", e);
+      }
+    });
   }
 
-  /**
-   * Get live stream URL for a match
-   */
   getLiveStreamUrl(gmid: string): string {
     return `${LIVE_STREAM_BASE}?gmid=${gmid}&key=${API_KEY}`;
   }
 
-  /**
-   * Place a bet
-   */
   async placeBet(betRequest: BetRequest): Promise<any> {
-    try {
-      const url = `${BASE_URL}/placed_bets?key=${API_KEY}`;
-      console.log(`[Enhanced Sports] Placing bet:`, betRequest);
+    const url = `${BASE_URL}/placed_bets?key=${API_KEY}`;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { Accept: "*/*", "Content-Type": "application/json" },
+      body: JSON.stringify(betRequest),
+    });
 
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          Accept: "*/*",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(betRequest),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `HTTP error! status: ${response.status}, message: ${errorText}`,
-        );
-      }
-
-      const result = await response.json();
-      console.log(`[Enhanced Sports] Bet placed successfully:`, result);
-      return result;
-    } catch (error) {
-      console.error(`[Enhanced Sports] Error placing bet:`, error);
-      throw error;
+    if (!response.ok) {
+      const txt = await response.text();
+      throw new Error(`HTTP ${response.status}: ${txt}`);
     }
+
+    return await response.json();
   }
 
-  /**
-   * Get result for a market
-   */
-  async getResult(request: {
-    event_id: number;
-    event_name: string;
-    market_id: number;
-    market_name: string;
-  }): Promise<any> {
-    try {
-      const url = `${BASE_URL}/get-result?key=${API_KEY}`;
-      console.log(`[Enhanced Sports] Getting result:`, request);
-
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          Accept: "*/*",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(request),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      console.log(`[Enhanced Sports] Result fetched:`, result);
-      return result;
-    } catch (error) {
-      console.error(`[Enhanced Sports] Error getting result:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get all placed bets for an event
-   */
   async getPlacedBets(eventId: number): Promise<any[]> {
     try {
       const url = `${BASE_URL}/get_placed_bets?event_id=${eventId}&key=${API_KEY}`;
-      console.log(
-        `[Enhanced Sports] Getting placed bets for event: ${eventId}`,
-      );
-
-      const response = await fetch(url, {
-        headers: {
-          Accept: "*/*",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
+      const response = await fetch(url, { headers: { Accept: "*/*" } });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const result = await response.json();
       return result.data || [];
     } catch (error) {
@@ -677,25 +563,18 @@ class EnhancedSportsService {
     }
   }
 
-  /**
-   * Cleanup all connections and intervals
-   */
   cleanup() {
-    this.scoreIntervals.forEach((interval) => clearInterval(interval));
+    this.scoreIntervals.forEach((i) => clearInterval(i));
     this.scoreIntervals.clear();
-
-    this.oddsIntervals.forEach((interval) => clearInterval(interval));
+    this.oddsIntervals.forEach((i) => clearInterval(i));
     this.oddsIntervals.clear();
-
     this.scoreSubscribers.clear();
     this.oddsSubscribers.clear();
   }
 }
 
-// Export singleton instance
 export const enhancedSportsService = new EnhancedSportsService();
 
-// Cleanup on page unload
 if (typeof window !== "undefined") {
   window.addEventListener("beforeunload", () => {
     enhancedSportsService.cleanup();

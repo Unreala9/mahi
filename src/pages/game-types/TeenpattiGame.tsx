@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useCasinoWebSocket } from "@/hooks/api/useCasinoWebSocket";
 import { CasinoGame } from "@/types/casino";
-import { placeCasinoBet } from "@/services/casino";
+import { useCasinoBetting } from "@/services/casinoBettingService";
+import { useWalletBalance } from "@/hooks/api/useWallet";
+import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -21,9 +23,19 @@ interface Bet {
 export function TeenpattiGame({ game }: TeenpattiGameProps) {
   const [bets, setBets] = useState<Bet[]>([]);
   const [selectedChip, setSelectedChip] = useState(100);
+  const [userId, setUserId] = useState<string | undefined>();
   const { gameData, resultData, isConnected } = useCasinoWebSocket(game.gmid);
+  const { placeBet } = useCasinoBetting();
+  const { data: walletBalance = 0, refetch: refetchBalance } = useWalletBalance();
 
   const chips = [100, 500, 1000, 5000, 10000, 25000];
+
+  // Get user ID
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUserId(session?.user?.id);
+    });
+  }, []);
 
   const handleMarketClick = (market: any) => {
     if (market.gstatus === "SUSPENDED") {
@@ -35,46 +47,97 @@ export function TeenpattiGame({ game }: TeenpattiGameProps) {
       return;
     }
 
-    const existingBet = bets.find((b) => b.sid === market.sid);
-    if (existingBet) {
-      setBets(bets.map((b) =>
-        b.sid === market.sid
-          ? { ...b, stake: b.stake + selectedChip }
-          : b
-      ));
+    // Toggle bet - remove if already exists
+    const existingBetIndex = bets.findIndex((b) => b.sid === market.sid);
+
+    if (existingBetIndex !== -1) {
+      // Remove bet
+      const updatedBets = bets.filter((b) => b.sid !== market.sid);
+      setBets(updatedBets);
+      toast({
+        title: "❌ Bet Removed",
+        description: `${market.nat} removed from bet slip`,
+      });
     } else {
-      setBets([...bets, {
-        sid: market.sid,
-        nat: market.nat,
-        stake: selectedChip,
-        odds: market.b || market.bs || 0,
-      }]);
+      // Add new bet
+      setBets([
+        ...bets,
+        {
+          sid: market.sid,
+          nat: market.nat,
+          stake: selectedChip,
+          odds: market.b || market.bs || 0,
+        },
+      ]);
+      toast({
+        title: "✅ Bet Added",
+        description: `${market.nat}: ₹${selectedChip}`,
+      });
     }
   };
 
   const handlePlaceBets = async () => {
-    if (bets.length === 0) return;
+    if (bets.length === 0) {
+      toast({
+        title: "No Bets",
+        description: "Please add bets before placing",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!userId) {
+      toast({
+        title: "Not Authenticated",
+        description: "Please login to place bets",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
+      let successCount = 0;
+      let failCount = 0;
+
       for (const bet of bets) {
-        await placeCasinoBet({
-          type: game.gmid,
-          mid: gameData?.mid,
-          sid: bet.sid,
-          stake: bet.stake,
-        });
+        try {
+          await placeBet({
+            gameType: game.gmid,
+            roundId: gameData?.mid || "",
+            marketId: bet.sid.toString(),
+            marketName: bet.nat,
+            stake: bet.stake,
+            odds: bet.odds,
+            userId: userId,
+          });
+          successCount++;
+        } catch (error) {
+          console.error("[TeenpattiGame] Bet failed:", error);
+          failCount++;
+        }
       }
 
-      toast({
-        title: "Bets Placed",
-        description: `${bets.length} bet(s) placed successfully`,
-      });
+      if (successCount > 0) {
+        toast({
+          title: "✅ Bets Placed",
+          description: `${successCount} bet(s) placed successfully`,
+          duration: 5000,
+        });
+        setBets([]);
+        refetchBalance();
+      }
 
-      setBets([]);
+      if (failCount > 0) {
+        toast({
+          title: "Some Bets Failed",
+          description: `${failCount} bet(s) could not be placed`,
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to place bets. Please try again.",
+        title: "❌ Error placing bets",
+        description: error instanceof Error ? error.message : "Please try again",
         variant: "destructive",
       });
     }
@@ -84,13 +147,16 @@ export function TeenpattiGame({ game }: TeenpattiGameProps) {
   const playerACards = cards.slice(0, 3);
   const playerBCards = cards.slice(3, 6);
 
-  const mainMarkets = gameData?.sub?.filter((m: any) =>
-    ["Player A", "Player B", "Tie"].some((name) => m.nat.includes(name))
-  ) || [];
+  const mainMarkets =
+    gameData?.sub?.filter((m: any) =>
+      ["Player A", "Player B", "Tie"].some((name) => m.nat.includes(name)),
+    ) || [];
 
-  const sideMarkets = gameData?.sub?.filter((m: any) =>
-    !["Player A", "Player B", "Tie"].some((name) => m.nat === name)
-  ) || [];
+  const sideMarkets =
+    gameData?.sub?.filter(
+      (m: any) =>
+        !["Player A", "Player B", "Tie"].some((name) => m.nat === name),
+    ) || [];
 
   const timer = gameData?.lt || 0;
 
@@ -102,7 +168,9 @@ export function TeenpattiGame({ game }: TeenpattiGameProps) {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-white font-bold text-lg">{game.gname}</h1>
-              <p className="text-slate-400 text-sm">Round ID: {gameData?.mid || "---"}</p>
+              <p className="text-slate-400 text-sm">
+                Round ID: {gameData?.mid || "---"}
+              </p>
             </div>
             <div className="text-right">
               <p className="text-slate-400 text-xs">Time Left</p>
@@ -118,41 +186,53 @@ export function TeenpattiGame({ game }: TeenpattiGameProps) {
             <div className="grid grid-cols-2 gap-6 mb-6">
               {/* Player A */}
               <Card className="bg-gradient-to-br from-blue-900 to-blue-950 border-blue-700 p-6">
-                <h3 className="text-white text-xl font-bold mb-4 text-center">PLAYER A</h3>
+                <h3 className="text-white text-xl font-bold mb-4 text-center">
+                  PLAYER A
+                </h3>
                 <div className="flex justify-center gap-2">
-                  {playerACards.length > 0 ? (
-                    playerACards.map((card, i) => (
-                      <div key={i} className="w-16 h-24 bg-white rounded-lg shadow-xl flex items-center justify-center text-2xl">
-                        {card}
-                      </div>
-                    ))
-                  ) : (
-                    [0, 1, 2].map((i) => (
-                      <div key={i} className="w-16 h-24 bg-slate-700 rounded-lg shadow-xl flex items-center justify-center">
-                        <div className="w-12 h-16 border-2 border-dashed border-slate-500 rounded"></div>
-                      </div>
-                    ))
-                  )}
+                  {playerACards.length > 0
+                    ? playerACards.map((card, i) => (
+                        <div
+                          key={i}
+                          className="w-16 h-24 bg-white rounded-lg shadow-xl flex items-center justify-center text-2xl"
+                        >
+                          {card}
+                        </div>
+                      ))
+                    : [0, 1, 2].map((i) => (
+                        <div
+                          key={i}
+                          className="w-16 h-24 bg-slate-700 rounded-lg shadow-xl flex items-center justify-center"
+                        >
+                          <div className="w-12 h-16 border-2 border-dashed border-slate-500 rounded"></div>
+                        </div>
+                      ))}
                 </div>
               </Card>
 
               {/* Player B */}
               <Card className="bg-gradient-to-br from-red-900 to-red-950 border-red-700 p-6">
-                <h3 className="text-white text-xl font-bold mb-4 text-center">PLAYER B</h3>
+                <h3 className="text-white text-xl font-bold mb-4 text-center">
+                  PLAYER B
+                </h3>
                 <div className="flex justify-center gap-2">
-                  {playerBCards.length > 0 ? (
-                    playerBCards.map((card, i) => (
-                      <div key={i} className="w-16 h-24 bg-white rounded-lg shadow-xl flex items-center justify-center text-2xl">
-                        {card}
-                      </div>
-                    ))
-                  ) : (
-                    [0, 1, 2].map((i) => (
-                      <div key={i} className="w-16 h-24 bg-slate-700 rounded-lg shadow-xl flex items-center justify-center">
-                        <div className="w-12 h-16 border-2 border-dashed border-slate-500 rounded"></div>
-                      </div>
-                    ))
-                  )}
+                  {playerBCards.length > 0
+                    ? playerBCards.map((card, i) => (
+                        <div
+                          key={i}
+                          className="w-16 h-24 bg-white rounded-lg shadow-xl flex items-center justify-center text-2xl"
+                        >
+                          {card}
+                        </div>
+                      ))
+                    : [0, 1, 2].map((i) => (
+                        <div
+                          key={i}
+                          className="w-16 h-24 bg-slate-700 rounded-lg shadow-xl flex items-center justify-center"
+                        >
+                          <div className="w-12 h-16 border-2 border-dashed border-slate-500 rounded"></div>
+                        </div>
+                      ))}
                 </div>
               </Card>
             </div>
@@ -168,12 +248,14 @@ export function TeenpattiGame({ game }: TeenpattiGameProps) {
                     market.nat.includes("Player A")
                       ? "bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
                       : market.nat.includes("Player B")
-                      ? "bg-gradient-to-br from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
-                      : "bg-gradient-to-br from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
+                        ? "bg-gradient-to-br from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
+                        : "bg-gradient-to-br from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
                   } ${market.gstatus === "SUSPENDED" ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   <span className="text-white">{market.nat}</span>
-                  <span className="text-yellow-300 text-sm mt-1">{market.b || market.bs || "0.00"}</span>
+                  <span className="text-yellow-300 text-sm mt-1">
+                    {market.b || market.bs || "0.00"}
+                  </span>
                   {bets.find((b) => b.sid === market.sid) && (
                     <span className="text-white text-xs mt-1">
                       ₹{bets.find((b) => b.sid === market.sid)?.stake}
@@ -195,8 +277,12 @@ export function TeenpattiGame({ game }: TeenpattiGameProps) {
                     className="h-16 flex flex-col items-center justify-center bg-slate-700 hover:bg-slate-600"
                     variant="outline"
                   >
-                    <span className="text-white text-xs text-center">{market.nat}</span>
-                    <span className="text-yellow-300 text-xs">{market.b || market.bs || "0.00"}</span>
+                    <span className="text-white text-xs text-center">
+                      {market.nat}
+                    </span>
+                    <span className="text-yellow-300 text-xs">
+                      {market.b || market.bs || "0.00"}
+                    </span>
                   </Button>
                 ))}
               </div>
@@ -206,20 +292,26 @@ export function TeenpattiGame({ game }: TeenpattiGameProps) {
             <div className="mt-6">
               <h4 className="text-white font-semibold mb-3">Last Results</h4>
               <div className="flex gap-2">
-                {resultData?.res?.slice(0, 10).map((result: any, index: number) => (
-                  <div
-                    key={index}
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                      result.win === "1"
-                        ? "bg-blue-600 text-white"
+                {resultData?.res
+                  ?.slice(0, 10)
+                  .map((result: any, index: number) => (
+                    <div
+                      key={index}
+                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                        result.win === "1"
+                          ? "bg-blue-600 text-white"
+                          : result.win === "2"
+                            ? "bg-red-600 text-white"
+                            : "bg-green-600 text-white"
+                      }`}
+                    >
+                      {result.win === "1"
+                        ? "A"
                         : result.win === "2"
-                        ? "bg-red-600 text-white"
-                        : "bg-green-600 text-white"
-                    }`}
-                  >
-                    {result.win === "1" ? "A" : result.win === "2" ? "B" : "T"}
-                  </div>
-                ))}
+                          ? "B"
+                          : "T"}
+                    </div>
+                  ))}
               </div>
             </div>
           </div>
@@ -248,16 +340,25 @@ export function TeenpattiGame({ game }: TeenpattiGameProps) {
             {/* Bets List */}
             <div className="space-y-2 mb-4 max-h-96 overflow-y-auto">
               {bets.length === 0 ? (
-                <p className="text-slate-400 text-center py-8">No bets selected</p>
+                <p className="text-slate-400 text-center py-8">
+                  No bets selected
+                </p>
               ) : (
                 bets.map((bet, index) => (
-                  <Card key={index} className="p-3 bg-slate-700 border-slate-600">
+                  <Card
+                    key={index}
+                    className="p-3 bg-slate-700 border-slate-600"
+                  >
                     <div className="flex justify-between items-start mb-2">
-                      <span className="text-white font-semibold text-sm">{bet.nat}</span>
+                      <span className="text-white font-semibold text-sm">
+                        {bet.nat}
+                      </span>
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => setBets(bets.filter((_, i) => i !== index))}
+                        onClick={() =>
+                          setBets(bets.filter((_, i) => i !== index))
+                        }
                         className="h-6 w-6 p-0 text-red-400 hover:text-red-300"
                       >
                         ×
@@ -273,7 +374,9 @@ export function TeenpattiGame({ game }: TeenpattiGameProps) {
                     </div>
                     <div className="flex justify-between text-xs font-semibold mt-2 pt-2 border-t border-slate-600">
                       <span className="text-slate-400">Returns:</span>
-                      <span className="text-green-400">₹{(bet.stake * bet.odds).toFixed(2)}</span>
+                      <span className="text-green-400">
+                        ₹{(bet.stake * bet.odds).toFixed(2)}
+                      </span>
                     </div>
                   </Card>
                 ))
@@ -292,7 +395,10 @@ export function TeenpattiGame({ game }: TeenpattiGameProps) {
                 <div className="flex justify-between text-sm text-slate-400 mt-1">
                   <span>Potential Win:</span>
                   <span className="text-green-400">
-                    ₹{bets.reduce((sum, bet) => sum + bet.stake * bet.odds, 0).toFixed(2)}
+                    ₹
+                    {bets
+                      .reduce((sum, bet) => sum + bet.stake * bet.odds, 0)
+                      .toFixed(2)}
                   </span>
                 </div>
               </Card>
