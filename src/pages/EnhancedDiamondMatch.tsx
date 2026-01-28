@@ -360,6 +360,7 @@ export default function EnhancedDiamondMatch() {
                 onUpdateStake={updateStake}
                 onPlaceBets={placeBets}
                 onClear={clearBetSlip}
+                placedBets={placedBets}
               />
             </div>
           </div>
