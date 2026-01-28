@@ -12,9 +12,10 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const Bets = () => {
-  const { data: bets = [], isLoading } = useMyBets();
+  const { data: bets = [], isLoading, error, refetch } = useMyBets();
 
   const stats = {
     total: bets.length,
@@ -59,12 +60,29 @@ const Bets = () => {
             <h3 className="font-display font-bold text-lg text-foreground">
               Betting History
             </h3>
-            <History className="w-5 h-5 text-primary" />
+            <button
+              onClick={() => refetch()}
+              className="p-2 hover:bg-muted rounded-full transition-colors"
+              title="Refresh Bets"
+            >
+              <History className="w-5 h-5 text-primary" />
+            </button>
           </div>
 
           {isLoading ? (
             <div className="p-20 flex justify-center">
               <Loader2 className="animate-spin text-primary w-10 h-10" />
+            </div>
+          ) : error ? (
+            <div className="p-12 text-center text-destructive">
+              <XCircle className="w-12 h-12 mx-auto mb-3 opacity-80" />
+              <p className="font-medium text-lg">Failed to load bets</p>
+              <p className="text-sm opacity-80 mb-4">
+                {(error as Error).message}
+              </p>
+              <Button onClick={() => refetch()} variant="outline" size="sm">
+                Try Again
+              </Button>
             </div>
           ) : bets.length === 0 ? (
             <div className="p-20 text-center text-muted-foreground">
@@ -105,11 +123,12 @@ const Bets = () => {
                     </div>
                     <div className="flex-1">
                       <p className="font-bold text-foreground text-lg">
-                        {bet.event || bet.game_id || "Unknown Event"}
+                        {bet.event_name || bet.event || "Unknown Event"}
                       </p>
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm text-gray-500">
                         <span className="text-primary font-medium">
-                          {bet.market} - {bet.selection}
+                          {bet.market_name || bet.market} -{" "}
+                          {bet.selection_name || bet.selection}
                         </span>
                         <span className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />
