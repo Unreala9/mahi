@@ -1,3 +1,4 @@
+// supabase/functions/bet-placement/index.ts
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -23,115 +24,150 @@ interface BetPlacement {
   eventName?: string;
 }
 
+function json(status: number, payload: any) {
+  return new Response(JSON.stringify(payload), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
 serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
+  if (req.method === "OPTIONS")
     return new Response("ok", { headers: corsHeaders });
-  }
+
+  const startedAt = Date.now();
 
   try {
-    // Initialize Supabase client with user's auth
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      {
-        global: {
-          headers: { Authorization: req.headers.get("Authorization")! },
-        },
-      },
-    );
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
-    // Get authenticated user
-    const {
-      data: { user },
-    } = await supabaseClient.auth.getUser();
-
-    if (!user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 401,
+    if (!supabaseUrl || !anonKey) {
+      return json(500, {
+        success: false,
+        error: "Server misconfigured",
+        details: "Missing SUPABASE_URL or SUPABASE_ANON_KEY in function env",
       });
     }
 
-    // Service role client for admin operations
-    const serviceClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-    );
+    const authHeader =
+      req.headers.get("authorization") ||
+      req.headers.get("Authorization") ||
+      "";
 
     const { searchParams } = new URL(req.url);
     const action = searchParams.get("action");
 
-    // Place a bet
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const userRes = await userClient.auth.getUser();
+
+    if (action === "debug-auth") {
+      return json(200, {
+        success: true,
+        hasAuthHeader: !!authHeader,
+        authHeaderStartsWithBearer: authHeader.startsWith("Bearer "),
+        user: userRes.data.user
+          ? { id: userRes.data.user.id, email: userRes.data.user.email }
+          : null,
+        userError: userRes.error?.message ?? null,
+        latency_ms: Date.now() - startedAt,
+      });
+    }
+
+    if (userRes.error || !userRes.data.user) {
+      return json(401, {
+        success: false,
+        error: "Unauthorized",
+        details: userRes.error?.message || "No user from token",
+        hasAuthHeader: !!authHeader,
+      });
+    }
+
+    const user = userRes.data.user;
+
+    if (!serviceKey) {
+      return json(500, {
+        success: false,
+        error: "Server misconfigured",
+        details: "Missing SUPABASE_SERVICE_ROLE_KEY (add in Function secrets)",
+      });
+    }
+
+    const admin = createClient(supabaseUrl, serviceKey);
+
     if (action === "place" && req.method === "POST") {
       const betData: BetPlacement = await req.json();
 
-      // Validate bet data
-      if (!betData.stake || betData.stake <= 0) {
-        return new Response(JSON.stringify({ error: "Invalid stake amount" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 400,
+      // Parse and validate stake/odds with explicit casting
+      const stake = Number(betData?.stake);
+      const odds = Number(betData?.odds);
+
+      if (!stake || isNaN(stake) || stake <= 0) {
+        return json(400, {
+          success: false,
+          error: `Invalid stake amount: ${betData?.stake} (parsed: ${stake})`,
+          received: betData,
+        });
+      }
+      if (!odds || isNaN(odds) || odds <= 0) {
+        return json(400, {
+          success: false,
+          error: `Invalid odds: ${betData?.odds} (parsed: ${odds})`,
+          received: betData,
         });
       }
 
-      if (!betData.odds || betData.odds <= 0) {
-        return new Response(JSON.stringify({ error: "Invalid odds" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 400,
-        });
-      }
+      // Use parsed values
+      betData.stake = stake;
+      betData.odds = odds;
 
-      // Step 1: Check wallet balance
-      const { data: wallet } = await serviceClient
+      const walletRes = await admin
         .from("wallets")
         .select("balance")
         .eq("user_id", user.id)
         .maybeSingle();
 
-      let balance = wallet?.balance ? Number(wallet.balance) : 0;
-
-      const { data: transactions } = await serviceClient
-        .from("wallet_transactions")
-        .select("amount, type")
-        .eq("user_id", user.id)
-        .eq("status", "completed");
-
-      if (transactions) {
-        transactions.forEach((tx) => {
-          const amt = Number(tx.amount);
-          if (["deposit", "win", "bonus"].includes(tx.type)) {
-            balance += amt;
-          } else if (["withdraw", "bet"].includes(tx.type)) {
-            balance -= amt;
-          }
+      if (walletRes.error) {
+        return json(500, {
+          success: false,
+          error: "Wallet fetch failed",
+          details: walletRes.error.message,
+          hint: walletRes.error.hint ?? null,
+          code: walletRes.error.code ?? null,
         });
       }
 
+      let balance = walletRes.data?.balance
+        ? Number(walletRes.data.balance)
+        : 0;
+
+      console.log(
+        `[BetPlacement] User: ${user.id}, Wallet Balance: ${balance}, Stake: ${betData.stake}`,
+      );
+
       if (balance < betData.stake) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: "Insufficient balance",
-            balance,
-            required: betData.stake,
-          }),
-          {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 400,
-          },
-        );
+        return json(400, {
+          success: false,
+          error: "Insufficient balance",
+          balance,
+          required: betData.stake,
+          userId: user.id,
+        });
       }
 
-      // Step 2: Calculate potential payout
       const potentialPayout =
         betData.betType === "BACK"
           ? betData.stake * betData.odds
           : betData.stake * (betData.odds - 1);
 
-      // Step 3: Create bet record
-      const providerBetId = `${betData.gameType.toLowerCase()}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const providerBetId = `${betData.gameType.toLowerCase()}_${Date.now()}_${Math.random()
+        .toString(36)
+        .slice(2, 11)}`;
 
-      const { data: bet, error: betError } = await serviceClient
+      const betInsert = await admin
         .from("bets")
         .insert({
           user_id: user.id,
@@ -152,149 +188,91 @@ serve(async (req) => {
         .select()
         .single();
 
-      if (betError) {
-        console.error("Error creating bet:", betError);
-        throw new Error(`Failed to create bet: ${betError.message}`);
+      if (betInsert.error) {
+        return json(500, {
+          success: false,
+          error: "Failed to create bet",
+          details: betInsert.error.message,
+          hint: betInsert.error.hint ?? null,
+          code: betInsert.error.code ?? null,
+        });
       }
 
-      // Step 4: Deduct from wallet
-      const { data: transaction, error: txError } = await serviceClient
-        .from("wallet_transactions")
+      const bet = betInsert.data;
+
+      const txInsert = await admin
+        .from("transactions")
         .insert({
           user_id: user.id,
           type: "bet",
           amount: betData.stake,
           status: "completed",
-          reference: providerBetId,
+          provider_ref_id: providerBetId, // mapping reference to provider_ref_id due to schema
           description: `${betData.betType} bet on ${betData.selection} @ ${betData.odds} in ${betData.gameName}`,
         })
         .select()
         .single();
 
-      if (txError) {
-        // Rollback: Delete the bet if transaction fails
-        await serviceClient.from("bets").delete().eq("id", bet.id);
+      if (txInsert.error) {
+        await admin.from("bets").delete().eq("id", bet.id);
 
-        throw new Error(`Transaction failed: ${txError.message}`);
+        return json(500, {
+          success: false,
+          error: "Transaction failed",
+          details: txInsert.error.message,
+          hint: txInsert.error.hint ?? null,
+          code: txInsert.error.code ?? null,
+        });
       }
 
-      // Step 5: Log the operation
-      await serviceClient.from("api_logs").insert({
-        user_id: user.id,
-        area: "bets",
-        endpoint: "place",
-        request_json: betData,
-        response_json: { bet, transaction },
-        status_code: 200,
-        latency_ms: Date.now() - parseInt(providerBetId.split("_")[1]),
+      return json(200, {
+        success: true,
+        betId: bet.id,
+        providerBetId,
+        balance: balance - betData.stake,
+        latency_ms: Date.now() - startedAt,
       });
-
-      const newBalance = balance - betData.stake;
-
-      return new Response(
-        JSON.stringify({
-          success: true,
-          betId: bet.id,
-          providerBetId,
-          balance: newBalance,
-          bet,
-          transaction,
-        }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        },
-      );
     }
 
-    // Get user's bets
-    if (action === "my-bets") {
-      const limit = parseInt(searchParams.get("limit") || "50");
-      const offset = parseInt(searchParams.get("offset") || "0");
-      const status = searchParams.get("status"); // pending, won, lost, void
+    if (action === "my-bets" && req.method === "GET") {
+      const limit = Number(searchParams.get("limit") || "50");
+      const offset = Number(searchParams.get("offset") || "0");
+      const status = searchParams.get("status");
 
-      let query = serviceClient
+      let query = admin
         .from("bets")
         .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .range(offset, offset + limit - 1);
 
-      if (status) {
+      if (status && status !== "all") {
         query = query.eq("status", status);
       }
 
-      const { data: bets, error: betsError } = await query;
+      const { data, error } = await query;
 
-      if (betsError) {
-        throw new Error(`Failed to fetch bets: ${betsError.message}`);
-      }
-
-      return new Response(
-        JSON.stringify({
-          success: true,
-          bets,
-          count: bets?.length || 0,
-        }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        },
-      );
-    }
-
-    // Get bet by ID
-    if (action === "get-bet") {
-      const betId = searchParams.get("betId");
-
-      if (!betId) {
-        return new Response(JSON.stringify({ error: "betId is required" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 400,
+      if (error) {
+        return json(500, {
+          success: false,
+          error: "Failed to fetch bets",
+          details: error.message,
         });
       }
 
-      const { data: bet, error: betError } = await serviceClient
-        .from("bets")
-        .select("*")
-        .eq("id", betId)
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (betError || !bet) {
-        return new Response(JSON.stringify({ error: "Bet not found" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 404,
-        });
-      }
-
-      return new Response(
-        JSON.stringify({
-          success: true,
-          bet,
-        }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        },
-      );
+      return json(200, { success: true, bets: data });
     }
 
-    return new Response(
-      JSON.stringify({ error: "Invalid action. Use: place, my-bets, get-bet" }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 400,
-      },
-    );
-  } catch (error) {
-    console.error("Bet placement error:", error);
-    return new Response(
-      JSON.stringify({ error: error.message || "Internal server error" }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 500,
-      },
-    );
+    return json(400, {
+      success: false,
+      error:
+        "Invalid action. Use: action=place (POST), action=my-bets (GET), or action=debug-auth (GET)",
+    });
+  } catch (err: any) {
+    return json(500, {
+      success: false,
+      error: "Internal server error",
+      details: err?.message || String(err),
+    });
   }
 });

@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useWalletBalance } from "@/hooks/api/useWallet";
+import { supabase } from "@/integrations/supabase/client";
 
 function getDemoBalanceFromStorage(): number {
   try {
@@ -42,8 +43,28 @@ export const MainHeader = ({
     [],
   );
 
+  // Track if session is fully ready with valid token
+  const [sessionReady, setSessionReady] = useState(false);
+
+  useEffect(() => {
+    if (isDemo || !session?.user) {
+      setSessionReady(false);
+      return;
+    }
+
+    // Verify session has valid access token before enabling queries
+    const checkSession = async () => {
+      const {
+        data: { session: currentSession },
+      } = await supabase.auth.getSession();
+      setSessionReady(Boolean(currentSession?.access_token));
+    };
+
+    checkSession();
+  }, [session?.user, isDemo]);
+
   const walletQuery = useWalletBalance({
-    enabled: !isDemo && Boolean(session?.user),
+    enabled: !isDemo && sessionReady && Boolean(session?.user),
     staleTime: 30000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,

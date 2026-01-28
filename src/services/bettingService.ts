@@ -1,8 +1,4 @@
-/**
- * Betting Service - Edge Function Based
- * Handles all bet placement and settlement through Supabase Edge Functions
- */
-
+// src/services/bettingService.ts
 import { callEdgeFunction } from "@/lib/edge";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,9 +25,6 @@ export interface BetResult {
 }
 
 class BettingService {
-  /**
-   * Place a bet using edge function
-   */
   async placeBet(bet: BetPlacement): Promise<{
     success: boolean;
     betId?: string;
@@ -39,45 +32,38 @@ class BettingService {
     error?: string;
   }> {
     try {
-      console.log("[BettingService] Placing bet via edge function:", bet);
+      console.log("[BettingService] Placing bet:", bet);
 
-      // Check if user is authenticated
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
-        console.error("[BettingService] User not authenticated");
+      // ✅ ensure session exists in same client
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) {
         toast({
-          title: "Authentication Required",
-          description: "Please login to place bets",
+          title: "⏳ Not Logged In",
+          description: "Please log in to place bets",
+          variant: "destructive",
+        });
+        return { success: false, error: "No active session" };
+      }
+
+      const result = await callEdgeFunction<any>(
+        "bet-placement?action=place",
+        bet,
+      );
+
+      if (!result?.success) {
+        toast({
+          title: "❌ Bet Failed",
+          description: result?.error || "Failed to place bet",
           variant: "destructive",
         });
         return {
           success: false,
-          error: "User not authenticated",
+          error: result?.error || "Failed to place bet",
         };
       }
-
-      const result = await callEdgeFunction("bet-placement?action=place", bet);
-
-      if (!result.success) {
-        console.error("[BettingService] Bet placement failed:", result.error);
-        toast({
-          title: "Bet Failed",
-          description: result.error || "Failed to place bet",
-          variant: "destructive",
-        });
-        return {
-          success: false,
-          error: result.error,
-        };
-      }
-
-      console.log("[BettingService] Bet placed successfully:", result);
 
       toast({
-        title: "Bet Placed",
+        title: "✅ Bet Placed Successfully!",
         description: `₹${bet.stake} on ${bet.selection} @ ${bet.odds}`,
       });
 
@@ -87,193 +73,92 @@ class BettingService {
         balance: result.balance,
       };
     } catch (error: any) {
-      console.error("[BettingService] Error placing bet:", error);
+      const msg = String(error?.message || error);
 
-      let errorMessage = error.message || "Failed to place bet";
-
-      // Handle specific error cases
-      if (
-        error.message?.includes("401") ||
-        error.message?.includes("Unauthorized")
-      ) {
-        errorMessage = "Please login to place bets";
-      } else if (error.message?.includes("Edge Function returned a non-2xx")) {
-        errorMessage = "Service unavailable. Please try again.";
+      // ✅ show edge JSON error nicely
+      let errorMessage = "Failed to place bet";
+      try {
+        const parsed = JSON.parse(msg);
+        errorMessage = parsed?.body?.error || parsed?.message || errorMessage;
+      } catch {
+        if (msg.includes("Invalid JWT") || msg.includes('"status":401')) {
+          errorMessage =
+            "Session issue (Invalid JWT). Please logout/login once.";
+        } else if (msg) {
+          errorMessage = msg;
+        }
       }
 
       toast({
-        title: "Bet Failed",
+        title: "❌ Bet Failed",
         description: errorMessage,
         variant: "destructive",
       });
 
-      return {
-        success: false,
-        error: errorMessage,
-      };
+      return { success: false, error: errorMessage };
     }
   }
 
-  /**
-   * Settle a bet using edge function
-   */
   async settleBet(
     betId: string,
     status: "won" | "lost" | "void",
     payout?: number,
-  ): Promise<{
-    success: boolean;
-    balance?: number;
-    error?: string;
-  }> {
+  ): Promise<{ success: boolean; balance?: number; error?: string }> {
     try {
-      console.log("[BettingService] Settling bet:", { betId, status, payout });
-
-      const result = await callEdgeFunction("bet-settlement?action=settle", {
-        betId,
-        status,
-        payout,
-      });
-
-      if (!result.success) {
-        console.error("[BettingService] Bet settlement failed:", result.error);
-        return {
-          success: false,
-          error: result.error,
-        };
-      }
-
-      console.log("[BettingService] Bet settled successfully:", result);
-
-      return {
-        success: true,
-        balance: result.balance,
-      };
-    } catch (error: any) {
-      console.error("[BettingService] Error settling bet:", error);
-      return {
-        success: false,
-        error: error.message || "Failed to settle bet",
-      };
-    }
-  }
-
-  /**
-   * Auto-settle casino bet based on result
-   */
-  async autoSettleCasinoBet(
-    betId: string,
-    result: string,
-    winningSelection: string,
-  ): Promise<{
-    success: boolean;
-    status?: "won" | "lost";
-    payout?: number;
-    balance?: number;
-    error?: string;
-  }> {
-    try {
-      console.log("[BettingService] Auto-settling casino bet:", {
-        betId,
-        result,
-        winningSelection,
-      });
-
-      const response = await callEdgeFunction(
-        "bet-settlement?action=auto-settle-casino",
+      const result = await callEdgeFunction<any>(
+        "bet-settlement?action=settle",
         {
           betId,
-          result,
-          winningSelection,
+          status,
+          payout,
         },
       );
 
-      if (!response.success) {
-        console.error(
-          "[BettingService] Auto-settlement failed:",
-          response.error,
-        );
-        return {
-          success: false,
-          error: response.error,
-        };
+      if (!result?.success) {
+        return { success: false, error: result?.error || "Settlement failed" };
       }
 
-      console.log("[BettingService] Casino bet auto-settled:", response);
-
-      if (response.status === "won") {
-        toast({
-          title: "You Won! 🎉",
-          description: `Congratulations! You won ₹${response.payout}`,
-        });
-      }
-
-      return {
-        success: true,
-        status: response.status,
-        payout: response.payout,
-        balance: response.balance,
-      };
+      return { success: true, balance: result.balance };
     } catch (error: any) {
-      console.error("[BettingService] Error auto-settling casino bet:", error);
       return {
         success: false,
-        error: error.message || "Failed to settle casino bet",
+        error: error?.message || "Failed to settle bet",
       };
     }
   }
 
-  /**
-   * Get user's bets
-   */
   async getMyBets(
     limit: number = 50,
     offset: number = 0,
     status?: string,
   ): Promise<any[]> {
     try {
-      console.log("[BettingService] Fetching user bets");
-
       let url = `bet-placement?action=my-bets&limit=${limit}&offset=${offset}`;
-      if (status) {
-        url += `&status=${status}`;
+      if (status) url += `&status=${status}`;
+
+      const result = await callEdgeFunction<any>(url, {}, { method: "GET" });
+
+      if (!result?.success) {
+        throw new Error(result?.error || "Failed to fetch bets");
       }
-
-      const result = await callEdgeFunction(url, {}, { method: "GET" });
-
-      if (!result.success) {
-        console.error("[BettingService] Failed to fetch bets:", result.error);
-        return [];
-      }
-
       return result.bets || [];
     } catch (error: any) {
-      console.error("[BettingService] Error fetching bets:", error);
-      return [];
+      console.error("[BettingService] getMyBets error:", error);
+      throw error;
     }
   }
 
-  /**
-   * Get bet by ID
-   */
   async getBetById(betId: string): Promise<any | null> {
     try {
-      console.log("[BettingService] Fetching bet:", betId);
-
-      const result = await callEdgeFunction(
+      const result = await callEdgeFunction<any>(
         `bet-placement?action=get-bet&betId=${betId}`,
         {},
         { method: "GET" },
       );
 
-      if (!result.success) {
-        console.error("[BettingService] Failed to fetch bet:", result.error);
-        return null;
-      }
-
+      if (!result?.success) return null;
       return result.bet;
-    } catch (error: any) {
-      console.error("[BettingService] Error fetching bet:", error);
+    } catch {
       return null;
     }
   }

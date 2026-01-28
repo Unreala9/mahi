@@ -66,36 +66,25 @@ class EnhancedPlacedBetsService {
    */
   async placeBet(bet: BetPlacement): Promise<PlaceBetResponse> {
     try {
-      const url = buildApiUrl("placed_bets", {});
+      // Import callEdgeFunction for authenticated requests
+      const { callEdgeFunction } = await import("@/lib/edge");
 
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          Accept: "*/*",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          event_id: bet.event_id,
-          event_name: bet.event_name,
-          market_id: bet.market_id,
-          market_name: bet.market_name,
-          market_type: bet.market_type,
-          selection: bet.selection,
-          selection_id: bet.selection_id,
-          stake: bet.stake,
-          odds: bet.odds,
-          bet_type: bet.bet_type,
-          user_id: bet.user_id,
-          ip_address: bet.ip_address,
-          device: bet.device,
-        }),
+      // Call the bet-placement edge function with authentication
+      const result: PlaceBetResponse = await callEdgeFunction("bet-placement", {
+        event_id: bet.event_id,
+        event_name: bet.event_name,
+        market_id: bet.market_id,
+        market_name: bet.market_name,
+        market_type: bet.market_type,
+        selection: bet.selection,
+        selection_id: bet.selection_id,
+        stake: bet.stake,
+        odds: bet.odds,
+        bet_type: bet.bet_type,
+        user_id: bet.user_id,
+        ip_address: bet.ip_address,
+        device: bet.device,
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const result: PlaceBetResponse = await response.json();
 
       // Broadcast bet placed event
       if (result.success && result.bet) {
