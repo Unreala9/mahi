@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect } from "react";
 import { diamondWS } from "@/services/websocket";
 import Index from "./pages/Index";
@@ -11,7 +11,7 @@ import Sportsbook from "./pages/Sportsbook";
 import CasinoLive from "./pages/CasinoLive";
 import Casino from "./pages/Casino";
 import CasinoGame from "./pages/CasinoGame";
-import Dashboard from "./pages/Dashboard";
+
 import Wallet from "./pages/Wallet";
 import Bets from "./pages/Bets";
 import Profile from "./pages/Profile";
@@ -25,6 +25,7 @@ import Contact from "./pages/Contact";
 import FAQ from "./pages/FAQ";
 
 import AdminLayout from "./components/admin/AdminLayout";
+import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminTransactions from "./pages/admin/AdminTransactions";
@@ -75,16 +76,10 @@ const App = () => {
             <Route path="/responsible-gaming" element={<ResponsibleGaming />} />
             <Route path="/api-test" element={<ApiTest />} />
 
-            {/* Protected User Routes */}
+            {/* Redirect old dashboard to sports */}
             <Route
-              path="/dashboard/*"
-              element={
-                <ProtectedRoute>
-                  <Routes>
-                    <Route path="/" element={<Dashboard />} />
-                  </Routes>
-                </ProtectedRoute>
-              }
+              path="/dashboard"
+              element={<Navigate to="/sports" replace />}
             />
             <Route
               path="/sports"
@@ -159,6 +154,9 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
+
+            {/* Admin Login - Public */}
+            <Route path="/admin/login" element={<AdminLogin />} />
 
             {/* Protected Admin Routes */}
             <Route

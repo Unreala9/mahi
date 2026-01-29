@@ -10,7 +10,7 @@ import {
   History,
   FileText,
   LogOut,
-  Shield
+  Shield,
 } from "lucide-react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
@@ -23,23 +23,36 @@ const AdminLayout = () => {
 
   useEffect(() => {
     const checkAdmin = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session?.user) {
         navigate("/auth");
         return;
       }
       setUser(session.user);
 
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", session.user.id);
+      console.log(
+        "🔐 [AdminLayout] Checking admin status for user:",
+        session.user.id,
+      );
 
-      const hasAdminRole = roles?.some(r => r.role === "admin" || r.role === "super_admin");
-      if (!hasAdminRole) {
-        navigate("/dashboard");
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", session.user.id)
+        .single();
+
+      console.log("🔐 [AdminLayout] Profile fetched:", profile);
+      console.log("🔐 [AdminLayout] Error:", error);
+
+      if (profile?.role !== "admin") {
+        console.error("❌ [AdminLayout] Not admin, redirecting to dashboard");
+        navigate("/sports");
         return;
       }
+
+      console.log("✅ [AdminLayout] Admin confirmed!");
       setIsAdmin(true);
       setLoading(false);
     };
@@ -64,7 +77,9 @@ const AdminLayout = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-primary font-display text-xl">Loading...</div>
+        <div className="animate-pulse text-primary font-display text-xl">
+          Loading...
+        </div>
       </div>
     );
   }
@@ -79,7 +94,9 @@ const AdminLayout = () => {
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-destructive to-accent flex items-center justify-center">
               <Shield className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="font-display font-bold text-lg text-gradient">Admin Panel</span>
+            <span className="font-display font-bold text-lg text-gradient">
+              Admin Panel
+            </span>
           </Link>
         </div>
 
@@ -103,10 +120,16 @@ const AdminLayout = () => {
         </nav>
 
         <div className="p-4 border-t border-border/50">
-          <Link to="/dashboard" className="block mb-2">
-            <Button variant="outline" className="w-full">Back to Player View</Button>
+          <Link to="/sports" className="block mb-2">
+            <Button variant="outline" className="w-full">
+              Back to Player View
+            </Button>
           </Link>
-          <Button variant="ghost" className="w-full justify-start text-muted-foreground" onClick={handleSignOut}>
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-muted-foreground"
+            onClick={handleSignOut}
+          >
             <LogOut className="w-4 h-4 mr-2" />
             Sign Out
           </Button>
