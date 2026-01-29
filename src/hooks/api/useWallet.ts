@@ -22,8 +22,36 @@ export const useWalletBalance = (
     queryKey: ["wallet-balance"],
     queryFn: async () => {
       try {
+        // First, verify we have a valid session with an access token
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (!session?.access_token) {
+          console.warn(
+            "[useWalletBalance] No valid session or access token, skipping Edge Function call",
+          );
+          // Fall back to direct query
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
+
+          if (user) {
+            const { data: wallet } = await supabase
+              .from("wallets")
+              .select("balance")
+              .eq("user_id", user.id)
+              .maybeSingle();
+
+            if (wallet?.balance) {
+              return Number(wallet.balance);
+            }
+          }
+          return 0;
+        }
+
         console.log(
-          "[useWalletBalance] Fetching balance from wallet-operation edge function...",
+          "[useWalletBalance] Valid session found, fetching balance from edge function...",
         );
         const result = await callEdgeFunction(
           "wallet-operation?action=get-balance",
@@ -65,11 +93,20 @@ export const useWalletBalance = (
 
         return 0;
       } catch (error) {
-        console.error("[useWalletBalance] Failed to fetch balance:", error);
+        // Don't log 401 errors as errors - they're expected during session initialization
+        const errorStr = String(error);
+        const is401 = errorStr.includes('"status":401') || errorStr.includes('401');
+
+        if (is401) {
+          console.log(
+            "[useWalletBalance] Session not ready yet (401), falling back to direct query...",
+          );
+        } else {
+          console.error("[useWalletBalance] Failed to fetch balance:", error);
+        }
 
         // Try direct query as final fallback
         try {
-          console.log("[useWalletBalance] Trying direct query as fallback...");
           const {
             data: { user },
           } = await supabase.auth.getUser();
@@ -90,17 +127,21 @@ export const useWalletBalance = (
             }
           }
         } catch (fallbackError) {
-          console.error(
-            "[useWalletBalance] Fallback also failed:",
-            fallbackError,
-          );
+          // Only log non-auth related errors
+          if (!String(fallbackError).includes('JWT')) {
+            console.error(
+              "[useWalletBalance] Fallback also failed:",
+              fallbackError,
+            );
+          }
         }
 
         return 0;
       }
     },
-    retry: 1,
-    retryDelay: 2000,
+    retry: false, // Don't retry 401 errors
+    refetchOnMount: false, // Don't refetch on mount
+    refetchOnWindowFocus: false, // Don't refetch on window focus
     staleTime: 30000,
     ...(options ?? {}),
   });

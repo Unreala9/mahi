@@ -1,11 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { callEdgeFunction } from "@/lib/edge";
+import { bettingService } from "@/services/bettingService";
 
 export const usePlaceBet = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (betData: any) =>
-      callEdgeFunction("bets?action=place", betData, { method: "POST" }),
+    mutationFn: (betData: any) => bettingService.placeBet(betData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-bets"] });
       queryClient.invalidateQueries({ queryKey: ["wallet-balance"] });
@@ -16,6 +15,6 @@ export const usePlaceBet = () => {
 export const useMyBets = () => {
   return useQuery({
     queryKey: ["my-bets"],
-    queryFn: () => callEdgeFunction("bets?action=my", {}, { method: "GET" }),
+    queryFn: () => bettingService.getMyBets(),
   });
 };

@@ -82,19 +82,22 @@ export interface BetPlacement {
 }
 
 export interface PlacedBet extends BetPlacement {
-  bet_id: string;
+  id: string; // db id
+  bet_id?: string; // intentionally optional to support both naming conventions if needed
   status: BetStatus;
-  potential_profit: number;
-  placed_at: string;
+  potential_payout: number; // DB column
+  potential_profit?: number; // Calculated or legacy
+  created_at: string;
   matched_at?: string;
   settled_at?: string;
   result?: BetResult;
   payout?: number;
   username?: string;
+  provider_bet_id?: string;
 }
 
 // ===== Bet Result =====
-export interface BetResult {
+export interface BetResultData {
   event_id: number;
   event_name: string;
   market_id: number | string;
