@@ -38,7 +38,7 @@ const FAQ = () => {
         },
         {
           q: "Is there a minimum withdrawal limit?",
-          a: "Yes, the minimum withdrawal amount is ₹500.",
+          a: "Yes, the minimum withdrawal amount is 🎰500.",
         },
       ],
     },

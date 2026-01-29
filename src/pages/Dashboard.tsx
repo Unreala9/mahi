@@ -18,6 +18,7 @@ import {
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { Toaster } from "@/components/ui/sonner";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { ChipAmount } from "@/components/ui/CasinoChip";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -142,7 +143,7 @@ const Dashboard = () => {
                 Main Balance
               </span>
               <div className="text-4xl font-black text-foreground tracking-tighter mb-4">
-                ₹{(walletBalance ?? 0).toLocaleString()}
+                <ChipAmount amount={walletBalance ?? 0} size="lg" className="text-4xl" />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <Button className="h-10 bg-primary text-black font-bold uppercase rounded-none border-none hover:bg-white text-xs">
@@ -163,7 +164,7 @@ const Dashboard = () => {
                     Total Profit
                   </span>
                   <span className="text-xl font-bold text-green-500">
-                    ₹{stats.totalProfit.toLocaleString()}
+                    <ChipAmount amount={stats.totalProfit} size="md" className="text-xl" />
                   </span>
                 </div>
               </div>
@@ -273,7 +274,7 @@ const Dashboard = () => {
                               : "text-foreground"
                         }`}
                       >
-                        ₹{bet.stake || 0}
+                        <ChipAmount amount={bet.stake || 0} size="sm" />
                       </td>
                       <td className="p-3 text-center">
                         <StatusIndicator status={bet.status} />

@@ -1,5 +1,5 @@
 -- RPC for requesting withdrawal (Atomic deduction)
-CREATE OR REPLACE FUNCTION request_withdrawal(p_user_id UUID, p_amount DECIMAL)
+CREATE OR REPLACE FUNCTION request_withdrawal(p_user_id UUID, p_amount DECIMAL, p_upi_id TEXT DEFAULT NULL)
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -9,9 +9,9 @@ DECLARE
   v_current_balance DECIMAL;
   v_tx_id UUID;
 BEGIN
-  -- Validate Limits
-  IF p_amount < 1000 OR p_amount > 10000 THEN
-    RAISE EXCEPTION 'Withdrawal amount must be between 1000 and 10000 coins.';
+  -- Validate amount is positive
+  IF p_amount <= 0 THEN
+    RAISE EXCEPTION 'Withdrawal amount must be greater than 0';
   END IF;
 
   -- Lock wallet
@@ -29,9 +29,16 @@ BEGIN
   SET balance = balance - p_amount
   WHERE user_id = p_user_id;
 
-  -- Create Transaction in wallet_transactions table
-  INSERT INTO public.wallet_transactions (user_id, type, amount, status, reference, description)
-  VALUES (p_user_id, 'withdraw', p_amount, 'pending', CONCAT('WD_', EXTRACT(EPOCH FROM NOW())::BIGINT), 'Withdrawal Request')
+  -- Create Transaction with UPI details
+  INSERT INTO public.transactions (user_id, type, amount, status, description, payment_details)
+  VALUES (
+    p_user_id, 
+    'withdrawal'::transaction_type, 
+    p_amount, 
+    'pending'::transaction_status, 
+    'Withdrawal Request',
+    CASE WHEN p_upi_id IS NOT NULL THEN 'UPI: ' || p_upi_id ELSE NULL END
+  )
   RETURNING id INTO v_tx_id;
 
   RETURN jsonb_build_object('success', true, 'transaction_id', v_tx_id, 'new_balance', v_current_balance - p_amount);
@@ -55,7 +62,7 @@ BEGIN
     RAISE EXCEPTION 'Transaction is not pending';
   END IF;
 
-  IF v_tx.type != 'withdraw' THEN
+  IF v_tx.type != 'withdrawal'::transaction_type THEN
      RAISE EXCEPTION 'Transaction is not a withdrawal';
   END IF;
 

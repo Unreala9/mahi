@@ -22,7 +22,6 @@ import {
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { cn } from "@/lib/utils";
 import { MainLayout } from "@/components/layout/MainLayout";
-import { BankAccountForm } from "@/components/wallet/BankAccountForm";
 
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || "");
@@ -36,6 +35,7 @@ const Wallet = () => {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [depositAmount, setDepositAmount] = useState("");
   const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [upiId, setUpiId] = useState("");
   const [activeTab, setActiveTab] = useState<"deposit" | "withdraw">("deposit");
   const [selectedGateway, setSelectedGateway] = useState<
     "stripe" | "razorpay" | "paypal" | "bank_transfer"
@@ -277,44 +277,13 @@ const Wallet = () => {
       return;
     }
 
-    // Check minimum withdrawal
-    if (amount < 1000) {
-      toast({
-        title: "⚠️ Amount Too Low",
-        description: "Minimum withdrawal amount is ₹1000",
+
         variant: "destructive",
       });
       return;
     }
 
-    // Check maximum withdrawal
-    if (amount > 10000) {
-      toast({
-        title: "⚠️ Amount Too High",
-        description: "Maximum withdrawal amount is ₹10,000 per transaction",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Check if user has sufficient balance
-    const currentBalance = walletData?.balance || 0;
-    if (amount > currentBalance) {
-      toast({
-        title: "⚠️ Insufficient Balance",
-        description: `You have ₹${currentBalance.toLocaleString()} available. Please enter a lower amount.`,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Move to bank details step
-    setWithdrawStep("bank");
-  };
-
-  const handleWithdraw = async (bankAccountDetails: any) => {
-    const amount = parseFloat(withdrawAmount);
-
+    // Call Secure RPC with UPI details
     try {
       setLoading(true);
 
@@ -324,6 +293,7 @@ const Wallet = () => {
       const { data, error } = await supabase.rpc("request_withdrawal", {
         p_user_id: user?.id,
         p_amount: amount,
+        p_upi_id: upiId,
       });
 
       if (error) throw error;
@@ -337,14 +307,13 @@ const Wallet = () => {
         .eq("id", data.transaction_id);
 
       toast({
-        title: "✅ Withdrawal Request Submitted",
-        description: `Your withdrawal of ₹${amount.toLocaleString()} is pending approval. You'll be notified within 24 hours.`,
+        title: "Success",
+        description: "Withdrawal request submitted. Admin will process UPI payment within 24 hours.",
       });
 
       // Reset form
       setWithdrawAmount("");
-      setBankDetails(null);
-      setWithdrawStep("amount");
+      setUpiId("");
       fetchTransactions(user!.id);
       fetchWalletData(user!.id);
     } catch (err: any) {
@@ -406,7 +375,7 @@ const Wallet = () => {
                     Total Funds
                   </p>
                   <h2 className="text-5xl font-black text-primary font-display tracking-tight leading-none">
-                    ₹ {walletData?.balance?.toLocaleString() ?? "0.00"}
+                    <ChipAmount amount={walletData?.balance ?? 0} size="lg" className="text-5xl" />
                   </h2>
                   <p className="text-[10px] text-green-500 font-bold uppercase mt-2 flex items-center gap-1">
                     <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />{" "}
@@ -448,11 +417,11 @@ const Wallet = () => {
                 <div className="space-y-8 animate-fade-in">
                   <div>
                     <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
-                      Enter Deposit Amount (₹)
+                      Enter Deposit Amount
                     </label>
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary text-lg font-bold">
-                        ₹
+                        
                       </span>
                       <Input
                         type="number"
@@ -471,7 +440,7 @@ const Wallet = () => {
                           className="border-border bg-card/50 text-muted-foreground hover:bg-primary hover:text-black rounded-none text-xs font-bold h-7"
                           onClick={() => setDepositAmount(amt.toString())}
                         >
-                          + ₹{amt}
+                          + {amt}
                         </Button>
                       ))}
                     </div>
@@ -570,17 +539,15 @@ const Wallet = () => {
                 </div>
               ) : (
                 <div className="space-y-6 animate-fade-in">
-                  {/* Information Banners */}
-                  <div className="space-y-3">
-                    <div className="bg-yellow-500/10 border border-yellow-500/20 p-3 flex items-start gap-3">
-                      <ShieldCheck className="w-4 h-4 text-yellow-500 mt-0.5" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">
-                          Withdrawals are processed within{" "}
-                          <strong className="text-yellow-500">24 hours</strong>.
-                          Ensure your details are correct.
-                        </p>
-                      </div>
+                  <div className="bg-yellow-500/10 border border-yellow-500/20 p-4 flex items-start gap-3">
+                    <ShieldCheck className="w-5 h-5 text-yellow-500 mt-0.5" />
+                    <div>
+                      <h4 className="text-sm font-bold text-yellow-500 uppercase">
+                        UPI Withdrawal
+                      </h4>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Admin will send money to your UPI ID within 24 hours. Make sure your UPI ID is correct.
+                      </p>
                     </div>
 
                     <div className="bg-blue-500/10 border border-blue-500/20 p-3 flex items-start gap-3">
@@ -607,109 +574,61 @@ const Wallet = () => {
                     )}
                   </div>
 
-                  {/* Step Indicator */}
-                  <div className="flex items-center justify-center gap-2 py-2">
-                    <div
-                      className={cn(
-                        "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold",
-                        withdrawStep === "amount"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-muted-foreground",
-                      )}
-                    >
-                      1
+                  <div>
+                    <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
+                      Withdrawal Amount
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary text-lg font-bold">
+                        
+                      </span>
+                      <Input
+                        type="number"
+                        value={withdrawAmount}
+                        onChange={(e) => setWithdrawAmount(e.target.value)}
+                        className="h-14 pl-10 text-xl font-bold bg-input/20 border-border rounded-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground/50"
+                        placeholder="0.00"
+                      />
                     </div>
-                    <div className="w-12 h-0.5 bg-border"></div>
-                    <div
-                      className={cn(
-                        "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold",
-                        withdrawStep === "bank"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-muted-foreground",
-                      )}
-                    >
-                      2
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {[1000, 2000, 5000, 10000].map((amt) => (
+                        <Button
+                          key={amt}
+                          variant="outline"
+                          size="sm"
+                          className="border-border bg-card/50 text-muted-foreground hover:bg-primary hover:text-black rounded-none text-xs font-bold h-7"
+                          onClick={() => setWithdrawAmount(amt.toString())}
+                        >
+                          {amt}
+                        </Button>
+                      ))}
                     </div>
                   </div>
 
-                  {/* Step Content */}
-                  {withdrawStep === "amount" ? (
-                    <>
-                      <div>
-                        <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
-                          Withdrawal Amount (₹)
-                        </label>
-                        <div className="relative">
-                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary text-lg font-bold">
-                            ₹
-                          </span>
-                          <Input
-                            type="number"
-                            value={withdrawAmount}
-                            onChange={(e) => setWithdrawAmount(e.target.value)}
-                            className="h-14 pl-10 text-xl font-bold bg-input/20 border-border rounded-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground/50"
-                            placeholder="Enter amount (1,000 - 10,000)"
-                            min="1000"
-                            max="10000"
-                            disabled={loading}
-                          />
-                        </div>
-                        {withdrawAmount && parseFloat(withdrawAmount) > 0 && (
-                          <div className="mt-2 text-xs text-muted-foreground">
-                            <div className="flex justify-between">
-                              <span>Current Balance:</span>
-                              <span className="font-bold">
-                                ₹{walletData?.balance?.toLocaleString() || 0}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span>Withdrawal Amount:</span>
-                              <span className="font-bold text-red-500">
-                                -₹{parseFloat(withdrawAmount).toLocaleString()}
-                              </span>
-                            </div>
-                            <div className="flex justify-between border-t border-border mt-1 pt-1">
-                              <span>Remaining Balance:</span>
-                              <span className="font-bold">
-                                ₹
-                                {Math.max(
-                                  0,
-                                  (walletData?.balance || 0) -
-                                    parseFloat(withdrawAmount),
-                                ).toLocaleString()}
-                              </span>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      <Button
-                        type="button"
-                        className="w-full h-12 text-sm font-black uppercase tracking-widest bg-foreground text-background hover:bg-muted transition-all rounded-none"
-                        onClick={handleWithdrawAmountSubmit}
-                        disabled={
-                          loading ||
-                          !withdrawAmount ||
-                          walletData?.balance < 1000
-                        }
-                      >
-                        Next: Enter Bank Details
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button
-                        variant="ghost"
-                        className="text-xs"
-                        onClick={() => setWithdrawStep("amount")}
-                      >
-                        ← Back to Amount
-                      </Button>
-                      <BankAccountForm
-                        onSubmit={handleWithdraw}
-                        loading={loading}
-                      />
-                    </>
-                  )}
+                  <div>
+                    <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
+                      Your UPI ID
+                    </label>
+                    <Input
+                      type="text"
+                      value={upiId}
+                      onChange={(e) => setUpiId(e.target.value)}
+                      className="h-12 text-lg bg-input/20 border-border rounded-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground/50"
+                      placeholder="username@paytm or 9876543210@ybl"
+                    />
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Enter your UPI ID (PhonePe, GPay, Paytm, etc.)
+                    </p>
+                  </div>
+
+                  <Button
+                    type="button"
+                    className="w-full h-12 text-sm font-black uppercase tracking-widest bg-foreground text-background hover:bg-muted transition-all rounded-none"
+                    onClick={handleWithdraw}
+                    disabled={loading}
+                  >
+                    {loading ? "Submitting..." : "Request UPI Payout"}
+                  </Button>
                 </div>
               )}
             </div>
@@ -806,8 +725,7 @@ const Wallet = () => {
                                   : "text-foreground",
                             )}
                           >
-                            {isDeposit || isWin ? "+" : "-"}{" "}
-                            {tx.display_amount || tx.amount} coins
+                            {(isDeposit || isWin) ? "+" : "-"} <ChipAmount amount={tx.display_amount || tx.amount} size="sm" />
                           </span>
                           {tx.status && (
                             <span

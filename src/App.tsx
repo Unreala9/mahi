@@ -32,6 +32,7 @@ import AdminTransactions from "./pages/admin/AdminTransactions";
 import AdminBets from "./pages/admin/AdminBets";
 import AdminGames from "./pages/admin/AdminGames";
 import AdminAuditLogs from "./pages/admin/AdminAuditLogs";
+import AdminWithdrawals from "./pages/admin/AdminWithdrawals";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
@@ -170,6 +171,7 @@ const App = () => {
               <Route index element={<AdminDashboard />} />
               <Route path="users" element={<AdminUsers />} />
               <Route path="transactions" element={<AdminTransactions />} />
+              <Route path="withdrawals" element={<AdminWithdrawals />} />
               <Route path="bets" element={<AdminBets />} />
               <Route path="games" element={<AdminGames />} />
               <Route path="audit-logs" element={<AdminAuditLogs />} />
