@@ -16,6 +16,8 @@ import {
   CreditCard as CardIcon,
   ShieldCheck,
   Download,
+  AlertTriangle,
+  Info,
 } from "lucide-react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { cn } from "@/lib/utils";
@@ -39,6 +41,8 @@ const Wallet = () => {
   const [selectedGateway, setSelectedGateway] = useState<
     "stripe" | "razorpay" | "paypal" | "bank_transfer"
   >("razorpay");
+  const [withdrawStep, setWithdrawStep] = useState<"amount" | "bank">("amount");
+  const [bankDetails, setBankDetails] = useState<any>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -63,19 +67,33 @@ const Wallet = () => {
   }, [navigate]);
 
   const fetchWalletData = async (userId: string) => {
-    const { data } = await (supabase
-      .from("wallets")
-      .select("*")
-      .eq("user_id", userId)
-      .maybeSingle() as any);
+    try {
+      const { data, error } = await (supabase
+        .from("wallets")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle() as any);
 
-    if (data) setWalletData(data);
+      if (error && error.code !== "PGRST116") {
+        console.error("❌ Error fetching wallet:", error);
+        toast({
+          title: "⚠️ Wallet Error",
+          description: "Failed to load wallet data. Please refresh the page.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data) setWalletData(data);
+    } catch (err) {
+      console.error("❌ Unexpected error:", err);
+    }
   };
 
   const fetchTransactions = async (userId: string) => {
     // Fetch deposit/withdrawal transactions
     const { data: txData } = await (supabase
-      .from("transactions")
+      .from("wallet_transactions")
       .select("*")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
@@ -98,16 +116,18 @@ const Wallet = () => {
       })),
       ...(betData || []).map((bet: any) => ({
         ...bet,
-        activity_type: bet.status === 'won' ? 'win' : bet.status === 'lost' ? 'loss' : 'bet',
-        display_amount: bet.status === 'won' ? bet.potential_win : bet.stake,
-        gateway_provider: 'betting',
-        description: `Bet on ${bet.match_name || 'Match'}`,
+        activity_type:
+          bet.status === "won" ? "win" : bet.status === "lost" ? "loss" : "bet",
+        display_amount: bet.status === "won" ? bet.potential_win : bet.stake,
+        gateway_provider: "betting",
+        description: `Bet on ${bet.match_name || "Match"}`,
       })),
     ];
 
     // Sort by created_at
-    allActivities.sort((a, b) =>
-      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    allActivities.sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
     );
 
     setTransactions(allActivities.slice(0, 50)); // Show top 50 activities
@@ -245,24 +265,14 @@ const Wallet = () => {
     );
   };
 
-  const handleWithdraw = async () => {
+  const handleWithdrawAmountSubmit = async () => {
     const amount = parseFloat(withdrawAmount);
 
     // Validate Amount
     if (!withdrawAmount || isNaN(amount) || amount <= 0) {
       toast({
-        title: "Error",
+        title: "⚠️ Invalid Amount",
         description: "Please enter a valid amount",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Validate UPI ID
-    if (!upiId || !upiId.includes("@")) {
-      toast({
-        title: "Error",
-        description: "Please enter a valid UPI ID (e.g., username@paytm)",
         variant: "destructive",
       });
       return;
@@ -271,6 +281,10 @@ const Wallet = () => {
     // Call Secure RPC with UPI details
     try {
       setLoading(true);
+
+      // Store bank details in transaction description/metadata
+      const bankInfo = `Bank: ${bankAccountDetails.bankName} | A/C: ${bankAccountDetails.accountNumber} | IFSC: ${bankAccountDetails.ifscCode} | Holder: ${bankAccountDetails.accountHolderName}`;
+
       const { data, error } = await supabase.rpc("request_withdrawal", {
         p_user_id: user?.id,
         p_amount: amount,
@@ -279,18 +293,29 @@ const Wallet = () => {
 
       if (error) throw error;
 
+      // Optionally store bank details separately
+      await supabase
+        .from("wallet_transactions")
+        .update({
+          description: `Withdrawal Request - ${bankInfo}`,
+        })
+        .eq("id", data.transaction_id);
+
       toast({
         title: "Success",
         description: "Withdrawal request submitted. Admin will process UPI payment within 24 hours.",
       });
+
+      // Reset form
       setWithdrawAmount("");
       setUpiId("");
       fetchTransactions(user!.id);
-      fetchWalletData(user!.id); // Update balance UI immediately
+      fetchWalletData(user!.id);
     } catch (err: any) {
       toast({
-        title: "Error",
-        description: err.message || "Failed to request withdrawal",
+        title: "❌ Withdrawal Failed",
+        description:
+          err.message || "Failed to request withdrawal. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -519,6 +544,29 @@ const Wallet = () => {
                         Admin will send money to your UPI ID within 24 hours. Make sure your UPI ID is correct.
                       </p>
                     </div>
+
+                    <div className="bg-blue-500/10 border border-blue-500/20 p-3 flex items-start gap-3">
+                      <Info className="w-4 h-4 text-blue-500 mt-0.5" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">
+                          <strong className="text-blue-500">Limits:</strong> Min
+                          ₹1,000 | Max ₹10,000 per transaction
+                        </p>
+                      </div>
+                    </div>
+
+                    {walletData?.balance < 1000 && (
+                      <div className="bg-red-500/10 border border-red-500/20 p-3 flex items-start gap-3">
+                        <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5" />
+                        <div>
+                          <p className="text-xs text-red-500">
+                            Insufficient balance. Your current balance is ₹
+                            {walletData?.balance?.toLocaleString() || 0}.
+                            Minimum withdrawal is ₹1,000.
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div>
@@ -592,30 +640,44 @@ const Wallet = () => {
             <div className="divide-y divide-border max-h-[600px] overflow-y-auto">
               {transactions.length > 0 ? (
                 transactions.map((tx) => {
-                  const isDeposit = tx.activity_type === 'deposit';
-                  const isWithdraw = tx.activity_type === 'withdraw';
-                  const isWin = tx.activity_type === 'win';
-                  const isLoss = tx.activity_type === 'loss';
-                  const isBet = tx.activity_type === 'bet';
+                  const isDeposit = tx.activity_type === "deposit";
+                  const isWithdraw = tx.activity_type === "withdraw";
+                  const isWin = tx.activity_type === "win";
+                  const isLoss = tx.activity_type === "loss";
+                  const isBet = tx.activity_type === "bet";
+                  const isPending = tx.status === "pending";
 
                   return (
                     <div
                       key={tx.id}
-                      className="p-4 hover:bg-muted/50 transition-colors group"
+                      className={cn(
+                        "p-4 transition-colors group",
+                        isPending && isWithdraw
+                          ? "bg-yellow-500/5 border-l-4 border-yellow-500"
+                          : "hover:bg-muted/50",
+                      )}
                     >
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            {isDeposit && <Plus className="w-4 h-4 text-green-500" />}
-                            {isWithdraw && <Minus className="w-4 h-4 text-orange-500" />}
-                            {isWin && <span className="text-green-500">🏆</span>}
-                            {(isLoss || isBet) && <span className="text-muted-foreground">🎲</span>}
+                            {isDeposit && (
+                              <Plus className="w-4 h-4 text-green-500" />
+                            )}
+                            {isWithdraw && (
+                              <Minus className="w-4 h-4 text-orange-500" />
+                            )}
+                            {isWin && (
+                              <span className="text-green-500">🏆</span>
+                            )}
+                            {(isLoss || isBet) && (
+                              <span className="text-muted-foreground">🎲</span>
+                            )}
                             <span className="font-bold text-xs text-foreground uppercase tracking-wide">
-                              {isDeposit && 'Deposit'}
-                              {isWithdraw && 'Withdrawal'}
-                              {isWin && 'Bet Won'}
-                              {isLoss && 'Bet Lost'}
-                              {isBet && 'Bet Placed'}
+                              {isDeposit && "Deposit"}
+                              {isWithdraw && "Withdrawal"}
+                              {isWin && "Bet Won"}
+                              {isLoss && "Bet Lost"}
+                              {isBet && "Bet Placed"}
                             </span>
                           </div>
                           {tx.description && (
@@ -627,23 +689,35 @@ const Wallet = () => {
                             <span className="opacity-50">
                               {new Date(tx.created_at).toLocaleString()}
                             </span>
-                            {(isDeposit || isWithdraw) && tx.gateway_provider && (
-                              <>
-                                <span>•</span>
-                                <span className="font-medium uppercase">
-                                  via {tx.gateway_provider}
-                                </span>
-                              </>
-                            )}
+                            {(isDeposit || isWithdraw) &&
+                              tx.gateway_provider && (
+                                <>
+                                  <span>•</span>
+                                  <span className="font-medium uppercase">
+                                    via {tx.gateway_provider}
+                                  </span>
+                                </>
+                              )}
                           </div>
+                          {isPending && isWithdraw && (
+                            <div className="mt-2 bg-yellow-500/10 border border-yellow-500/20 rounded px-2 py-1 text-[10px] text-yellow-600 flex items-center gap-1">
+                              <History className="w-3 h-3" />
+                              <span>
+                                Pending admin approval - Processing within 24
+                                hours
+                              </span>
+                            </div>
+                          )}
                         </div>
                         <div className="flex flex-col items-end gap-1">
                           <span
                             className={cn(
                               "font-black font-mono text-sm whitespace-nowrap",
-                              isDeposit || isWin ? "text-green-500" :
-                              isWithdraw || isLoss || isBet ? "text-red-500" :
-                              "text-foreground"
+                              isDeposit || isWin
+                                ? "text-green-500"
+                                : isWithdraw || isLoss || isBet
+                                  ? "text-red-500"
+                                  : "text-foreground",
                             )}
                           >
                             {(isDeposit || isWin) ? "+" : "-"} <ChipAmount amount={tx.display_amount || tx.amount} size="sm" />
@@ -656,7 +730,7 @@ const Wallet = () => {
                                   ? "bg-green-500/10 text-green-500 border-green-500/20"
                                   : tx.status === "pending"
                                     ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
-                                    : "bg-red-500/10 text-red-500 border-red-500/20"
+                                    : "bg-red-500/10 text-red-500 border-red-500/20",
                               )}
                             >
                               {tx.status}

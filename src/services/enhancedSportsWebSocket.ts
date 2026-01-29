@@ -400,35 +400,7 @@ class EnhancedSportsWebSocketService {
         throw new Error(`HTTP ${response.status}`);
       }
 
-      // Check if response is JSON
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        console.warn(
-          `[Enhanced Sports WS] Score API returned non-JSON response for ${eventId}: ${contentType}`,
-        );
-        return;
-      }
-
-      const text = await response.text();
-
-      // Validate it's actually JSON before parsing
-      if (!text || text.trim().startsWith("<")) {
-        console.warn(
-          `[Enhanced Sports WS] Score API returned HTML instead of JSON for ${eventId}`,
-        );
-        return;
-      }
-
-      let scoreData: LiveScoreData;
-      try {
-        scoreData = JSON.parse(text);
-      } catch (parseError) {
-        console.warn(
-          `[Enhanced Sports WS] Failed to parse score JSON for ${eventId}:`,
-          parseError,
-        );
-        return;
-      }
+      const scoreData: LiveScoreData = await response.json();
 
       // Check if data has changed for THIS specific event
       const cached = this.scoreCache.get(eventId);
@@ -449,14 +421,10 @@ class EnhancedSportsWebSocketService {
         timestamp: Date.now(),
       });
     } catch (error) {
-      // Only log meaningful errors, not HTML pages
-      const errorMsg = String(error);
-      if (!errorMsg.includes("HTML") && !errorMsg.includes("<!DOCTYPE")) {
-        console.error(
-          `[Enhanced Sports WS] Failed to poll score for ${eventId}:`,
-          error,
-        );
-      }
+      console.error(
+        `[Enhanced Sports WS] Failed to poll score for ${eventId}:`,
+        error,
+      );
     }
   }
 
