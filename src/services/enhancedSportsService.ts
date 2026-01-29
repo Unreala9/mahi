@@ -355,49 +355,78 @@ class EnhancedSportsService {
 
   /**
    * Get live score for a match
+   * Note: Diamond API's /score endpoint returns iframe HTML, not JSON
+   * So we extract basic match info from getDetailsData
    */
   async getLiveScore(gmid: number): Promise<LiveScore | null> {
     try {
-      // Try primary score API
-      const url = `${SCORE_API_BASE}${SCORE_API_PATH}?gmid=${gmid}`;
-      console.log(`[Enhanced Sports] Fetching live score for match: ${gmid}`);
+      // Get match details which has basic match info
+      const detailsUrl = `${BASE_URL}/getDetailsData?gmid=${gmid}&key=${API_KEY}`;
+      console.log(`[Enhanced Sports] Fetching match details for score: ${gmid}`);
 
-      const response = await fetch(url, {
+      const detailsResponse = await fetch(detailsUrl, {
         headers: {
           Accept: "application/json",
         },
       });
 
-      if (!response.ok) {
-        const text = await response.text();
-        console.warn(
-          `[Enhanced Sports] Score API returned ${response.status}, trying fallback. Response: ${text}`,
-        );
-        return await this.getFallbackScore(gmid);
+      if (!detailsResponse.ok) {
+        console.warn(`[Enhanced Sports] Could not fetch match details for score`);
+        return null;
       }
 
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        const text = await response.text();
-        console.warn(
-          `[Enhanced Sports] Score API non-JSON response: ${contentType}. Response: ${text}`
-        );
-        return await this.getFallbackScore(gmid);
+      const detailsResult = await detailsResponse.json();
+      console.log(`[Enhanced Sports] Match details response:`, detailsResult);
+
+      // Extract match details to create score data
+      if (detailsResult && detailsResult.data) {
+        const matchData = Array.isArray(detailsResult.data)
+          ? detailsResult.data[0]
+          : detailsResult.data;
+
+        if (!matchData) return null;
+
+        return this.transformScoreFromDetails(gmid, matchData);
       }
 
-      const result = await response.json();
-      console.log(`[Enhanced Sports] Score API response:`, result);
-
-      if (result.success && result.data) {
-        return this.transformScoreData(gmid, result.data);
-      }
-
-      // Try fallback if no data
-      return await this.getFallbackScore(gmid);
+      return null;
     } catch (error) {
       console.error(`[Enhanced Sports] Error fetching live score:`, error);
-      return await this.getFallbackScore(gmid);
+      return null;
     }
+  }
+
+  /**
+   * Transform score from match details data
+   */
+  private transformScoreFromDetails(gmid: number, data: any): LiveScore {
+    // Parse team names from match name
+    const matchName = data.ename || data.name || "";
+    const teams = matchName.split(" v ");
+    const homeTeam = teams[0]?.trim() || "Team 1";
+    const awayTeam = teams[1]?.trim() || "Team 2";
+
+    // Note: Diamond API doesn't provide score data in getDetailsData
+    // Actual live scores are shown via /score iframe endpoint
+    // This just provides basic match structure
+
+    return {
+      gmid,
+      score: {
+        home: {
+          name: homeTeam,
+          score: "-",
+          overs: undefined,
+        },
+        away: {
+          name: awayTeam,
+          score: "-",
+          overs: undefined,
+        },
+      },
+      status: data.iplay ? "Live" : "Scheduled",
+      timestamp: Date.now(),
+    };
   }
 
   /**
@@ -426,8 +455,7 @@ class EnhancedSportsService {
 
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
-        const text = await response.text();
-        console.warn(`[Enhanced Sports] Fallback expected JSON but got: ${contentType}. Response: ${text}`);
+        console.warn(`[Enhanced Sports] Expected JSON but got: ${contentType}`);
         return null;
       }
 

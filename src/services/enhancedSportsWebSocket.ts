@@ -397,20 +397,7 @@ class EnhancedSportsWebSocketService {
       const response = await fetch(url);
 
       if (!response.ok) {
-        const text = await response.text();
-        console.error(
-          `[Enhanced Sports WS] Poll score HTTP error for ${eventId}: ${response.status} - ${text}`
-        );
         throw new Error(`HTTP ${response.status}`);
-      }
-
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        const text = await response.text();
-        console.error(
-          `[Enhanced Sports WS] Poll score non-JSON response for ${eventId}: ${contentType} - ${text}`
-        );
-        throw new Error(`Non-JSON response: ${contentType}`);
       }
 
       const scoreData: LiveScoreData = await response.json();
