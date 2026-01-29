@@ -40,17 +40,35 @@ const ProtectedRoute = ({
       }
 
       if (requireAdmin) {
-        const { data: profile } = await supabase
+        console.log(
+          "🔒 [ProtectedRoute] Admin access required, checking role...",
+        );
+        console.log("🔒 [ProtectedRoute] User ID:", session.user.id);
+
+        const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("role")
           .eq("id", session.user.id)
           .single();
 
+        console.log("🔒 [ProtectedRoute] Profile data:", profile);
+        console.log("🔒 [ProtectedRoute] Profile error:", profileError);
+        console.log("🔒 [ProtectedRoute] Role found:", profile?.role);
+
         if (profile?.role !== "admin") {
+          console.error(
+            "❌ [ProtectedRoute] ACCESS DENIED - User is not admin!",
+          );
+          console.error(
+            "❌ [ProtectedRoute] Expected: 'admin', Got:",
+            profile?.role,
+          );
           setAuthorized(false);
           setLoading(false);
           return;
         }
+
+        console.log("✅ [ProtectedRoute] Admin access GRANTED!");
       }
 
       setAuthorized(true);
