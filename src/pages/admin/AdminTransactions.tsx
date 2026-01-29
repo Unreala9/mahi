@@ -3,17 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle, XCircle } from "lucide-react";
+import { useAdminTransactions } from "@/hooks/api/useAdmin";
+import { useQueryClient } from "@tanstack/react-query";
 
 const AdminTransactions = () => {
   const { toast } = useToast();
-  const [transactions, setTransactions] = useState<any[]>([]);
-
-  useEffect(() => { fetchTransactions(); }, []);
-
-  const fetchTransactions = async () => {
-    const { data } = await supabase.from("transactions").select("*, profiles(full_name, email)").order("created_at", { ascending: false });
-    if (data) setTransactions(data);
-  };
+  const queryClient = useQueryClient();
+  const { data: transactions = [], isLoading } = useAdminTransactions();
 
   const handleAction = async (id: string, status: "completed" | "failed") => {
     const { error } = await supabase.from("transactions").update({ status, processed_at: new Date().toISOString() }).eq("id", id);

@@ -53,31 +53,36 @@ const Dashboard = () => {
     }
   }
 
-  async function fetchRecentTransactions(userId: string) {
+  async function fetchRecentBets(userId: string) {
     try {
-      const { data } = await supabase
-        .from("transactions")
+      // Fetch actual BETS from bets table
+      const { data: betsData } = await supabase
+        .from("bets")
         .select("*")
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
-        .limit(10);
+        .limit(20);
 
-      const txs = (data as any) ?? [];
-      setRecentBets(txs);
+      const bets = (betsData as any) ?? [];
 
-      const bets = txs.filter((t: any) => t.type === "bet");
+      // Calculate real stats from bets
       const totalBets = bets.length;
-      const totalWins = bets.filter((t: any) => t.status === "win").length;
-      const totalProfit = bets.reduce(
-        (acc: number, t: any) =>
-          acc + (typeof t.profit === "number" ? t.profit : 0),
-        0,
-      );
-      const winRate =
-        totalBets > 0 ? `${Math.round((totalWins / totalBets) * 100)}%` : "0%";
+      const totalWins = bets.filter((b: any) => b.status === "won").length;
+      const totalLosses = bets.filter((b: any) => b.status === "lost").length;
+      const activeBets = bets.filter((b: any) => b.status === "pending").length;
 
+      const totalProfit = bets.reduce((acc: number, b: any) => {
+        if (b.status === "won") return acc + (b.potential_win || 0) - (b.stake || 0);
+        if (b.status === "lost") return acc - (b.stake || 0);
+        return acc;
+      }, 0);
+
+      const winRate = totalBets > 0 ? `${Math.round((totalWins / totalBets) * 100)}%` : "0%";
+
+      setRecentBets(bets);
       setStats({ totalBets, totalWins, winRate, totalProfit });
     } catch (e) {
+      console.error("[Dashboard] Error fetching bets:", e);
       setRecentBets([]);
       setStats({ totalBets: 0, totalWins: 0, winRate: "0%", totalProfit: 0 });
     }
@@ -92,7 +97,7 @@ const Dashboard = () => {
         navigate("/auth");
       } else {
         fetchWalletData(session.user.id);
-        fetchRecentTransactions(session.user.id);
+        fetchRecentBets(session.user.id);
       }
     });
 
@@ -213,7 +218,7 @@ const Dashboard = () => {
           <div className="col-span-12 lg:col-span-9 bg-card border border-border flex flex-col">
             <div className="h-10 border-b border-border flex items-center px-4 justify-between bg-muted/30">
               <span className="text-xs font-bold text-foreground uppercase">
-                Recent Transactions
+                Recent Bets & Activity
               </span>
               <span className="text-[10px] text-primary font-mono cursor-pointer hover:underline">
                 VIEW ALL
@@ -238,31 +243,43 @@ const Dashboard = () => {
                   </tr>
                 </thead>
                 <tbody className="text-xs font-medium font-mono">
-                  {recentBets.map((tx) => (
+                  {recentBets.map((bet) => (
                     <tr
-                      key={tx.id}
+                      key={bet.id}
                       className="border-b border-border/50 hover:bg-muted/50 transition-colors"
                     >
                       <td className="p-3">
                         <span
-                          className={`px-2 py-0.5 text-[10px] uppercase font-bold ${tx.type === "bet" ? "text-blue-400 bg-blue-900/20" : "text-yellow-400 bg-yellow-900/20"}`}
+                          className={`px-2 py-0.5 text-[10px] uppercase font-bold ${
+                            bet.status === "won"
+                              ? "text-green-400 bg-green-900/20"
+                              : bet.status === "lost"
+                                ? "text-red-400 bg-red-900/20"
+                                : "text-yellow-400 bg-yellow-900/20"
+                          }`}
                         >
-                          {tx.type}
+                          {bet.status || "Pending"}
                         </span>
                       </td>
                       <td className="p-3 text-foreground/80 truncate max-w-[200px]">
-                        {tx.game || tx.description || "System Transaction"}
+                        {bet.match_name || bet.selection || "Bet"}
                       </td>
                       <td
-                        className={`p-3 text-right font-bold ${tx.profit > 0 ? "text-green-500" : tx.profit < 0 ? "text-red-500" : "text-foreground"}`}
+                        className={`p-3 text-right font-bold ${
+                          bet.status === "won"
+                            ? "text-green-500"
+                            : bet.status === "lost"
+                              ? "text-red-500"
+                              : "text-foreground"
+                        }`}
                       >
-                        {tx.amount ? `₹${tx.amount}` : "-"}
+                        ₹{bet.stake || 0}
                       </td>
                       <td className="p-3 text-center">
-                        <StatusIndicator status={tx.status} />
+                        <StatusIndicator status={bet.status} />
                       </td>
                       <td className="p-3 text-right text-muted-foreground">
-                        {new Date(tx.created_at).toLocaleTimeString([], {
+                        {new Date(bet.created_at).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
