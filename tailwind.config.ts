@@ -24,6 +24,11 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        admin: {
+          bg: "#0A0E1A",
+          card: "#131824",
+          border: "rgba(255, 255, 255, 0.05)",
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",

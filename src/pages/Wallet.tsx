@@ -33,6 +33,7 @@ const Wallet = () => {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [depositAmount, setDepositAmount] = useState("");
   const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [upiId, setUpiId] = useState("");
   const [activeTab, setActiveTab] = useState<"deposit" | "withdraw">("deposit");
   const [selectedGateway, setSelectedGateway] = useState<
     "stripe" | "razorpay" | "paypal" | "bank_transfer"
@@ -256,30 +257,33 @@ const Wallet = () => {
       return;
     }
 
-    if (amount < 1000 || amount > 10000) {
+    // Validate UPI ID
+    if (!upiId || !upiId.includes("@")) {
       toast({
         title: "Error",
-        description: "Withdrawal amount must be between 1000 and 10000 coins.",
+        description: "Please enter a valid UPI ID (e.g., username@paytm)",
         variant: "destructive",
       });
       return;
     }
 
-    // Call Secure RPC
+    // Call Secure RPC with UPI details
     try {
       setLoading(true);
       const { data, error } = await supabase.rpc("request_withdrawal", {
         p_user_id: user?.id,
         p_amount: amount,
+        p_upi_id: upiId,
       });
 
       if (error) throw error;
 
       toast({
         title: "Success",
-        description: "Withdrawal request submitted for approval",
+        description: "Withdrawal request submitted. Admin will process UPI payment within 24 hours.",
       });
       setWithdrawAmount("");
+      setUpiId("");
       fetchTransactions(user!.id);
       fetchWalletData(user!.id); // Update balance UI immediately
     } catch (err: any) {
@@ -508,11 +512,10 @@ const Wallet = () => {
                     <ShieldCheck className="w-5 h-5 text-yellow-500 mt-0.5" />
                     <div>
                       <h4 className="text-sm font-bold text-yellow-500 uppercase">
-                        Pro Tip
+                        UPI Withdrawal
                       </h4>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Withdrawals are processed within 24 hours. Ensure your
-                        KYC is verified for faster processing.
+                        Admin will send money to your UPI ID within 24 hours. Make sure your UPI ID is correct.
                       </p>
                     </div>
                   </div>
@@ -533,13 +536,44 @@ const Wallet = () => {
                         placeholder="0.00"
                       />
                     </div>
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {[1000, 2000, 5000, 10000].map((amt) => (
+                        <Button
+                          key={amt}
+                          variant="outline"
+                          size="sm"
+                          className="border-border bg-card/50 text-muted-foreground hover:bg-primary hover:text-black rounded-none text-xs font-bold h-7"
+                          onClick={() => setWithdrawAmount(amt.toString())}
+                        >
+                          ₹{amt}
+                        </Button>
+                      ))}
+                    </div>
                   </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
+                      Your UPI ID
+                    </label>
+                    <Input
+                      type="text"
+                      value={upiId}
+                      onChange={(e) => setUpiId(e.target.value)}
+                      className="h-12 text-lg bg-input/20 border-border rounded-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground/50"
+                      placeholder="username@paytm or 9876543210@ybl"
+                    />
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Enter your UPI ID (PhonePe, GPay, Paytm, etc.)
+                    </p>
+                  </div>
+
                   <Button
                     type="button"
                     className="w-full h-12 text-sm font-black uppercase tracking-widest bg-foreground text-background hover:bg-muted transition-all rounded-none"
                     onClick={handleWithdraw}
+                    disabled={loading}
                   >
-                    Request Payout
+                    {loading ? "Submitting..." : "Request UPI Payout"}
                   </Button>
                 </div>
               )}

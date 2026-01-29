@@ -11,6 +11,7 @@ import {
   FileText,
   LogOut,
   Shield,
+  DollarSign,
 } from "lucide-react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
@@ -32,27 +33,17 @@ const AdminLayout = () => {
       }
       setUser(session.user);
 
-      console.log(
-        "🔐 [AdminLayout] Checking admin status for user:",
-        session.user.id,
-      );
-
       const { data: profile, error } = await supabase
         .from("profiles")
         .select("role")
         .eq("id", session.user.id)
         .single();
 
-      console.log("🔐 [AdminLayout] Profile fetched:", profile);
-      console.log("🔐 [AdminLayout] Error:", error);
-
       if (profile?.role !== "admin") {
-        console.error("❌ [AdminLayout] Not admin, redirecting to dashboard");
         navigate("/sports");
         return;
       }
 
-      console.log("✅ [AdminLayout] Admin confirmed!");
       setIsAdmin(true);
       setLoading(false);
     };
@@ -68,16 +59,15 @@ const AdminLayout = () => {
   const navItems = [
     { name: "Dashboard", path: "/admin", icon: LayoutDashboard },
     { name: "Users", path: "/admin/users", icon: Users },
-    { name: "Transactions", path: "/admin/transactions", icon: Wallet },
-    { name: "Bets", path: "/admin/bets", icon: History },
-    { name: "Games", path: "/admin/games", icon: Gamepad2 },
-    { name: "Audit Logs", path: "/admin/audit-logs", icon: FileText },
+    { name: "Bets", path: "/admin/bets", icon: Gamepad2 },
+    { name: "My transfers", path: "/admin/withdrawals", icon: Wallet },
+    { name: "Transactions history", path: "/admin/transactions", icon: FileText },
   ];
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-primary font-display text-xl">
+      <div className="min-h-screen bg-[#0A0E1A] flex items-center justify-center">
+        <div className="animate-pulse text-blue-500 font-display text-xl">
           Loading...
         </div>
       </div>
@@ -87,47 +77,53 @@ const AdminLayout = () => {
   if (!isAdmin) return null;
 
   return (
-    <div className="min-h-screen bg-background">
-      <aside className="fixed left-0 top-0 h-full w-64 bg-card border-r border-border/50 hidden lg:flex flex-col">
-        <div className="p-6 border-b border-border/50">
-          <Link to="/admin" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-destructive to-accent flex items-center justify-center">
-              <Shield className="w-5 h-5 text-primary-foreground" />
+    <div className="min-h-screen bg-[#0f172a]">
+      <aside className="fixed left-0 top-0 h-full w-64 bg-[#1e293b] border-r border-white/5 hidden lg:flex flex-col">
+        <div className="p-6 border-b border-white/5">
+          <Link to="/admin" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-all">
+              <Shield className="w-5 h-5 text-white" />
             </div>
-            <span className="font-display font-bold text-lg text-gradient">
-              Admin Panel
-            </span>
+            <div>
+              <div className="font-bold text-base text-white">Betting</div>
+              <div className="text-xs text-gray-400 uppercase tracking-wider">Admin Panel</div>
+            </div>
           </Link>
         </div>
 
-        <nav className="flex-1 p-4">
+        <nav className="flex-1 p-4 overflow-y-auto">
           <div className="space-y-1">
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all group ${
                   location.pathname === item.path
-                    ? "bg-primary/10 text-primary font-medium"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    ? "bg-blue-500/15 text-blue-400 font-medium shadow-lg shadow-blue-500/10"
+                    : "text-gray-400 hover:text-white hover:bg-white/5"
                 }`}
               >
-                <item.icon className="w-5 h-5" />
-                {item.name}
+                <item.icon className={`w-5 h-5 transition-transform ${
+                  location.pathname === item.path ? "scale-110" : "group-hover:scale-105"
+                }`} />
+                <span className="text-sm">{item.name}</span>
+                {location.pathname === item.path && (
+                  <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+                )}
               </Link>
             ))}
           </div>
         </nav>
 
-        <div className="p-4 border-t border-border/50">
-          <Link to="/sports" className="block mb-2">
-            <Button variant="outline" className="w-full">
+        <div className="p-4 border-t border-white/5 space-y-2">
+          <Link to="/sports" className="block">
+            <Button variant="outline" className="w-full border-white/10 text-gray-300 hover:bg-white/5 hover:border-blue-500/30 transition-all">
               Back to Player View
             </Button>
           </Link>
           <Button
             variant="ghost"
-            className="w-full justify-start text-muted-foreground"
+            className="w-full justify-start text-gray-400 hover:text-white hover:bg-red-500/10 hover:text-red-400 transition-all"
             onClick={handleSignOut}
           >
             <LogOut className="w-4 h-4 mr-2" />
@@ -136,7 +132,7 @@ const AdminLayout = () => {
         </div>
       </aside>
 
-      <main className="lg:ml-64 min-h-screen p-6 lg:p-8">
+      <main className="lg:ml-64 min-h-screen p-6 lg:p-8 bg-[#0f172a]">
         <Outlet />
       </main>
     </div>
