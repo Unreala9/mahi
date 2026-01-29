@@ -11,6 +11,7 @@ import {
   UserCircle,
 } from "lucide-react";
 import DateFilter from "@/components/admin/DateFilter";
+import { CasinoChip } from "@/components/ui/CasinoChip";
 
 const AdminDashboard = () => {
   const { data: stats, isLoading } = useAdminStats();
@@ -266,7 +267,7 @@ const AdminDashboard = () => {
                   </div>
                   <p className="text-3xl font-bold text-green-400">{transactionStats.totalDeposits.toFixed(2)}</p>
                 </div>
-                <p className="text-xs text-gray-500">USD</p>
+                <CasinoChip size="md" />
               </div>
             </div>
 
@@ -279,7 +280,7 @@ const AdminDashboard = () => {
                   </div>
                   <p className="text-3xl font-bold text-red-400">{transactionStats.totalWithdrawals.toFixed(2)}</p>
                 </div>
-                <p className="text-xs text-gray-500">USD</p>
+                <p className="text-xs text-gray-500">Coins</p>
               </div>
             </div>
 
@@ -292,7 +293,7 @@ const AdminDashboard = () => {
                   </div>
                   <p className="text-3xl font-bold text-blue-400">{(transactionStats.totalDeposits - transactionStats.totalWithdrawals).toFixed(2)}</p>
                 </div>
-                <p className="text-xs text-gray-500">USD</p>
+                <p className="text-xs text-gray-500">Coins</p>
               </div>
             </div>
           </div>
@@ -317,7 +318,7 @@ const AdminDashboard = () => {
                   </div>
                   <p className="text-3xl font-bold text-green-400">{betStats.totalBetAmount.toFixed(2)}</p>
                 </div>
-                <p className="text-xs text-gray-500">USD</p>
+                <p className="text-xs text-gray-500">Coins</p>
               </div>
             </div>
 
@@ -330,7 +331,7 @@ const AdminDashboard = () => {
                   </div>
                   <p className="text-3xl font-bold text-red-400">{betStats.totalWinnings.toFixed(2)}</p>
                 </div>
-                <p className="text-xs text-gray-500">USD</p>
+                <p className="text-xs text-gray-500">Coins</p>
               </div>
             </div>
 
@@ -343,7 +344,7 @@ const AdminDashboard = () => {
                   </div>
                   <p className="text-3xl font-bold text-blue-400">{(betStats.totalBetAmount - betStats.totalWinnings).toFixed(2)}</p>
                 </div>
-                <p className="text-xs text-gray-500">USD</p>
+                <p className="text-xs text-gray-500">Coins</p>
               </div>
             </div>
           </div>
@@ -358,7 +359,7 @@ const AdminDashboard = () => {
           </div>
           <div>
             <p className="text-white font-semibold">{user?.full_name || "Super_Admin"} <span className="text-gray-400 font-normal">({user?.role || "Super Admin"})</span></p>
-            <p className="text-gray-500 text-sm">ID: {user?.id?.substring(0, 8)} • Balance: <span className="text-blue-400">{adminWallet?.balance?.toFixed(2) || '0.00'} USD</span></p>
+            <p className="text-gray-500 text-sm">ID: {user?.id?.substring(0, 8)} • Balance: <span className="text-blue-400 inline-flex items-center gap-1"><CasinoChip size="sm" />{adminWallet?.balance?.toFixed(2) || '0.00'}</span></p>
           </div>
         </div>
       )}

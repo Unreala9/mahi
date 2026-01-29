@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Edit, Key, Ban, TrendingUp, TrendingDown, DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 import DateFilter from "./DateFilter";
+import { CasinoChip } from "@/components/ui/CasinoChip";
 import StatCard from "./StatCard";
 import { supabase } from "@/lib/supabase";
 
@@ -194,7 +195,7 @@ const UserDetailModal = ({ open, onOpenChange, user, onBanUser, onUnbanUser }: U
                     <p className="text-gray-400 text-sm">Total Bet Amount</p>
                   </div>
                   <p className="text-2xl font-bold text-green-400">{userBetStats.totalBetAmount.toFixed(2)}</p>
-                  <p className="text-xs text-gray-500 mt-1">USD</p>
+                  <CasinoChip size="md" />
                 </div>
 
                 <div className="bg-[#0A0E1A] rounded-lg p-4 border border-red-500/20">
@@ -203,7 +204,7 @@ const UserDetailModal = ({ open, onOpenChange, user, onBanUser, onUnbanUser }: U
                     <p className="text-gray-400 text-sm">Total Winnings</p>
                   </div>
                   <p className="text-2xl font-bold text-red-400">{userBetStats.totalWinnings.toFixed(2)}</p>
-                  <p className="text-xs text-gray-500 mt-1">USD</p>
+                  <p className="text-xs text-gray-500 mt-1">Coins</p>
                 </div>
 
                 <div className="bg-[#0A0E1A] rounded-lg p-4 border border-blue-500/20">
@@ -212,7 +213,7 @@ const UserDetailModal = ({ open, onOpenChange, user, onBanUser, onUnbanUser }: U
                     <p className="text-gray-400 text-sm">Total (GGR)</p>
                   </div>
                   <p className="text-2xl font-bold text-blue-400">{(userBetStats.totalBetAmount - userBetStats.totalWinnings).toFixed(2)}</p>
-                  <p className="text-xs text-gray-500 mt-1">USD</p>
+                  <p className="text-xs text-gray-500 mt-1">Coins</p>
                 </div>
               </div>
             </div>
@@ -228,7 +229,7 @@ const UserDetailModal = ({ open, onOpenChange, user, onBanUser, onUnbanUser }: U
                   <label className="text-gray-400 text-sm">Balance</label>
                   <div className="bg-[#0A0E1A] rounded-lg px-4 py-3 border border-white/10 flex items-center justify-between">
                     <p className="text-white">{userWallet?.balance?.toFixed(2) || '0.00'}</p>
-                    <p className="text-blue-400 text-sm">USD</p>
+                    <CasinoChip size="sm" />
                   </div>
                 </div>
 
@@ -236,7 +237,7 @@ const UserDetailModal = ({ open, onOpenChange, user, onBanUser, onUnbanUser }: U
                   <label className="text-gray-400 text-sm">TopUp</label>
                   <div className="bg-[#0A0E1A] rounded-lg px-4 py-3 border border-white/10 flex items-center justify-between">
                     <p className="text-white">0.00</p>
-                    <p className="text-blue-400 text-sm">USD</p>
+                    <p className="text-blue-400 text-sm">Coins</p>
                   </div>
                 </div>
 

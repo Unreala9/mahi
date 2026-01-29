@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useWalletBalance } from "@/hooks/api/useWallet";
 import { supabase } from "@/integrations/supabase/client";
+import { ChipAmount } from "@/components/ui/CasinoChip";
 
 function getDemoBalanceFromStorage(): number {
   try {
@@ -126,10 +127,6 @@ export const MainHeader = ({
             >
               <Menu className="w-6 h-6" />
             </button>
-
-            <Link to="/" className="flex items-center gap-2 min-w-0">
-              <img src="/mahiex.png" alt="" className="h-7 w-auto" />
-            </Link>
           </div>
 
           <div className="flex items-center gap-3 text-sm flex-shrink-0">
@@ -154,7 +151,7 @@ export const MainHeader = ({
               <span>
                 Balance:{" "}
                 <span className="font-mono">
-                  ₹{Number(balance).toLocaleString()}
+                  <ChipAmount amount={Number(balance)} size="sm" />
                 </span>
               </span>
               <Button

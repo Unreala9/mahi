@@ -20,6 +20,7 @@ import {
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { cn } from "@/lib/utils";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { ChipAmount } from "@/components/ui/CasinoChip";
 
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || "");
@@ -344,7 +345,7 @@ const Wallet = () => {
                     Total Funds
                   </p>
                   <h2 className="text-5xl font-black text-primary font-display tracking-tight leading-none">
-                    ₹ {walletData?.balance?.toLocaleString() ?? "0.00"}
+                    <ChipAmount amount={walletData?.balance ?? 0} size="lg" className="text-5xl" />
                   </h2>
                   <p className="text-[10px] text-green-500 font-bold uppercase mt-2 flex items-center gap-1">
                     <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />{" "}
@@ -386,11 +387,11 @@ const Wallet = () => {
                 <div className="space-y-8 animate-fade-in">
                   <div>
                     <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
-                      Enter Deposit Amount (₹)
+                      Enter Deposit Amount
                     </label>
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary text-lg font-bold">
-                        ₹
+                        
                       </span>
                       <Input
                         type="number"
@@ -409,7 +410,7 @@ const Wallet = () => {
                           className="border-border bg-card/50 text-muted-foreground hover:bg-primary hover:text-black rounded-none text-xs font-bold h-7"
                           onClick={() => setDepositAmount(amt.toString())}
                         >
-                          + ₹{amt}
+                          + {amt}
                         </Button>
                       ))}
                     </div>
@@ -522,11 +523,11 @@ const Wallet = () => {
 
                   <div>
                     <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
-                      Withdrawal Amount (₹)
+                      Withdrawal Amount
                     </label>
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary text-lg font-bold">
-                        ₹
+                        
                       </span>
                       <Input
                         type="number"
@@ -545,7 +546,7 @@ const Wallet = () => {
                           className="border-border bg-card/50 text-muted-foreground hover:bg-primary hover:text-black rounded-none text-xs font-bold h-7"
                           onClick={() => setWithdrawAmount(amt.toString())}
                         >
-                          ₹{amt}
+                          {amt}
                         </Button>
                       ))}
                     </div>
@@ -645,7 +646,7 @@ const Wallet = () => {
                               "text-foreground"
                             )}
                           >
-                            {(isDeposit || isWin) ? "+" : "-"} {tx.display_amount || tx.amount} coins
+                            {(isDeposit || isWin) ? "+" : "-"} <ChipAmount amount={tx.display_amount || tx.amount} size="sm" />
                           </span>
                           {tx.status && (
                             <span
