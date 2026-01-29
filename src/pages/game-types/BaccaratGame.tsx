@@ -328,3 +328,4 @@ export function BaccaratGame({ game }: BaccaratGameProps) {
     </MainLayout>
   );
 }
+

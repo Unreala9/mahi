@@ -302,3 +302,4 @@ export function AndarBaharGame({ game }: AndarBaharGameProps) {
     </MainLayout>
   );
 }
+

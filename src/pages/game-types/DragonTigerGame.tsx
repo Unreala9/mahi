@@ -415,3 +415,4 @@ export function DragonTigerGame({ game }: DragonTigerGameProps) {
     </MainLayout>
   );
 }
+
