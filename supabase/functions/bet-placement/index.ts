@@ -225,11 +225,33 @@ serve(async (req) => {
         });
       }
 
+      // ✅ Explicitly update wallet balance using ATOMIC RPC
+      const { data: walletData, error: updateError } = await admin
+        .rpc("deduct_balance", {
+          p_user_id: user.id,
+          p_amount: betData.stake,
+        });
+
+      if (updateError) {
+        console.error("Failed to update wallet balance (RPC):", updateError);
+        // Rollback bet if money couldn't be deducted
+         await admin.from("bets").delete().eq("id", bet.id);
+         await admin.from("transactions").delete().eq("id", txInsert.data.id);
+
+         return json(400, {
+          success: false,
+          error: "Deduction failed",
+          details: updateError.message,
+        });
+      }
+
+      const newBalance = walletData?.new_balance ?? (balance - betData.stake);
+
       return json(200, {
         success: true,
         betId: bet.id,
         providerBetId,
-        balance: balance - betData.stake,
+        balance: newBalance,
         latency_ms: Date.now() - startedAt,
       });
     }

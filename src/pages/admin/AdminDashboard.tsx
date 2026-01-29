@@ -1,81 +1,366 @@
 import { useAdminStats } from "@/hooks/api/useAdmin";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 import {
   Users,
-  Wallet,
   TrendingUp,
+  TrendingDown,
   Gamepad2,
-  Clock,
-  CheckCircle,
+  DollarSign,
   Loader2,
+  UserCircle,
 } from "lucide-react";
+import DateFilter from "@/components/admin/DateFilter";
+import { CasinoChip } from "@/components/ui/CasinoChip";
 
 const AdminDashboard = () => {
-  const { data: stats = {}, isLoading } = useAdminStats();
+  const { data: stats, isLoading } = useAdminStats();
+  const [user, setUser] = useState<any>(null);
+  const [adminWallet, setAdminWallet] = useState<any>(null);
+  const [transactionStats, setTransactionStats] = useState<any>({
+    totalDeposits: 0,
+    totalWithdrawals: 0,
+    depositsToday: 0,
+  });
+  const [betStats, setBetStats] = useState<any>({
+    totalBetAmount: 0,
+    totalWinnings: 0,
+  });
+  const [userRoleStats, setUserRoleStats] = useState<any>({
+    totalCashiers: 0,
+    totalAdmins: 0,
+    registeredToday: 0,
+  });
 
-  const statCards = [
-    {
-      label: "Total Users",
-      value: stats.totalUsers || 0,
-      icon: Users,
-      color: "text-primary",
-    }, // My mock returns total_bets etc, need to align or Mock better
-    // My mock: { date, total_bets, total_wins, profit }
-    // Ideally I should update Mock to return these fields or adapt here.
-    // For now I'll map what I have or use defaults.
-    // The previous implementation fetched count from DB directly.
-    // I should stick to that if available or update EF to return comprehensive stats.
-    // Given constraints, I'll update EF to return better mock data or map here.
-    // I'll assume standard 0.
-    {
-      label: "Total Bets",
-      value: stats.total_bets || 0,
-      icon: Gamepad2,
-      color: "text-secondary",
-    },
-    {
-      label: "Total Wins",
-      value: stats.total_wins || 0,
-      icon: CheckCircle,
-      color: "text-neon-green",
-    },
-    {
-      label: "Profit",
-      value: `₹${stats.profit || 0}`,
-      icon: Wallet,
-      color: "text-success",
-    },
-  ];
+  useEffect(() => {
+    const fetchAdminData = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", session.user.id)
+          .single();
+        
+        setUser(profile);
+
+        // Get today's date range
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayISO = today.toISOString();
+
+        // Fetch ALL transaction stats (for admin balance calculation)
+        const { data: allDeposits } = await supabase
+          .from("transactions")
+          .select("amount")
+          .eq("type", "deposit")
+          .eq("status", "completed");
+
+        const { data: allWithdrawals } = await supabase
+          .from("transactions")
+          .select("amount")
+          .eq("type", "withdrawal")
+          .eq("status", "completed");
+
+        const totalAllDeposits = allDeposits?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0;
+        const totalAllWithdrawals = allWithdrawals?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0;
+        
+        // Admin balance = House revenue (all deposits - all withdrawals)
+        const adminBalance = totalAllDeposits - totalAllWithdrawals;
+
+        // Fetch transaction stats (TODAY ONLY)
+        const { data: deposits } = await supabase
+          .from("transactions")
+          .select("amount")
+          .eq("type", "deposit")
+          .eq("status", "completed")
+          .gte("created_at", todayISO);
+
+        const { data: withdrawals } = await supabase
+          .from("transactions")
+          .select("amount")
+          .eq("type", "withdrawal")
+          .eq("status", "completed")
+          .gte("created_at", todayISO);
+
+        const totalDeposits = deposits?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0;
+        const totalWithdrawals = withdrawals?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0;
+
+        setTransactionStats({
+          totalDeposits,
+          totalWithdrawals,
+          depositsToday: totalDeposits, // Same as totalDeposits now
+        });
+
+        // Set admin wallet with calculated balance
+        setAdminWallet({
+          balance: adminBalance,
+          total_deposits: totalAllDeposits,
+          total_withdrawals: totalAllWithdrawals,
+        });
+
+        // Fetch bet stats (TODAY ONLY)
+        const { data: bets } = await supabase
+          .from("bets")
+          .select("amount, payout, status")
+          .gte("created_at", todayISO);
+
+        const totalBetAmount = bets?.reduce((sum, b) => sum + (b.amount || 0), 0) || 0;
+        const totalWinnings = bets?.filter(b => b.status === 'won').reduce((sum, b) => sum + (b.payout || 0), 0) || 0;
+
+        setBetStats({
+          totalBetAmount,
+          totalWinnings,
+        });
+
+        // Fetch user role stats
+        const { count: cashiersCount } = await supabase
+          .from("profiles")
+          .select("*", { count: 'exact', head: true })
+          .eq("role", "cashier");
+
+        const { count: adminsCount } = await supabase
+          .from("profiles")
+          .select("*", { count: 'exact', head: true })
+          .eq("role", "admin");
+
+        const { count: newUsersTodayCount } = await supabase
+          .from("profiles")
+          .select("*", { count: 'exact', head: true })
+          .gte("created_at", todayISO);
+
+        setUserRoleStats({
+          totalCashiers: cashiersCount || 0,
+          totalAdmins: adminsCount || 0,
+          registeredToday: newUsersTodayCount || 0,
+        });
+      }
+    };
+    
+    fetchAdminData();
+  }, []);
 
   return (
-    <div>
-      <h1 className="font-display text-3xl font-bold text-foreground mb-8">
-        Admin <span className="text-gradient">Dashboard</span>
-      </h1>
+    <div className="space-y-6">
+      {/* Welcome Section */}
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">
+            Welcome to Admin Panel!
+          </h1>
+          <p className="text-gray-400">Use the left menu to manage users</p>
+        </div>
+        
+        {user && (
+          <div className="flex items-center gap-2 bg-[#1e293b] rounded-lg px-4 py-2 border border-white/5">
+            <UserCircle className="w-5 h-5 text-blue-400" />
+            <span className="text-white text-sm font-medium">{user?.full_name || "Super_Admin"}</span>
+          </div>
+        )}
+      </div>
 
-      {isLoading ? (
-        <Loader2 className="animate-spin" />
-      ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {statCards.map((stat, i) => (
-            <div
-              key={i}
-              className="bg-card rounded-2xl p-6 border border-border/50"
-            >
-              <div className="flex items-center gap-4">
-                <div
-                  className={`w-12 h-12 rounded-xl bg-muted flex items-center justify-center`}
-                >
-                  <stat.icon className={`w-6 h-6 ${stat.color}`} />
+      {/* Main Grid - 40/60 split */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Balance Card - 5 columns (40%) */}
+        <div className="lg:col-span-5">
+          <div className="bg-gradient-to-br from-blue-600 to-cyan-500 rounded-2xl p-8 shadow-2xl shadow-blue-500/20 relative overflow-hidden h-full">
+            {/* Background watermark */}
+            <div className="absolute top-1/2 right-4 -translate-y-1/2 opacity-10">
+              <DollarSign className="w-48 h-48 text-white" />
+            </div>
+            
+            <div className="relative z-10">
+              <p className="text-blue-100 text-sm mb-3">My Balance</p>
+              <p className="text-5xl font-bold text-white mb-8">
+                {(adminWallet?.balance || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </p>
+              
+              {/* Stacked stats on left */}
+              <div className="space-y-4">
+                <div>
+                  <p className="text-blue-100 text-xs mb-1">Income for Today</p>
+                  <p className="text-xl font-bold text-white">
+                    {transactionStats.depositsToday.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-sm">{stat.label}</p>
-                  <p className="font-display text-2xl font-bold text-foreground">
-                    {stat.value}
+                  <p className="text-blue-100 text-xs mb-1">Total User Balances</p>
+                  <p className="text-xl font-bold text-white">
+                    {(stats?.totalBalance || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                 </div>
               </div>
             </div>
-          ))}
+          </div>
+        </div>
+
+        {/* Users Section - 7 columns (60%) */}
+        <div className="lg:col-span-7">
+          <div className="bg-[#1e293b] rounded-2xl p-6 border border-white/5 h-full">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-white font-semibold text-lg">Users</h2>
+              <button className="text-blue-400 text-xs hover:text-blue-300 transition-colors">
+                All users →
+              </button>
+            </div>
+
+            {/* Horizontal layout for stats */}
+            <div className="flex gap-4 mb-6">
+              <div className="flex-1 bg-[#0f172a] rounded-lg p-4 border border-white/5">
+                <div className="flex items-center gap-2 mb-2">
+                  <Users className="w-4 h-4 text-gray-400" />
+                  <p className="text-gray-400 text-xs">Total Players</p>
+                </div>
+                <p className="text-3xl font-bold text-white">{stats?.totalUsers || 0}</p>
+              </div>
+              
+              <div className="flex-1 bg-[#0f172a] rounded-lg p-4 border border-white/5">
+                <div className="flex items-center gap-2 mb-2">
+                  <Users className="w-4 h-4 text-gray-400" />
+                  <p className="text-gray-400 text-xs">Total Cashiers</p>
+                </div>
+                <p className="text-3xl font-bold text-white">{userRoleStats.totalCashiers}</p>
+              </div>
+              
+              <div className="flex-1 bg-[#0f172a] rounded-lg p-4 border border-white/5">
+                <div className="flex items-center gap-2 mb-2">
+                  <Users className="w-4 h-4 text-gray-400" />
+                  <p className="text-gray-400 text-xs">Total Admins</p>
+                </div>
+                <p className="text-3xl font-bold text-white">{userRoleStats.totalAdmins}</p>
+              </div>
+            </div>
+
+            <div className="bg-[#0f172a] rounded-lg p-4 border border-green-500/20 mb-4">
+              <p className="text-gray-400 text-xs mb-2">Registered Today</p>
+              <p className="text-3xl font-bold text-green-400">+{userRoleStats.registeredToday}</p>
+            </div>
+
+            <button className="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 transition-colors font-medium text-sm">
+              + Create new user
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Date Filter */}
+      <DateFilter />
+
+      {/* Deposit/Withdrawal and Bets Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Deposit/Withdrawal */}
+        <div className="bg-[#1e293b] rounded-2xl p-6 border border-white/5">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-white font-semibold text-lg">Deposit/Withdrawal <span className="text-gray-500 text-xs font-normal">(Today)</span></h3>
+            <button className="text-blue-400 text-xs hover:text-blue-300 transition-colors">
+              All transaction →
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            <div className="bg-[#0f172a] rounded-lg p-5 border border-green-500/20 relative">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <TrendingUp className="w-5 h-5 text-green-400" />
+                    <p className="text-gray-400 text-sm">Deposits (Today)</p>
+                  </div>
+                  <p className="text-3xl font-bold text-green-400">{transactionStats.totalDeposits.toFixed(2)}</p>
+                </div>
+                <CasinoChip size="md" />
+              </div>
+            </div>
+
+            <div className="bg-[#0f172a] rounded-lg p-5 border border-red-500/20 relative">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <TrendingDown className="w-5 h-5 text-red-400" />
+                    <p className="text-gray-400 text-sm">Withdrawals (Today)</p>
+                  </div>
+                  <p className="text-3xl font-bold text-red-400">{transactionStats.totalWithdrawals.toFixed(2)}</p>
+                </div>
+                <p className="text-xs text-gray-500">Coins</p>
+              </div>
+            </div>
+
+            <div className="bg-[#0f172a] rounded-lg p-5 border border-blue-500/20 relative">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <DollarSign className="w-5 h-5 text-blue-400" />
+                    <p className="text-gray-400 text-sm">Net (Today)</p>
+                  </div>
+                  <p className="text-3xl font-bold text-blue-400">{(transactionStats.totalDeposits - transactionStats.totalWithdrawals).toFixed(2)}</p>
+                </div>
+                <p className="text-xs text-gray-500">Coins</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bets */}
+        <div className="bg-[#1e293b] rounded-2xl p-6 border border-white/5">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-white font-semibold text-lg">Bets <span className="text-gray-500 text-xs font-normal">(Today)</span></h3>
+            <button className="text-blue-400 text-xs hover:text-blue-300 transition-colors flex items-center gap-1">
+              Bet history →
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            <div className="bg-[#0f172a] rounded-lg p-5 border border-green-500/20 relative">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <TrendingUp className="w-5 h-5 text-green-400" />
+                    <p className="text-gray-400 text-sm">Total Bet Amount (Today)</p>
+                  </div>
+                  <p className="text-3xl font-bold text-green-400">{betStats.totalBetAmount.toFixed(2)}</p>
+                </div>
+                <p className="text-xs text-gray-500">Coins</p>
+              </div>
+            </div>
+
+            <div className="bg-[#0f172a] rounded-lg p-5 border border-red-500/20 relative">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <TrendingDown className="w-5 h-5 text-red-400" />
+                    <p className="text-gray-400 text-sm">Total Winnings (Today)</p>
+                  </div>
+                  <p className="text-3xl font-bold text-red-400">{betStats.totalWinnings.toFixed(2)}</p>
+                </div>
+                <p className="text-xs text-gray-500">Coins</p>
+              </div>
+            </div>
+
+            <div className="bg-[#0f172a] rounded-lg p-5 border border-blue-500/20 relative">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Gamepad2 className="w-5 h-5 text-blue-400" />
+                    <p className="text-gray-400 text-sm">GGR (Today)</p>
+                  </div>
+                  <p className="text-3xl font-bold text-blue-400">{(betStats.totalBetAmount - betStats.totalWinnings).toFixed(2)}</p>
+                </div>
+                <p className="text-xs text-gray-500">Coins</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Admin Card */}
+      {user && (
+        <div className="bg-[#1e293b] rounded-2xl p-5 border border-white/5 inline-flex items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+            <Users className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <p className="text-white font-semibold">{user?.full_name || "Super_Admin"} <span className="text-gray-400 font-normal">({user?.role || "Super Admin"})</span></p>
+            <p className="text-gray-500 text-sm">ID: {user?.id?.substring(0, 8)} • Balance: <span className="text-blue-400 inline-flex items-center gap-1"><CasinoChip size="sm" />{adminWallet?.balance?.toFixed(2) || '0.00'}</span></p>
+          </div>
         </div>
       )}
     </div>
@@ -83,3 +368,4 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
+

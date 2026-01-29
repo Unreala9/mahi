@@ -37,7 +37,7 @@ export function useUnifiedBetting(userId?: string) {
     if (stake < 100) {
       toast({
         title: "Invalid Stake",
-        description: "Minimum stake is ₹100",
+        description: "Minimum stake is 🎰100",
         variant: "destructive",
       });
       return false;
@@ -45,7 +45,7 @@ export function useUnifiedBetting(userId?: string) {
     if (stake > 25000) {
       toast({
         title: "Invalid Stake",
-        description: "Maximum stake is ₹25,000",
+        description: "Maximum stake is 🎰25,000",
         variant: "destructive",
       });
       return false;
@@ -53,7 +53,7 @@ export function useUnifiedBetting(userId?: string) {
     if (stake > balance) {
       toast({
         title: "Insufficient Balance",
-        description: `You have ₹${balance.toFixed(2)}, need ₹${stake}`,
+        description: `You have 🎰${balance.toFixed(2)}, need 🎰${stake}`,
         variant: "destructive",
       });
       return false;

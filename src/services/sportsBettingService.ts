@@ -28,9 +28,9 @@ export async function placeSportsBetWithWallet(
 ): Promise<SportsBetResult> {
   try {
     if (bet.stake < 100)
-      return { success: false, error: "Minimum stake is ₹100" };
+      return { success: false, error: "Minimum stake is 🎰100" };
     if (bet.stake > 25000)
-      return { success: false, error: "Maximum stake is ₹25,000" };
+      return { success: false, error: "Maximum stake is 🎰25,000" };
 
     const betData: BetPlacement = {
       gameType: "SPORTS",

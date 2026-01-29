@@ -698,3 +698,4 @@ export function GenericCardGame({ game }: GenericCardGameProps) {
     </MainLayout>
   );
 }
+

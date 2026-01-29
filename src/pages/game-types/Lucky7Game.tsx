@@ -262,3 +262,4 @@ export function Lucky7Game({ game }: Lucky7GameProps) {
     </MainLayout>
   );
 }
+
