@@ -30,14 +30,16 @@ export const useAdminTransactions = () => {
       console.log("🔍 [useAdminTransactions] Fetching all transactions...");
 
       const { data, error } = await supabase
-        .from("transactions")
-        .select(`
+        .from("wallet_transactions")
+        .select(
+          `
           *,
-          profiles!transactions_user_id_fkey (
+          profiles!wallet_transactions_user_id_fkey (
             email,
             full_name
           )
-        `)
+        `,
+        )
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -45,7 +47,10 @@ export const useAdminTransactions = () => {
         throw error;
       }
 
-      console.log("✅ [useAdminTransactions] Fetched transactions:", data?.length);
+      console.log(
+        "✅ [useAdminTransactions] Fetched transactions:",
+        data?.length,
+      );
       return data || [];
     },
   });
@@ -59,13 +64,15 @@ export const useAdminBets = () => {
 
       const { data, error } = await supabase
         .from("bets")
-        .select(`
+        .select(
+          `
           *,
           profiles!bets_user_id_fkey (
             email,
             full_name
           )
-        `)
+        `,
+        )
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -86,17 +93,21 @@ export const useAdminStats = () => {
       console.log("🔍 [useAdminStats] Calculating stats...");
 
       // Fetch all data in parallel
-      const [usersRes, transactionsRes, betsRes, walletsRes] = await Promise.all([
-        supabase.from("profiles").select("*", { count: "exact", head: true }),
-        supabase.from("transactions").select("*", { count: "exact", head: true }),
-        supabase.from("bets").select("*", { count: "exact", head: true }),
-        supabase.from("wallets").select("balance"),
-      ]);
+      const [usersRes, transactionsRes, betsRes, walletsRes] =
+        await Promise.all([
+          supabase.from("profiles").select("*", { count: "exact", head: true }),
+          supabase
+            .from("transactions")
+            .select("*", { count: "exact", head: true }),
+          supabase.from("bets").select("*", { count: "exact", head: true }),
+          supabase.from("wallets").select("balance"),
+        ]);
 
       const totalUsers = usersRes.count || 0;
       const totalTransactions = transactionsRes.count || 0;
       const totalBets = betsRes.count || 0;
-      const totalBalance = walletsRes.data?.reduce((sum, w) => sum + (w.balance || 0), 0) || 0;
+      const totalBalance =
+        walletsRes.data?.reduce((sum, w) => sum + (w.balance || 0), 0) || 0;
 
       const stats = {
         totalUsers,
