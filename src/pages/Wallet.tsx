@@ -22,6 +22,7 @@ import {
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { cn } from "@/lib/utils";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { ChipAmount } from "@/components/ui/CasinoChip";
 
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || "");
@@ -264,7 +265,7 @@ const Wallet = () => {
     );
   };
 
-  const handleWithdrawAmountSubmit = () => {
+  const handleWithdrawAmountSubmit = async () => {
     const amount = parseFloat(withdrawAmount);
 
     // Validate Amount
@@ -272,12 +273,6 @@ const Wallet = () => {
       toast({
         title: "⚠️ Invalid Amount",
         description: "Please enter a valid amount",
-        variant: "destructive",
-      });
-      return;
-    }
-
-
         variant: "destructive",
       });
       return;
