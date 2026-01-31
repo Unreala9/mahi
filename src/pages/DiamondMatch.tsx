@@ -23,8 +23,18 @@ import type {
   BetType,
 } from "@/types/sports-betting";
 
+import { supabase } from "@/integrations/supabase/client";
+
 export default function DiamondMatch() {
   const { gmid, sid } = useParams();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+  }, []);
+
   const gmidNum = useMemo(() => (gmid ? parseInt(gmid, 10) : null), [gmid]);
   // Resolve sid from all matches if not provided in URL
   const { data: allMatches } = useAllMatches();
@@ -91,7 +101,8 @@ export default function DiamondMatch() {
     updateStake,
     clearBetSlip,
     placeBets,
-  } = useBettingLogic("user123"); // TODO: Get real user ID
+  } = useBettingLogic(user?.id || ""); 
+
 
   // Subscribe to real-time updates
   useEffect(() => {

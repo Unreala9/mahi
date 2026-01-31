@@ -534,6 +534,13 @@ class EnhancedSportsWebSocketService {
   getActiveSubscriptions(): number {
     return this.subscriptions.size;
   }
+
+  /**
+   * Check if service is connected/active
+   */
+  isConnected(): boolean {
+    return this.subscriptions.size > 0;
+  }
 }
 
 // Export singleton instance

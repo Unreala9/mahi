@@ -253,7 +253,7 @@ export function useBettingLogic(userId?: string) {
       try {
         const parsed = JSON.parse(String(err?.message || err));
         msg = parsed?.body?.error || parsed?.message || msg;
-      } catch {}
+      } catch { }
 
       toast({ title: "Error", description: msg, variant: "destructive" });
     } finally {
@@ -266,7 +266,9 @@ export function useBettingLogic(userId?: string) {
   const fetchMyBets = useCallback(async () => {
     if (!userId) return;
     try {
+      console.log("[BettingLogic] Fetching my bets for userId:", userId);
       const bets = await bettingService.getMyBets(50, 0, "pending");
+      console.log("[BettingLogic] Fetched bets:", bets);
       setPlacedBets(bets);
     } catch (error) {
       console.error("Failed to fetch bets", error);
@@ -305,6 +307,7 @@ export function useBettingLogic(userId?: string) {
     updateStake,
     clearBetSlip,
     placeBets,
+    fetchMyBets,
     setPlacedBets,
   };
 }

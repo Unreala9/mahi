@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Edit, Key, Ban, TrendingUp, TrendingDown, DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 import DateFilter from "./DateFilter";
-import { CasinoChip } from "@/components/ui/CasinoChip";
+import { CasinoChip, ChipAmount } from "@/components/ui/CasinoChip";
 import StatCard from "./StatCard";
 import { supabase } from "@/lib/supabase";
 
@@ -194,8 +194,7 @@ const UserDetailModal = ({ open, onOpenChange, user, onBanUser, onUnbanUser }: U
                     <TrendingUp className="w-5 h-5 text-green-400" />
                     <p className="text-gray-400 text-sm">Total Bet Amount</p>
                   </div>
-                  <p className="text-2xl font-bold text-green-400">{userBetStats.totalBetAmount.toFixed(2)}</p>
-                  <CasinoChip size="md" />
+                  <ChipAmount amount={userBetStats.totalBetAmount} size="lg" className="text-2xl text-green-400" />
                 </div>
 
                 <div className="bg-[#0A0E1A] rounded-lg p-4 border border-red-500/20">
@@ -203,8 +202,7 @@ const UserDetailModal = ({ open, onOpenChange, user, onBanUser, onUnbanUser }: U
                     <TrendingDown className="w-5 h-5 text-red-400" />
                     <p className="text-gray-400 text-sm">Total Winnings</p>
                   </div>
-                  <p className="text-2xl font-bold text-red-400">{userBetStats.totalWinnings.toFixed(2)}</p>
-                  <p className="text-xs text-gray-500 mt-1">Coins</p>
+                  <ChipAmount amount={userBetStats.totalWinnings} size="lg" className="text-2xl text-red-400" />
                 </div>
 
                 <div className="bg-[#0A0E1A] rounded-lg p-4 border border-blue-500/20">
@@ -212,8 +210,7 @@ const UserDetailModal = ({ open, onOpenChange, user, onBanUser, onUnbanUser }: U
                     <DollarSign className="w-5 h-5 text-blue-400" />
                     <p className="text-gray-400 text-sm">Total (GGR)</p>
                   </div>
-                  <p className="text-2xl font-bold text-blue-400">{(userBetStats.totalBetAmount - userBetStats.totalWinnings).toFixed(2)}</p>
-                  <p className="text-xs text-gray-500 mt-1">Coins</p>
+                  <ChipAmount amount={userBetStats.totalBetAmount - userBetStats.totalWinnings} size="lg" className="text-2xl text-blue-400" />
                 </div>
               </div>
             </div>
@@ -228,16 +225,14 @@ const UserDetailModal = ({ open, onOpenChange, user, onBanUser, onUnbanUser }: U
                 <div className="space-y-2">
                   <label className="text-gray-400 text-sm">Balance</label>
                   <div className="bg-[#0A0E1A] rounded-lg px-4 py-3 border border-white/10 flex items-center justify-between">
-                    <p className="text-white">{userWallet?.balance?.toFixed(2) || '0.00'}</p>
-                    <CasinoChip size="sm" />
+                    <ChipAmount amount={userWallet?.balance || 0} size="md" className="text-white" />
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-gray-400 text-sm">TopUp</label>
                   <div className="bg-[#0A0E1A] rounded-lg px-4 py-3 border border-white/10 flex items-center justify-between">
-                    <p className="text-white">0.00</p>
-                    <p className="text-blue-400 text-sm">Coins</p>
+                    <ChipAmount amount={0} size="sm" className="text-white" />
                   </div>
                 </div>
 

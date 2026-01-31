@@ -60,7 +60,7 @@ const AdminLayout = () => {
     { name: "Dashboard", path: "/admin", icon: LayoutDashboard },
     { name: "Users", path: "/admin/users", icon: Users },
     { name: "Bets", path: "/admin/bets", icon: Gamepad2 },
-    { name: "My transfers", path: "/admin/withdrawals", icon: Wallet },
+    { name: "Requests", path: "/admin/withdrawals", icon: Wallet },
     { name: "Transactions history", path: "/admin/transactions", icon: FileText },
   ];
 
