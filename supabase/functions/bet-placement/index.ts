@@ -163,6 +163,47 @@ serve(async (req) => {
           ? betData.stake * betData.odds
           : betData.stake * (betData.odds - 1);
 
+      // Calculate Exposure (Liability)
+      // BACK: Risk = Stake
+      // LAY: Risk = (Odds - 1) * Stake
+      let exposure = betData.stake;
+      if (betData.betType === "LAY") {
+        exposure = betData.stake * (betData.odds - 1);
+      }
+
+      const walletRes = await admin
+        .from("wallets")
+        .select("balance")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (walletRes.error) {
+        return json(500, {
+          success: false,
+          error: "Wallet fetch failed",
+          details: walletRes.error.message,
+        });
+      }
+
+      let balance = walletRes.data?.balance
+        ? Number(walletRes.data.balance)
+        : 0;
+
+      console.log(
+        `[BetPlacement] User: ${user.id}, Wallet Balance: ${balance}, Stake: ${betData.stake}, Exposure: ${exposure}`,
+      );
+
+      // Check if balance covers the EXCEPTED EXPOSURE, not just stake
+      if (balance < exposure) {
+        return json(400, {
+          success: false,
+          error: "Insufficient balance to cover exposure",
+          balance,
+          required: exposure,
+          userId: user.id,
+        });
+      }
+
       const providerBetId = `${betData.gameType.toLowerCase()}_${Date.now()}_${Math.random()
         .toString(36)
         .slice(2, 11)}`;
@@ -184,6 +225,11 @@ serve(async (req) => {
           status: "pending",
           bet_type: betData.betType,
           potential_payout: potentialPayout,
+          // New Fields
+          exposure: exposure,
+          bet_on: betData.marketName.toLowerCase().includes("fancy") ? "fancy" :
+            betData.marketName.toLowerCase().includes("bookmaker") ? "bookmaker" : "odds",
+          rate: 100, // Default to 100 for now, can be passed from frontend later
         })
         .select()
         .single();
@@ -229,16 +275,16 @@ serve(async (req) => {
       const { data: walletData, error: updateError } = await admin
         .rpc("deduct_balance", {
           p_user_id: user.id,
-          p_amount: betData.stake,
+          p_amount: exposure, // Use calculated exposure (Liability for LAY, Stake for BACK)
         });
 
       if (updateError) {
         console.error("Failed to update wallet balance (RPC):", updateError);
         // Rollback bet if money couldn't be deducted
-         await admin.from("bets").delete().eq("id", bet.id);
-         await admin.from("transactions").delete().eq("id", txInsert.data.id);
+        await admin.from("bets").delete().eq("id", bet.id);
+        await admin.from("transactions").delete().eq("id", txInsert.data.id);
 
-         return json(400, {
+        return json(400, {
           success: false,
           error: "Deduction failed",
           details: updateError.message,
