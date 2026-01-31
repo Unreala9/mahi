@@ -11,7 +11,6 @@ import {
   UserCircle,
 } from "lucide-react";
 import DateFilter from "@/components/admin/DateFilter";
-import { CasinoChip } from "@/components/ui/CasinoChip";
 
 const AdminDashboard = () => {
   const { data: stats, isLoading } = useAdminStats();
@@ -44,29 +43,19 @@ const AdminDashboard = () => {
         
         setUser(profile);
 
+        // Fetch admin wallet balance
+        const { data: wallet } = await supabase
+          .from("wallets")
+          .select("*")
+          .eq("user_id", session.user.id)
+          .single();
+        
+        setAdminWallet(wallet);
+
         // Get today's date range
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const todayISO = today.toISOString();
-
-        // Fetch ALL transaction stats (for admin balance calculation)
-        const { data: allDeposits } = await supabase
-          .from("transactions")
-          .select("amount")
-          .eq("type", "deposit")
-          .eq("status", "completed");
-
-        const { data: allWithdrawals } = await supabase
-          .from("transactions")
-          .select("amount")
-          .eq("type", "withdrawal")
-          .eq("status", "completed");
-
-        const totalAllDeposits = allDeposits?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0;
-        const totalAllWithdrawals = allWithdrawals?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0;
-        
-        // Admin balance = House revenue (all deposits - all withdrawals)
-        const adminBalance = totalAllDeposits - totalAllWithdrawals;
 
         // Fetch transaction stats (TODAY ONLY)
         const { data: deposits } = await supabase
@@ -92,13 +81,6 @@ const AdminDashboard = () => {
           depositsToday: totalDeposits, // Same as totalDeposits now
         });
 
-        // Set admin wallet with calculated balance
-        setAdminWallet({
-          balance: adminBalance,
-          total_deposits: totalAllDeposits,
-          total_withdrawals: totalAllWithdrawals,
-        });
-
         // Fetch bet stats (TODAY ONLY)
         const { data: bets } = await supabase
           .from("bets")
@@ -114,25 +96,25 @@ const AdminDashboard = () => {
         });
 
         // Fetch user role stats
-        const { count: cashiersCount } = await supabase
+        const { data: cashiers } = await supabase
           .from("profiles")
-          .select("*", { count: 'exact', head: true })
+          .select("id", { count: 'exact', head: true })
           .eq("role", "cashier");
 
-        const { count: adminsCount } = await supabase
+        const { data: admins } = await supabase
           .from("profiles")
-          .select("*", { count: 'exact', head: true })
+          .select("id", { count: 'exact', head: true })
           .eq("role", "admin");
 
-        const { count: newUsersTodayCount } = await supabase
+        const { data: newUsersToday } = await supabase
           .from("profiles")
-          .select("*", { count: 'exact', head: true })
-          .gte("created_at", todayISO);
+          .select("id", { count: 'exact', head: true })
+          .gte("created_at", today.toISOString());
 
         setUserRoleStats({
-          totalCashiers: cashiersCount || 0,
-          totalAdmins: adminsCount || 0,
-          registeredToday: newUsersTodayCount || 0,
+          totalCashiers: cashiers?.length || 0,
+          totalAdmins: admins?.length || 0,
+          registeredToday: newUsersToday?.length || 0,
         });
       }
     };
@@ -172,7 +154,7 @@ const AdminDashboard = () => {
             <div className="relative z-10">
               <p className="text-blue-100 text-sm mb-3">My Balance</p>
               <p className="text-5xl font-bold text-white mb-8">
-                {(adminWallet?.balance || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {adminWallet?.balance?.toLocaleString() || '0'}<span className="text-2xl">.00</span>
               </p>
               
               {/* Stacked stats on left */}
@@ -180,13 +162,13 @@ const AdminDashboard = () => {
                 <div>
                   <p className="text-blue-100 text-xs mb-1">Income for Today</p>
                   <p className="text-xl font-bold text-white">
-                    {transactionStats.depositsToday.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {transactionStats.depositsToday.toLocaleString()}<span className="text-sm">.00</span>
                   </p>
                 </div>
                 <div>
-                  <p className="text-blue-100 text-xs mb-1">Total User Balances</p>
+                  <p className="text-blue-100 text-xs mb-1">Total Balance (All Users)</p>
                   <p className="text-xl font-bold text-white">
-                    {(stats?.totalBalance || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {stats?.totalBalance?.toLocaleString() || '0'}<span className="text-sm">.00</span>
                   </p>
                 </div>
               </div>
@@ -267,7 +249,7 @@ const AdminDashboard = () => {
                   </div>
                   <p className="text-3xl font-bold text-green-400">{transactionStats.totalDeposits.toFixed(2)}</p>
                 </div>
-                <CasinoChip size="md" />
+                <p className="text-xs text-gray-500">USD</p>
               </div>
             </div>
 
@@ -280,7 +262,7 @@ const AdminDashboard = () => {
                   </div>
                   <p className="text-3xl font-bold text-red-400">{transactionStats.totalWithdrawals.toFixed(2)}</p>
                 </div>
-                <p className="text-xs text-gray-500">Coins</p>
+                <p className="text-xs text-gray-500">USD</p>
               </div>
             </div>
 
@@ -293,7 +275,7 @@ const AdminDashboard = () => {
                   </div>
                   <p className="text-3xl font-bold text-blue-400">{(transactionStats.totalDeposits - transactionStats.totalWithdrawals).toFixed(2)}</p>
                 </div>
-                <p className="text-xs text-gray-500">Coins</p>
+                <p className="text-xs text-gray-500">USD</p>
               </div>
             </div>
           </div>
@@ -318,7 +300,7 @@ const AdminDashboard = () => {
                   </div>
                   <p className="text-3xl font-bold text-green-400">{betStats.totalBetAmount.toFixed(2)}</p>
                 </div>
-                <p className="text-xs text-gray-500">Coins</p>
+                <p className="text-xs text-gray-500">USD</p>
               </div>
             </div>
 
@@ -331,7 +313,7 @@ const AdminDashboard = () => {
                   </div>
                   <p className="text-3xl font-bold text-red-400">{betStats.totalWinnings.toFixed(2)}</p>
                 </div>
-                <p className="text-xs text-gray-500">Coins</p>
+                <p className="text-xs text-gray-500">USD</p>
               </div>
             </div>
 
@@ -344,7 +326,7 @@ const AdminDashboard = () => {
                   </div>
                   <p className="text-3xl font-bold text-blue-400">{(betStats.totalBetAmount - betStats.totalWinnings).toFixed(2)}</p>
                 </div>
-                <p className="text-xs text-gray-500">Coins</p>
+                <p className="text-xs text-gray-500">USD</p>
               </div>
             </div>
           </div>
@@ -359,7 +341,7 @@ const AdminDashboard = () => {
           </div>
           <div>
             <p className="text-white font-semibold">{user?.full_name || "Super_Admin"} <span className="text-gray-400 font-normal">({user?.role || "Super Admin"})</span></p>
-            <p className="text-gray-500 text-sm">ID: {user?.id?.substring(0, 8)} • Balance: <span className="text-blue-400 inline-flex items-center gap-1"><CasinoChip size="sm" />{adminWallet?.balance?.toFixed(2) || '0.00'}</span></p>
+            <p className="text-gray-500 text-sm">ID: {user?.id?.substring(0, 8)} • Balance: <span className="text-blue-400">{adminWallet?.balance?.toFixed(2) || '0.00'} USD</span></p>
           </div>
         </div>
       )}

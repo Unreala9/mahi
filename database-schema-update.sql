@@ -12,7 +12,10 @@ ADD COLUMN IF NOT EXISTS selection_name TEXT,
 ADD COLUMN IF NOT EXISTS potential_payout DECIMAL(10, 2),
 ADD COLUMN IF NOT EXISTS bet_type TEXT CHECK (bet_type IN ('BACK', 'LAY')),
 ADD COLUMN IF NOT EXISTS settled_at TIMESTAMPTZ,
-ADD COLUMN IF NOT EXISTS payout DECIMAL(10, 2);
+ADD COLUMN IF NOT EXISTS payout DECIMAL(10, 2),
+ADD COLUMN IF NOT EXISTS bet_on TEXT CHECK (bet_on IN ('odds', 'fancy', 'bookmaker')),
+ADD COLUMN IF NOT EXISTS exposure DECIMAL(10, 2) DEFAULT 0,
+ADD COLUMN IF NOT EXISTS rate DECIMAL(10, 2) DEFAULT 100;
 
 -- Ensure wallet_transactions table exists with proper structure
 CREATE TABLE IF NOT EXISTS wallet_transactions (
@@ -77,6 +80,15 @@ CREATE POLICY "Service role full access to bets"
 ALTER TABLE wallets
 ADD COLUMN IF NOT EXISTS balance DECIMAL(10, 2) DEFAULT 0 CHECK (balance >= 0);
 
+-- Update users table (handled via auth.users but custom data often in public.users or profiles)
+-- Assuming a public.users table mirrors auth.users for app data
+CREATE TABLE IF NOT EXISTS public.users (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  username TEXT,
+  partnership_share DECIMAL(5, 2) DEFAULT 0,
+  parentid UUID REFERENCES auth.users(id)
+);
+
 -- Update existing user wallet with initial balance if needed
 -- This is safe to run multiple times
 INSERT INTO wallets (user_id, balance)
@@ -108,6 +120,8 @@ GRANT ALL ON bets TO service_role;
 GRANT SELECT ON bets TO authenticated;
 GRANT ALL ON wallets TO service_role;
 GRANT SELECT, UPDATE ON wallets TO authenticated;
+GRANT ALL ON public.users TO service_role;
+GRANT SELECT, UPDATE ON public.users TO authenticated;
 
 -- Verify tables
 SELECT 'Tables are ready!' as status;
