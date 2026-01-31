@@ -56,7 +56,7 @@ DECLARE
   v_tx RECORD;
 BEGIN
   -- Get Transaction
-  SELECT * INTO v_tx FROM public.transactions WHERE id = p_transaction_id FOR UPDATE;
+  SELECT * INTO v_tx FROM public.wallet_transactions WHERE id = p_transaction_id FOR UPDATE;
 
   IF v_tx.status != 'pending' THEN
     RAISE EXCEPTION 'Transaction is not pending';
@@ -72,8 +72,8 @@ BEGIN
   WHERE user_id = v_tx.user_id;
 
   -- Update Transaction Status
-  UPDATE public.transactions
-  SET status = 'failed', completed_at = NOW()
+  UPDATE public.wallet_transactions
+  SET status = 'failed', updated_at = NOW()
   WHERE id = p_transaction_id;
 
   RETURN jsonb_build_object('success', true);
@@ -88,8 +88,8 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  UPDATE public.transactions
-  SET status = 'completed', completed_at = NOW()
+  UPDATE public.wallet_transactions
+  SET status = 'completed', updated_at = NOW()
   WHERE id = p_transaction_id AND status = 'pending';
 
   RETURN jsonb_build_object('success', true);

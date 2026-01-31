@@ -87,6 +87,7 @@ export default function DiamondMatch() {
   // Real-time odds state
   const [oddsData, setOddsData] = useState<MatchOddsData>({});
   const [oddsLoading, setOddsLoading] = useState(true);
+  const [streamLoaded, setStreamLoaded] = useState(false);
 
   // Betting logic hook
   const {
@@ -252,19 +253,25 @@ export default function DiamondMatch() {
                           title="Live Match Stream"
                           allow="autoplay; fullscreen"
                           allowFullScreen
+                          onLoad={() => {
+                            setStreamLoaded(true);
+                            console.log("[DiamondMatch] Stream loaded successfully");
+                          }}
                           onError={(e) => {
                             console.warn(
                               "[DiamondMatch] Stream iframe failed to load",
                             );
-                            e.currentTarget.style.display = "none";
+                            setStreamLoaded(false);
                           }}
                         />
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <p className="text-xs text-muted-foreground bg-background/80 px-3 py-2 rounded">
-                            If stream doesn't load, it may not be available for
-                            this match
-                          </p>
-                        </div>
+                        {!streamLoaded && (
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <p className="text-xs text-muted-foreground bg-background/80 px-3 py-2 rounded">
+                              If stream doesn't load, it may not be available for
+                              this match
+                            </p>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div className="p-6 text-center text-muted-foreground">

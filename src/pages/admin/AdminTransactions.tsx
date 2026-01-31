@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -10,6 +10,7 @@ const AdminTransactions = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: transactions = [], isLoading } = useAdminTransactions();
+  const [processingId, setProcessingId] = useState<string | null>(null);
 
   const handleAction = async (id: string, status: "completed" | "failed") => {
     const { error } = await supabase.from("transactions").update({ status, processed_at: new Date().toISOString() }).eq("id", id);
