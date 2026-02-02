@@ -2,22 +2,12 @@ import { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useCasinoWebSocket } from "@/hooks/api/useCasinoWebSocket";
 import { CasinoGame } from "@/types/casino";
-import { placeCasinoBet } from "@/services/casino";
-import { bettingService } from "@/services/bettingService";
-import { supabase } from "@/integrations/supabase/client";
+import { isMarketActive } from "@/lib/casinoUtils";
+import { casinoBettingService } from "@/services/casinoBettingService";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import {
-  Wifi,
-  WifiOff,
-  Clock,
-  DollarSign,
-  Flame,
-  Zap,
-  History,
-  Target,
-} from "lucide-react";
+import { RefreshCw, Trash2, X } from "lucide-react";
 
 interface DragonTigerGameProps {
   game: CasinoGame;
@@ -30,72 +20,64 @@ interface Bet {
   odds: number;
 }
 
-export function DragonTigerGame({ game }: DragonTigerGameProps) {
+export default function DragonTigerGame({ game }: DragonTigerGameProps) {
   const [bets, setBets] = useState<Bet[]>([]);
-  const [placedBets, setPlacedBets] = useState<any[]>([]);
   const [selectedChip, setSelectedChip] = useState(100);
   const [pulseTimer, setPulseTimer] = useState(false);
-  const [userId, setUserId] = useState<string | undefined>();
-  const { gameData, resultData, isConnected } = useCasinoWebSocket(game.gmid);
+  const { gameData, resultData } = useCasinoWebSocket(game.gmid);
 
-  const chips = [100, 500, 1000, 5000, 10000, 25000];
-
-  // Get user ID
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUserId(session?.user?.id);
-    });
-  }, []);
-
-  // Function to fetch placed bets
-  const fetchPlacedBets = async () => {
-    if (!userId) return;
-    try {
-      console.log(
-        "[DragonTiger] Fetching placed bets for user:",
-        userId,
-        "Game:",
-        game.gmid,
-      );
-      const allBets = await bettingService.getMyBets(50, 0);
-      console.log("[DragonTiger] All fetched bets:", allBets);
-
-      // Filter for this specific game only
-      const thisGameBets = allBets.filter((bet) => {
-        const isCasino =
-          bet.game_type === "CASINO" ||
-          bet.sport === "CASINO" ||
-          bet.gameType === "CASINO";
-        const isThisGame =
-          bet.game_id === game.gmid ||
-          bet.gameId === game.gmid ||
-          bet.game === game.gname;
-        return isCasino && isThisGame;
-      });
-
-      console.log(
-        "[DragonTiger] Filtered bets for game",
-        game.gmid,
-        ":",
-        thisGameBets,
-      );
-      setPlacedBets(thisGameBets);
-    } catch (error) {
-      console.error("[DragonTiger] Error fetching placed bets:", error);
+  // Generate chip values based on available markets' min/max limits
+  const generateChipValues = () => {
+    if (!gameData?.sub || gameData.sub.length === 0) {
+      return [100, 500, 1000, 5000, 10000];
     }
+
+    // Get min and max from all active markets
+    const activeMarkets = gameData.sub.filter(isMarketActive);
+    if (activeMarkets.length === 0) {
+      return [100, 500, 1000, 5000, 10000];
+    }
+
+    const minLimit = Math.min(...activeMarkets.map((m: any) => m.min));
+    const maxLimit = Math.max(...activeMarkets.map((m: any) => m.max));
+
+    // Generate smart chip values based on limits
+    const chips: number[] = [];
+
+    // Always include min
+    chips.push(minLimit);
+
+    // Add intermediate values
+    const range = maxLimit - minLimit;
+    if (range > 0) {
+      if (minLimit * 5 <= maxLimit) chips.push(minLimit * 5);
+      if (minLimit * 10 <= maxLimit) chips.push(minLimit * 10);
+      if (minLimit * 50 <= maxLimit) chips.push(minLimit * 50);
+      if (minLimit * 100 <= maxLimit) chips.push(minLimit * 100);
+
+      // Add max if it's significantly different
+      if (maxLimit > chips[chips.length - 1] * 1.5) {
+        chips.push(maxLimit);
+      }
+    }
+
+    // Limit to 6 chips max
+    return chips.slice(0, 6);
   };
 
-  // Fetch placed bets when user is authenticated
-  useEffect(() => {
-    if (userId) {
-      fetchPlacedBets();
-    }
-  }, [userId]);
+  const chips = generateChipValues();
 
   useEffect(() => {
     const timer = gameData?.lt || 0;
     setPulseTimer(timer <= 10 && timer > 0);
   }, [gameData?.lt]);
+
+  // Update selected chip if it becomes invalid
+  useEffect(() => {
+    if (chips.length > 0 && !chips.includes(selectedChip)) {
+      setSelectedChip(chips[0]);
+    }
+  }, [chips, selectedChip]);
 
   const handleMarketClick = (market: any) => {
     if (market.gstatus === "SUSPENDED") {
@@ -107,16 +89,45 @@ export function DragonTigerGame({ game }: DragonTigerGameProps) {
       return;
     }
 
+    // Validate stake against market limits
+    if (selectedChip < market.min) {
+      toast({
+        title: "⚠️ Stake Too Low",
+        description: `Minimum bet for ${market.nat} is ₹${market.min}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (selectedChip > market.max) {
+      toast({
+        title: "⚠️ Stake Too High",
+        description: `Maximum bet for ${market.nat} is ₹${market.max.toLocaleString()}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     const existingBet = bets.find((b) => b.sid === market.sid);
     if (existingBet) {
+      const newStake = existingBet.stake + selectedChip;
+
+      // Check if new total exceeds max
+      if (newStake > market.max) {
+        toast({
+          title: "⚠️ Exceeds Maximum",
+          description: `Total stake would be ₹${newStake}, max is ₹${market.max.toLocaleString()}`,
+          variant: "destructive",
+        });
+        return;
+      }
+
       setBets(
-        bets.map((b) =>
-          b.sid === market.sid ? { ...b, stake: b.stake + selectedChip } : b,
-        ),
+        bets.map((b) => (b.sid === market.sid ? { ...b, stake: newStake } : b)),
       );
       toast({
         title: "✅ Bet Updated",
-        description: `${market.nat}: ₹${existingBet.stake + selectedChip}`,
+        description: `${market.nat}: ₹${newStake}`,
       });
     } else {
       setBets([
@@ -147,11 +158,16 @@ export function DragonTigerGame({ game }: DragonTigerGameProps) {
 
     try {
       for (const bet of bets) {
-        await placeCasinoBet({
-          type: game.gmid,
-          mid: gameData?.mid,
-          sid: bet.sid,
+        await casinoBettingService.placeCasinoBet({
+          gameId: game.gmid,
+          gameName: game.gname,
+          roundId: gameData?.mid?.toString() || "",
+          marketId: bet.sid.toString(),
+          marketName: bet.nat,
+          selection: bet.nat,
+          odds: bet.odds,
           stake: bet.stake,
+          betType: "BACK",
         });
       }
 
@@ -168,8 +184,6 @@ export function DragonTigerGame({ game }: DragonTigerGameProps) {
       });
 
       setBets([]);
-      // Fetch placed bets to update "My Bets" section
-      setTimeout(() => fetchPlacedBets(), 1000);
     } catch (error) {
       toast({
         title: "Error",
@@ -476,77 +490,6 @@ export function DragonTigerGame({ game }: DragonTigerGameProps) {
             >
               Clear All
             </Button>
-
-            {/* My Bets Section */}
-            {userId && (
-              <div className="mt-6 pt-6 border-t-2 border-slate-700">
-                <div className="flex items-center gap-2 mb-4">
-                  <History className="w-5 h-5 text-yellow-500" />
-                  <h3 className="text-white font-bold">My Bets</h3>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={fetchPlacedBets}
-                    className="ml-auto h-6 text-xs text-slate-400 hover:text-white"
-                  >
-                    Refresh
-                  </Button>
-                </div>
-
-                <div className="space-y-2 max-h-[300px] overflow-y-auto">
-                  {placedBets.length === 0 ? (
-                    <Card className="bg-slate-700/50 border-slate-600 p-4 text-center">
-                      <Target className="w-6 h-6 text-slate-500 mx-auto mb-2" />
-                      <p className="text-slate-500 text-xs">
-                        No bets placed yet
-                      </p>
-                    </Card>
-                  ) : (
-                    placedBets.map((bet, index) => (
-                      <Card
-                        key={bet.id || index}
-                        className="p-2 bg-slate-700 border-slate-600 hover:border-slate-500 transition-colors"
-                      >
-                        <div className="flex justify-between items-start mb-1">
-                          <div className="flex-1">
-                            <p className="text-white font-semibold text-xs">
-                              {bet.selection || bet.selection_name}
-                            </p>
-                            <p className="text-slate-400 text-xs">
-                              {bet.market_name || bet.market}
-                            </p>
-                          </div>
-                          <div
-                            className={`px-2 py-0.5 rounded text-xs font-semibold ${
-                              bet.status === "pending"
-                                ? "bg-yellow-600/20 text-yellow-400"
-                                : bet.status === "won" || bet.status === "win"
-                                  ? "bg-green-600/20 text-green-400"
-                                  : bet.status === "lost" ||
-                                      bet.status === "loss"
-                                    ? "bg-red-600/20 text-red-400"
-                                    : "bg-slate-600/20 text-slate-400"
-                            }`}
-                          >
-                            {bet.status?.toUpperCase()}
-                          </div>
-                        </div>
-                        <div className="flex justify-between text-xs">
-                          <span className="text-slate-400">
-                            ₹{bet.stake} @ {bet.odds}
-                          </span>
-                          {bet.potential_return && (
-                            <span className="text-green-400 font-semibold">
-                              ₹{bet.potential_return.toFixed(2)}
-                            </span>
-                          )}
-                        </div>
-                      </Card>
-                    ))
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>

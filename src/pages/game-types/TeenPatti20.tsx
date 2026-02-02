@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +8,9 @@ import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { ArrowLeft, Clock, Users, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "@/hooks/use-toast";
+import { bettingService } from "@/services/bettingService";
+import { fetchCasinoResult } from "@/services/casino";
 
 const HAND_RANKINGS = [
   { name: "Trail", desc: "Three of a kind", icon: "🔥" },
@@ -18,11 +22,29 @@ const HAND_RANKINGS = [
 ];
 
 const PLAYER_SEATS = [
-  { id: 1, username: "Player1", chips: 2500, lastAction: "Chaal", avatar: "👤" },
+  {
+    id: 1,
+    username: "Player1",
+    chips: 2500,
+    lastAction: "Chaal",
+    avatar: "👤",
+  },
   { id: 2, username: "Player2", chips: 3200, lastAction: "Pack", avatar: "👨" },
   { id: 3, username: "Player3", chips: 1800, lastAction: "Show", avatar: "👩" },
-  { id: 4, username: "Player4", chips: 4100, lastAction: "Chaal", avatar: "🧑" },
-  { id: 5, username: "Player5", chips: 2900, lastAction: "Chaal", avatar: "👴" },
+  {
+    id: 4,
+    username: "Player4",
+    chips: 4100,
+    lastAction: "Chaal",
+    avatar: "🧑",
+  },
+  {
+    id: 5,
+    username: "Player5",
+    chips: 2900,
+    lastAction: "Chaal",
+    avatar: "👴",
+  },
 ];
 
 const HISTORY_HANDS = [
@@ -40,12 +62,44 @@ export default function TeenPatti20() {
   const [myCards] = useState(["🂡", "🂮", "🃋"]);
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
 
+  // Fetch live results from API
+  const { data: apiResults } = useQuery({
+    queryKey: ["casino-results", "teen20"],
+    queryFn: () => fetchCasinoResult("teen20"),
+    refetchInterval: 5000, // Refresh every 5 seconds
+    retry: 1,
+  });
+
   useEffect(() => {
     const timer = setInterval(() => {
       setCountdown((prev) => (prev > 0 ? prev - 1 : 15));
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  const handlePlaceBet = async () => {
+    if (chaalAmount[0] === 0) {
+      toast({ title: "Please select bet amount", variant: "destructive" });
+      return;
+    }
+
+    try {
+      await bettingService.placeBet({
+        gameType: "CASINO",
+        gameId: "teen20",
+        gameName: "Teen Patti 20",
+        marketId: "chaal",
+        marketName: "Chaal",
+        selection: "Chaal",
+        odds: 2.0,
+        stake: chaalAmount[0],
+        betType: "BACK",
+      });
+      setChaalAmount([bootAmount * 2]);
+    } catch (error) {
+      console.error("Failed to place bet:", error);
+    }
+  };
 
   return (
     <MainLayout>
@@ -57,7 +111,7 @@ export default function TeenPatti20() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate("/casino-lobby")}
+                onClick={() => navigate("/casino")}
                 className="text-gray-400 hover:text-white"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
@@ -117,7 +171,9 @@ export default function TeenPatti20() {
                       className="bg-gray-900/50 rounded p-2 border border-gray-700"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-400 text-xs">{hand.round}</span>
+                        <span className="text-gray-400 text-xs">
+                          {hand.round}
+                        </span>
                         <span className="text-yellow-500 text-xs font-bold">
                           ₹{hand.amount}
                         </span>
@@ -142,8 +198,12 @@ export default function TeenPatti20() {
                     <div className="bg-gradient-to-br from-yellow-600 to-yellow-800 rounded-full p-6 shadow-2xl shadow-yellow-600/50 border-4 border-yellow-500/50">
                       <div className="text-center">
                         <p className="text-yellow-200 text-xs mb-1">POT</p>
-                        <p className="text-white font-bold text-3xl">₹{potAmount}</p>
-                        <p className="text-yellow-200 text-xs mt-1">Boot: ₹{bootAmount}</p>
+                        <p className="text-white font-bold text-3xl">
+                          ₹{potAmount}
+                        </p>
+                        <p className="text-yellow-200 text-xs mt-1">
+                          Boot: ₹{bootAmount}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -183,8 +243,8 @@ export default function TeenPatti20() {
                               player.lastAction === "Pack"
                                 ? "bg-red-900/50 border-red-600"
                                 : player.lastAction === "Chaal"
-                                ? "bg-green-900/50 border-green-600"
-                                : "bg-blue-900/50 border-blue-600"
+                                  ? "bg-green-900/50 border-green-600"
+                                  : "bg-blue-900/50 border-blue-600",
                             )}
                           >
                             {player.lastAction}
@@ -212,7 +272,9 @@ export default function TeenPatti20() {
                       {/* Chaal Slider */}
                       <div className="mb-4">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-gray-400 text-sm">Chaal Amount</span>
+                          <span className="text-gray-400 text-sm">
+                            Chaal Amount
+                          </span>
                           <span className="text-yellow-500 font-bold text-lg">
                             ₹{chaalAmount[0]}
                           </span>
@@ -238,7 +300,8 @@ export default function TeenPatti20() {
                           onClick={() => setSelectedAction("pack")}
                           className={cn(
                             "border-red-600 text-red-500 hover:bg-red-600 hover:text-white",
-                            selectedAction === "pack" && "bg-red-600 text-white"
+                            selectedAction === "pack" &&
+                              "bg-red-600 text-white",
                           )}
                         >
                           Pack
@@ -247,7 +310,8 @@ export default function TeenPatti20() {
                           onClick={() => setSelectedAction("chaal")}
                           className={cn(
                             "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800",
-                            selectedAction === "chaal" && "ring-2 ring-green-400"
+                            selectedAction === "chaal" &&
+                              "ring-2 ring-green-400",
                           )}
                         >
                           Chaal
@@ -257,7 +321,8 @@ export default function TeenPatti20() {
                           onClick={() => setSelectedAction("sideshow")}
                           className={cn(
                             "border-blue-600 text-blue-500 hover:bg-blue-600 hover:text-white",
-                            selectedAction === "sideshow" && "bg-blue-600 text-white"
+                            selectedAction === "sideshow" &&
+                              "bg-blue-600 text-white",
                           )}
                         >
                           Side Show
@@ -266,7 +331,8 @@ export default function TeenPatti20() {
                           onClick={() => setSelectedAction("show")}
                           className={cn(
                             "bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700",
-                            selectedAction === "show" && "ring-2 ring-yellow-400"
+                            selectedAction === "show" &&
+                              "ring-2 ring-yellow-400",
                           )}
                         >
                           Show
@@ -300,6 +366,12 @@ export default function TeenPatti20() {
                           8x
                         </Button>
                       </div>
+                      <Button
+                        onClick={handlePlaceBet}
+                        className="w-full mt-3 bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 font-bold"
+                      >
+                        PLACE BET (₹{chaalAmount[0]})
+                      </Button>
                     </Card>
                   </div>
                 </div>

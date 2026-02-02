@@ -1,4 +1,3 @@
-import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,8 +5,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect } from "react";
 import { diamondWS } from "@/services/websocket";
-<<<<<<< HEAD
-=======
 import { settlementMonitor } from "@/services/autoSettlementService";
 import { resultWebSocket } from "@/services/resultWebSocket";
 import Index from "./pages/Index";
@@ -16,50 +13,137 @@ import Sportsbook from "./pages/Sportsbook";
 import CasinoLive from "./pages/CasinoLive";
 import Casino from "./pages/Casino";
 import CasinoGame from "./pages/CasinoGame";
-import CasinoLobby from "./pages/CasinoLobby";
-import GenericGameTemplate from "./pages/GenericGameTemplate";
->>>>>>> 8913c804a0072c7a75fad46c0eb1cd32592acb6f
+import TeenPatti20 from "./pages/game-types/TeenPatti20";
+import OurRoulette from "./pages/game-types/OurRoulette";
+import DragonTiger20 from "./pages/game-types/DragonTiger20";
+import AndarBahar20 from "./pages/game-types/AndarBahar20";
+import Card32EU from "./pages/game-types/Card32EU";
+import Baccarat from "./pages/game-types/Baccarat";
+import Poker20 from "./pages/game-types/Poker20";
+import Lucky7 from "./pages/game-types/Lucky7";
+import Worli from "./pages/game-types/Worli";
+import BallByBall from "./pages/game-types/BallByBall";
+import ThreeCardJ from "./pages/game-types/ThreeCardJ";
+import CasinoWar from "./pages/game-types/CasinoWar";
+import DragonTiger6 from "./pages/game-types/DragonTiger6";
+import AndarBaharJ from "./pages/game-types/AndarBaharJ";
+import Card32J from "./pages/game-types/Card32J";
+import BaccaratTable from "./pages/game-types/BaccaratTable";
+import Lucky7EU from "./pages/game-types/Lucky7EU";
+import Race20 from "./pages/game-types/Race20";
+import Joker20 from "./pages/game-types/Joker20";
+import KBC from "./pages/game-types/KBC";
+import Sicbo from "./pages/game-types/Sicbo";
+import Sicbo2 from "./pages/game-types/Sicbo2";
+import Worli3 from "./pages/game-types/Worli3";
 
-// Lazy load page components
-const Index = lazy(() => import("./pages/Index"));
-const Auth = lazy(() => import("./pages/Auth"));
-const Sportsbook = lazy(() => import("./pages/Sportsbook"));
-const CasinoLive = lazy(() => import("./pages/CasinoLive"));
-const Casino = lazy(() => import("./pages/Casino"));
-const CasinoGame = lazy(() => import("./pages/CasinoGame"));
-const Wallet = lazy(() => import("./pages/Wallet"));
-const Bets = lazy(() => import("./pages/Bets"));
-const Profile = lazy(() => import("./pages/Profile"));
-const DiamondMatch = lazy(() => import("./pages/DiamondMatch"));
-const ApiTest = lazy(() => import("./pages/ApiTest"));
-const Terms = lazy(() => import("./pages/Terms"));
-const Privacy = lazy(() => import("./pages/Privacy"));
-const ResponsibleGaming = lazy(() => import("./pages/ResponsibleGaming"));
-const Contact = lazy(() => import("./pages/Contact"));
-const FAQ = lazy(() => import("./pages/FAQ"));
-const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
-const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
-const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
-const AdminTransactions = lazy(() => import("./pages/admin/AdminTransactions"));
-const AdminBets = lazy(() => import("./pages/admin/AdminBets"));
-const AdminGames = lazy(() => import("./pages/admin/AdminGames"));
-const AdminAuditLogs = lazy(() => import("./pages/admin/AdminAuditLogs"));
-const AdminWithdrawals = lazy(() => import("./pages/admin/AdminWithdrawals"));
-const NotFound = lazy(() => import("./pages/NotFound"));
+// Additional Game Imports
+import Aaa2Game from "./pages/game-types/Aaa2Game";
+import AbjGame from "./pages/game-types/AbjGame";
+import AndarBaharGame from "./pages/game-types/AndarBaharGame";
+import AndarBaharVariantGame from "./pages/game-types/AndarBaharVariantGame";
+import Baccarat2Game from "./pages/game-types/Baccarat2Game";
+import BaccaratGame from "./pages/game-types/BaccaratGame";
+import BaccaratVariantGame from "./pages/game-types/BaccaratVariantGame";
+import BallByBallGame from "./pages/game-types/BallByBallGame";
+import BeachRouletteGame from "./pages/game-types/BeachRouletteGame";
+import BollywoodGameSuite from "./pages/game-types/BollywoodGameSuite";
+import Btable2Game from "./pages/game-types/Btable2Game";
+import Card32VariantGame from "./pages/game-types/Card32VariantGame";
+import CasinoWarGame from "./pages/game-types/CasinoWarGame";
+import CricketLine2Game from "./pages/game-types/CricketLine2Game";
+import CricketLineGame from "./pages/game-types/CricketLineGame";
+import CricketMatchMeterGame from "./pages/game-types/CricketMatchMeterGame";
+import CricketMeter1Game from "./pages/game-types/CricketMeter1Game";
+import CricketMeterGame from "./pages/game-types/CricketMeterGame";
+import CricketV3Game from "./pages/game-types/CricketV3Game";
+import Dolidana2Game from "./pages/game-types/Dolidana2Game";
+import DolidanaGame from "./pages/game-types/DolidanaGame";
+import DragonTigerGame from "./pages/game-types/DragonTigerGame";
+import DragonTigerVariantGame from "./pages/game-types/DragonTigerVariantGame";
+import DT202Game from "./pages/game-types/DT202Game";
+import DTL20Game from "./pages/game-types/DTL20Game";
+import DTL20ProGame from "./pages/game-types/DTL20ProGame";
+import Dum10Game from "./pages/game-types/Dum10Game";
+import FantasyCricketGame from "./pages/game-types/FantasyCricketGame";
+import FootballLiveGame from "./pages/game-types/FootballLiveGame";
+import GoalGame from "./pages/game-types/GoalGame";
+import GoldenRouletteGame from "./pages/game-types/GoldenRouletteGame";
+import Joker120Game from "./pages/game-types/Joker120Game";
+import JokerGame from "./pages/game-types/JokerGame";
+import KbcGame from "./pages/game-types/KbcGame";
+import LottCard2Game from "./pages/game-types/LottCard2Game";
+import LottCardGame from "./pages/game-types/LottCardGame";
+import Lucky7EU2Game from "./pages/game-types/Lucky7EU2Game";
+import Lucky7EuropeanGame from "./pages/game-types/Lucky7EuropeanGame";
+import Lucky7Game from "./pages/game-types/Lucky7Game";
+import Lucky7GGame from "./pages/game-types/Lucky7GGame";
+import MatkaGame from "./pages/game-types/MatkaGame";
+import MatkaMarketGame from "./pages/game-types/MatkaMarketGame";
+import MogamboGame from "./pages/game-types/MogamboGame";
+import NotenumGame from "./pages/game-types/NotenumGame";
+import Patti2Game from "./pages/game-types/Patti2Game";
+import Poison20Game from "./pages/game-types/Poison20Game";
+import PoisonGame from "./pages/game-types/PoisonGame";
+import Poker6Game from "./pages/game-types/Poker6Game";
+import PokerGame from "./pages/game-types/PokerGame";
+import QueenTeenPattiGame from "./pages/game-types/QueenTeenPattiGame";
+import Race17Game from "./pages/game-types/Race17Game";
+import Race2Game from "./pages/game-types/Race2Game";
+import RaceAdvancedGame from "./pages/game-types/RaceAdvancedGame";
+import RaceGame from "./pages/game-types/RaceGame";
+import RouletteGame from "./pages/game-types/RouletteGame";
+import SicBoGame from "./pages/game-types/SicBoGame";
+import SicBoVariantGame from "./pages/game-types/SicBoVariantGame";
+import Superover2Game from "./pages/game-types/Superover2Game";
+import SuperOver3Game from "./pages/game-types/SuperOver3Game";
+import Teen120Game from "./pages/game-types/Teen120Game";
+import Teen1Game from "./pages/game-types/Teen1Game";
+import Teen20BGame from "./pages/game-types/Teen20BGame";
+import Teen20CGame from "./pages/game-types/Teen20CGame";
+import Teen32Game from "./pages/game-types/Teen32Game";
+import Teen33Game from "./pages/game-types/Teen33Game";
+import Teen3Game from "./pages/game-types/Teen3Game";
+import Teen41Game from "./pages/game-types/Teen41Game";
+import Teen42Game from "./pages/game-types/Teen42Game";
+import Teen6Game from "./pages/game-types/Teen6Game";
+import Teen8Game from "./pages/game-types/Teen8Game";
+import Teen9Game from "./pages/game-types/Teen9Game";
+import Teenmuf2Game from "./pages/game-types/Teenmuf2Game";
+import TeenPatti1DayGame from "./pages/game-types/TeenPatti1DayGame";
+import TeenpattiGame from "./pages/game-types/TeenpattiGame";
+import TheTrapGame from "./pages/game-types/TheTrapGame";
+import ThreeCardJudgementGame from "./pages/game-types/ThreeCardJudgementGame";
+import Trap20Game from "./pages/game-types/Trap20Game";
+import TrapRacingGame from "./pages/game-types/TrapRacingGame";
+import UniqueRouletteGame from "./pages/game-types/UniqueRouletteGame";
+import WorliVariant2Game from "./pages/game-types/WorliVariant2Game";
+import WorliVariant3Game from "./pages/game-types/WorliVariant3Game";
+
+import Wallet from "./pages/Wallet";
+import Bets from "./pages/Bets";
+import Profile from "./pages/Profile";
+import DiamondMatch from "./pages/DiamondMatch";
+import ApiTest from "./pages/ApiTest";
+
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import ResponsibleGaming from "./pages/ResponsibleGaming";
+import Contact from "./pages/Contact";
+import FAQ from "./pages/FAQ";
 
 import AdminLayout from "./components/admin/AdminLayout";
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminTransactions from "./pages/admin/AdminTransactions";
+import AdminBets from "./pages/admin/AdminBets";
+import AdminGames from "./pages/admin/AdminGames";
+import AdminAuditLogs from "./pages/admin/AdminAuditLogs";
+import AdminWithdrawals from "./pages/admin/AdminWithdrawals";
+import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import TestSettlement from "./pages/TestSettlement";
-
-// Loading fallback component
-const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center bg-[#020817]">
-    <div className="relative w-16 h-16">
-      <div className="absolute inset-0 border-4 border-yellow-500/20 rounded-full"></div>
-      <div className="absolute inset-0 border-4 border-t-yellow-500 rounded-full animate-spin"></div>
-    </div>
-  </div>
-);
 
 const queryClient = new QueryClient();
 
@@ -114,75 +198,6 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-<<<<<<< HEAD
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/faq" element={<FAQ />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/privacy" element={<Privacy />} />
-              <Route
-                path="/responsible-gaming"
-                element={<ResponsibleGaming />}
-              />
-              <Route path="/api-test" element={<ApiTest />} />
-
-              {/* Redirect old dashboard to sports */}
-              <Route
-                path="/dashboard"
-                element={<Navigate to="/sports" replace />}
-              />
-              <Route
-                path="/sports"
-                element={
-                  <ProtectedRoute>
-                    <Sportsbook />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/match/:gmid/:sid"
-                element={
-                  <ProtectedRoute>
-                    <DiamondMatch />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/match/:gmid"
-                element={
-                  <ProtectedRoute>
-                    <DiamondMatch />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/casino-live"
-                element={
-                  <ProtectedRoute>
-                    <CasinoLive />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/casino"
-                element={
-                  <ProtectedRoute>
-                    <Casino />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/casino/:gmid"
-                element={
-                  <ProtectedRoute>
-                    <CasinoGame />
-                  </ProtectedRoute>
-                }
-              />
-=======
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
@@ -241,20 +256,957 @@ const App = () => {
             />
             <Route
               path="/casino-lobby"
+              element={<Navigate to="/casino" replace />}
+            />
+            {/* Specific Casino Game Pages */}
+            <Route
+              path="/casino/teen20"
               element={
                 <ProtectedRoute>
-                  <CasinoLobby />
+                  <TeenPatti20 />
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/casino/:slug"
+              path="/casino/ourroullete"
               element={
                 <ProtectedRoute>
-                  <GenericGameTemplate />
+                  <OurRoulette />
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/casino/dt20"
+              element={
+                <ProtectedRoute>
+                  <DragonTiger20 />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/ab20"
+              element={
+                <ProtectedRoute>
+                  <AndarBahar20 />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/card32eu"
+              element={
+                <ProtectedRoute>
+                  <Card32EU />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/baccarat"
+              element={
+                <ProtectedRoute>
+                  <Baccarat />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/poker20"
+              element={
+                <ProtectedRoute>
+                  <Poker20 />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/lucky7"
+              element={
+                <ProtectedRoute>
+                  <Lucky7 />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/worli"
+              element={
+                <ProtectedRoute>
+                  <Worli />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/ballbyball"
+              element={
+                <ProtectedRoute>
+                  <BallByBall />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/3cardj"
+              element={
+                <ProtectedRoute>
+                  <ThreeCardJ />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/war"
+              element={
+                <ProtectedRoute>
+                  <CasinoWar />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/dt6"
+              element={
+                <ProtectedRoute>
+                  <DragonTiger6 />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/abj"
+              element={
+                <ProtectedRoute>
+                  <AndarBaharJ />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/card32"
+              element={
+                <ProtectedRoute>
+                  <Card32J />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/btable"
+              element={
+                <ProtectedRoute>
+                  <BaccaratTable />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/lucky7eu"
+              element={
+                <ProtectedRoute>
+                  <Lucky7EU />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/race20"
+              element={
+                <ProtectedRoute>
+                  <Race20 />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/joker20"
+              element={
+                <ProtectedRoute>
+                  <Joker20 />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/kbc"
+              element={
+                <ProtectedRoute>
+                  <KBC />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/sicbo"
+              element={
+                <ProtectedRoute>
+                  <Sicbo />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/sicbo2"
+              element={
+                <ProtectedRoute>
+                  <Sicbo2 />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/worli3"
+              element={
+                <ProtectedRoute>
+                  <Worli3 />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Additional Teen Patti Routes */}
+            <Route
+              path="/casino/teen1"
+              element={
+                <ProtectedRoute>
+                  <Teen1Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/teen120"
+              element={
+                <ProtectedRoute>
+                  <Teen120Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/teen20b"
+              element={
+                <ProtectedRoute>
+                  <Teen20BGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/teen20c"
+              element={
+                <ProtectedRoute>
+                  <Teen20CGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/teen32"
+              element={
+                <ProtectedRoute>
+                  <Teen32Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/teen33"
+              element={
+                <ProtectedRoute>
+                  <Teen33Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/teen3"
+              element={
+                <ProtectedRoute>
+                  <Teen3Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/teen6"
+              element={
+                <ProtectedRoute>
+                  <Teen6Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/teen8"
+              element={
+                <ProtectedRoute>
+                  <Teen8Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/teen9"
+              element={
+                <ProtectedRoute>
+                  <Teen9Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/teen41"
+              element={
+                <ProtectedRoute>
+                  <Teen41Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/teen42"
+              element={
+                <ProtectedRoute>
+                  <Teen42Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/teen62"
+              element={
+                <ProtectedRoute>
+                  <TeenPatti1DayGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/teen20v1"
+              element={
+                <ProtectedRoute>
+                  <TeenPatti20 />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/teenpatti"
+              element={
+                <ProtectedRoute>
+                  <TeenpattiGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/teenmuf2"
+              element={
+                <ProtectedRoute>
+                  <Teenmuf2Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/teenunique"
+              element={
+                <ProtectedRoute>
+                  <QueenTeenPattiGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/patti2"
+              element={
+                <ProtectedRoute>
+                  <Patti2Game />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Poison Teen Patti Routes */}
+            <Route
+              path="/casino/poison"
+              element={
+                <ProtectedRoute>
+                  <PoisonGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/poison20"
+              element={
+                <ProtectedRoute>
+                  <Poison20Game />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Additional Poker Routes */}
+            <Route
+              path="/casino/poker"
+              element={
+                <ProtectedRoute>
+                  <PokerGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/poker6"
+              element={
+                <ProtectedRoute>
+                  <Poker6Game />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Additional Baccarat Routes */}
+            <Route
+              path="/casino/baccarat2"
+              element={
+                <ProtectedRoute>
+                  <Baccarat2Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/btable2"
+              element={
+                <ProtectedRoute>
+                  <Btable2Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/baccaratgame"
+              element={
+                <ProtectedRoute>
+                  <BaccaratGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/baccaratvariant"
+              element={
+                <ProtectedRoute>
+                  <BaccaratVariantGame />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Additional Dragon Tiger Routes */}
+            <Route
+              path="/casino/dt202"
+              element={
+                <ProtectedRoute>
+                  <DT202Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/dtl20"
+              element={
+                <ProtectedRoute>
+                  <DTL20Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/dtl20pro"
+              element={
+                <ProtectedRoute>
+                  <DTL20ProGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/dragontiger"
+              element={
+                <ProtectedRoute>
+                  <DragonTigerGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/dragontigervariant"
+              element={
+                <ProtectedRoute>
+                  <DragonTigerVariantGame />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Additional Andar Bahar Routes */}
+            <Route
+              path="/casino/andarbahar"
+              element={
+                <ProtectedRoute>
+                  <AndarBaharGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/andarbaharvariant"
+              element={
+                <ProtectedRoute>
+                  <AndarBaharVariantGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/abjgame"
+              element={
+                <ProtectedRoute>
+                  <AbjGame />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Additional 32 Cards Routes */}
+            <Route
+              path="/casino/card32b"
+              element={
+                <ProtectedRoute>
+                  <Card32VariantGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/card32c"
+              element={
+                <ProtectedRoute>
+                  <Card32VariantGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/card32variant"
+              element={
+                <ProtectedRoute>
+                  <Card32VariantGame />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Additional Lucky 7 Routes */}
+            <Route
+              path="/casino/lucky7eu2"
+              element={
+                <ProtectedRoute>
+                  <Lucky7EU2Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/lucky7european"
+              element={
+                <ProtectedRoute>
+                  <Lucky7EuropeanGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/lucky7g"
+              element={
+                <ProtectedRoute>
+                  <Lucky7GGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/lucky5"
+              element={
+                <ProtectedRoute>
+                  <Lucky7Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/lucky7b"
+              element={
+                <ProtectedRoute>
+                  <Lucky7Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/lucky7game"
+              element={
+                <ProtectedRoute>
+                  <Lucky7Game />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Additional 3 Card Routes */}
+            <Route
+              path="/casino/3cardb"
+              element={
+                <ProtectedRoute>
+                  <ThreeCardJudgementGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/aaa2"
+              element={
+                <ProtectedRoute>
+                  <Aaa2Game />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Additional Casino War Routes */}
+            <Route
+              path="/casino/casinowar"
+              element={
+                <ProtectedRoute>
+                  <CasinoWarGame />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Additional Worli/Matka Routes */}
+            <Route
+              path="/casino/worli2"
+              element={
+                <ProtectedRoute>
+                  <WorliVariant2Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/worlivariant3"
+              element={
+                <ProtectedRoute>
+                  <WorliVariant3Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/instantworli"
+              element={
+                <ProtectedRoute>
+                  <MatkaGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/matka"
+              element={
+                <ProtectedRoute>
+                  <MatkaMarketGame />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Additional Roulette Routes */}
+            <Route
+              path="/casino/roulette11"
+              element={
+                <ProtectedRoute>
+                  <GoldenRouletteGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/roulette12"
+              element={
+                <ProtectedRoute>
+                  <BeachRouletteGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/roulette13"
+              element={
+                <ProtectedRoute>
+                  <RouletteGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/rouletteu"
+              element={
+                <ProtectedRoute>
+                  <UniqueRouletteGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/miniroulette"
+              element={
+                <ProtectedRoute>
+                  <RouletteGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/roulette"
+              element={
+                <ProtectedRoute>
+                  <RouletteGame />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Additional Joker Routes */}
+            <Route
+              path="/casino/joker1"
+              element={
+                <ProtectedRoute>
+                  <Joker120Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/joker"
+              element={
+                <ProtectedRoute>
+                  <JokerGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/jokeroneday"
+              element={
+                <ProtectedRoute>
+                  <JokerGame />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Additional Race Routes */}
+            <Route
+              path="/casino/race17"
+              element={
+                <ProtectedRoute>
+                  <Race17Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/race2"
+              element={
+                <ProtectedRoute>
+                  <Race2Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/raceadvanced"
+              element={
+                <ProtectedRoute>
+                  <RaceAdvancedGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/race"
+              element={
+                <ProtectedRoute>
+                  <RaceGame />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Additional Sicbo Routes */}
+            <Route
+              path="/casino/sicbovariant"
+              element={
+                <ProtectedRoute>
+                  <SicBoVariantGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/sicbogame"
+              element={
+                <ProtectedRoute>
+                  <SicBoGame />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Ball By Ball Routes */}
+            <Route
+              path="/casino/ballbyballgame"
+              element={
+                <ProtectedRoute>
+                  <BallByBallGame />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* KBC Routes */}
+            <Route
+              path="/casino/kbcgame"
+              element={
+                <ProtectedRoute>
+                  <KbcGame />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Special Game Routes */}
+            <Route path="/casino/dolidana" element={<DolidanaGame />} />
+            <Route
+              path="/casino/dolidana2"
+              element={
+                <ProtectedRoute>
+                  <Dolidana2Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/mogambo"
+              element={
+                <ProtectedRoute>
+                  <MogamboGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/bollywood"
+              element={
+                <ProtectedRoute>
+                  <BollywoodGameSuite />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/bollywood2"
+              element={
+                <ProtectedRoute>
+                  <BollywoodGameSuite />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Cricket Game Routes */}
+            <Route
+              path="/casino/goalsuperover"
+              element={
+                <ProtectedRoute>
+                  <GoalGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/goal"
+              element={
+                <ProtectedRoute>
+                  <GoalGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/superover2"
+              element={
+                <ProtectedRoute>
+                  <Superover2Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/superover3"
+              element={
+                <ProtectedRoute>
+                  <SuperOver3Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/cricketline"
+              element={
+                <ProtectedRoute>
+                  <CricketLineGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/cricketline2"
+              element={
+                <ProtectedRoute>
+                  <CricketLine2Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/cricketmeter"
+              element={
+                <ProtectedRoute>
+                  <CricketMeterGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/cricketmeter1"
+              element={
+                <ProtectedRoute>
+                  <CricketMeter1Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/cricketmatchmeter"
+              element={
+                <ProtectedRoute>
+                  <CricketMatchMeterGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/cricketv3"
+              element={
+                <ProtectedRoute>
+                  <CricketV3Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/fantasycricket"
+              element={
+                <ProtectedRoute>
+                  <FantasyCricketGame />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Football Routes */}
+            <Route
+              path="/casino/footballlive"
+              element={
+                <ProtectedRoute>
+                  <FootballLiveGame />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Other Game Routes */}
+            <Route
+              path="/casino/notenum"
+              element={
+                <ProtectedRoute>
+                  <NotenumGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/dum10"
+              element={
+                <ProtectedRoute>
+                  <Dum10Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/trap20"
+              element={
+                <ProtectedRoute>
+                  <Trap20Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/trapracing"
+              element={
+                <ProtectedRoute>
+                  <TrapRacingGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/thetrap"
+              element={
+                <ProtectedRoute>
+                  <TheTrapGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/lottcard"
+              element={
+                <ProtectedRoute>
+                  <LottCardGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/lottcard2"
+              element={
+                <ProtectedRoute>
+                  <LottCard2Game />
+                </ProtectedRoute>
+              }
+            />
+
             <Route
               path="/casino-old/:gmid"
               element={
@@ -263,57 +1215,55 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
->>>>>>> 8913c804a0072c7a75fad46c0eb1cd32592acb6f
 
-              <Route
-                path="/wallet"
-                element={
-                  <ProtectedRoute>
-                    <Wallet />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/bets"
-                element={
-                  <ProtectedRoute>
-                    <Bets />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute>
-                    <Profile />
-                  </ProtectedRoute>
-                }
-              />
+            <Route
+              path="/wallet"
+              element={
+                <ProtectedRoute>
+                  <Wallet />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/bets"
+              element={
+                <ProtectedRoute>
+                  <Bets />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
 
-              {/* Admin Login - Public */}
-              <Route path="/admin/login" element={<AdminLogin />} />
+            {/* Admin Login - Public */}
+            <Route path="/admin/login" element={<AdminLogin />} />
 
-              {/* Protected Admin Routes */}
-              <Route
-                path="/admin"
-                element={
-                  <ProtectedRoute requireAdmin>
-                    <AdminLayout />
-                  </ProtectedRoute>
-                }
-              >
-                <Route index element={<AdminDashboard />} />
-                <Route path="users" element={<AdminUsers />} />
-                <Route path="transactions" element={<AdminTransactions />} />
-                <Route path="withdrawals" element={<AdminWithdrawals />} />
-                <Route path="bets" element={<AdminBets />} />
-                <Route path="games" element={<AdminGames />} />
-                <Route path="audit-logs" element={<AdminAuditLogs />} />
-              </Route>
+            {/* Protected Admin Routes */}
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <AdminLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<AdminDashboard />} />
+              <Route path="users" element={<AdminUsers />} />
+              <Route path="transactions" element={<AdminTransactions />} />
+              <Route path="withdrawals" element={<AdminWithdrawals />} />
+              <Route path="bets" element={<AdminBets />} />
+              <Route path="games" element={<AdminGames />} />
+              <Route path="audit-logs" element={<AdminAuditLogs />} />
+            </Route>
 
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

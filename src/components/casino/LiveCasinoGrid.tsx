@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import type { CasinoGame } from "@/types/casino";
 import { getImageCandidates } from "@/services/casino";
 import { useState } from "react";
+import { hasCustomPage } from "@/data/gameRouteMapping";
 
 interface LiveCasinoGridProps {
   games: CasinoGame[];
@@ -19,13 +20,21 @@ export function LiveCasinoGrid({
   const gmids = games.slice(0, maxDisplay).map((g) => g.gmid);
   const { getData } = useCasinoLiveMultiple(gmids);
 
+  const getGamePath = (game: CasinoGame) => {
+    const gameId = game.gmid.toLowerCase();
+    if (hasCustomPage(gameId)) {
+      return `/casino/${gameId}`;
+    }
+    return `/casino/${game.gmid}`;
+  };
+
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
       {games.slice(0, maxDisplay).map((game) => {
         const liveData = getData(game.gmid);
 
         return (
-          <Link key={game.gmid} to={`/casino/${game.gmid}`}>
+          <Link key={game.gmid} to={getGamePath(game)}>
             <LiveGameCard game={game} liveData={liveData} />
           </Link>
         );

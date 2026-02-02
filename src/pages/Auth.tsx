@@ -19,7 +19,8 @@ const Auth = () => {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
+        console.log("[AUTH] Login attempt for:", email);
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });

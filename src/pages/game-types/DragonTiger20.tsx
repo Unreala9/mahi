@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
-
+import { toast } from "@/hooks/use-toast";
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
 const HISTORY = [
@@ -65,6 +65,98 @@ export default function DragonTiger20() {
     setBets({ dragon: 0, tiger: 0, tie: 0, dragonSuited: 0, tigerSuited: 0 });
   };
 
+  const handlePlaceBets = async () => {
+    const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
+    if (totalStake === 0) {
+      toast({ title: "Please place a bet first", variant: "destructive" });
+      return;
+    }
+
+    try {
+      const betPromises = [];
+      if (bets.dragon > 0) {
+        betPromises.push(
+          bettingService.placeBet({
+            gameType: "CASINO",
+            gameId: "dt20",
+            gameName: "Dragon Tiger 20",
+            marketId: "dragon",
+            marketName: "Dragon",
+            selection: "Dragon",
+            odds: 1.95,
+            stake: bets.dragon,
+            betType: "BACK",
+          }),
+        );
+      }
+      if (bets.tiger > 0) {
+        betPromises.push(
+          bettingService.placeBet({
+            gameType: "CASINO",
+            gameId: "dt20",
+            gameName: "Dragon Tiger 20",
+            marketId: "tiger",
+            marketName: "Tiger",
+            selection: "Tiger",
+            odds: 1.95,
+            stake: bets.tiger,
+            betType: "BACK",
+          }),
+        );
+      }
+      if (bets.tie > 0) {
+        betPromises.push(
+          bettingService.placeBet({
+            gameType: "CASINO",
+            gameId: "dt20",
+            gameName: "Dragon Tiger 20",
+            marketId: "tie",
+            marketName: "Tie",
+            selection: "Tie",
+            odds: 11,
+            stake: bets.tie,
+            betType: "BACK",
+          }),
+        );
+      }
+      if (bets.dragonSuited > 0) {
+        betPromises.push(
+          bettingService.placeBet({
+            gameType: "CASINO",
+            gameId: "dt20",
+            gameName: "Dragon Tiger 20",
+            marketId: "dragonSuited",
+            marketName: "Dragon Suited",
+            selection: "Dragon Suited",
+            odds: 5.0,
+            stake: bets.dragonSuited,
+            betType: "BACK",
+          }),
+        );
+      }
+      if (bets.tigerSuited > 0) {
+        betPromises.push(
+          bettingService.placeBet({
+            gameType: "CASINO",
+            gameId: "dt20",
+            gameName: "Dragon Tiger 20",
+            marketId: "tigerSuited",
+            marketName: "Tiger Suited",
+            selection: "Tiger Suited",
+            odds: 5.0,
+            stake: bets.tigerSuited,
+            betType: "BACK",
+          }),
+        );
+      }
+
+      await Promise.all(betPromises);
+      clearBets();
+    } catch (error) {
+      console.error("Failed to place bets:", error);
+    }
+  };
+
   const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
 
   return (
@@ -77,7 +169,7 @@ export default function DragonTiger20() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate("/casino-lobby")}
+                onClick={() => navigate("/casino")}
                 className="text-gray-400 hover:text-white"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
@@ -85,11 +177,14 @@ export default function DragonTiger20() {
               </Button>
               <div className="text-center flex-1">
                 <h1 className="text-2xl font-bold text-white mb-1">
-                  <span className="text-red-500">Dragon</span> vs <span className="text-blue-500">Tiger</span> 20
+                  <span className="text-red-500">Dragon</span> vs{" "}
+                  <span className="text-blue-500">Tiger</span> 20
                 </h1>
                 <div className="flex items-center justify-center gap-2">
                   <Clock className="w-4 h-4 text-yellow-500" />
-                  <span className="text-yellow-500 font-bold text-lg">{countdown}s</span>
+                  <span className="text-yellow-500 font-bold text-lg">
+                    {countdown}s
+                  </span>
                 </div>
               </div>
               <Badge className="bg-red-600 animate-pulse">
@@ -106,7 +201,9 @@ export default function DragonTiger20() {
             {/* History Column (Left) */}
             <div className="lg:col-span-1 order-last lg:order-first">
               <Card className="bg-gray-800/50 border-purple-600/20 p-4">
-                <h3 className="text-purple-400 font-bold mb-4 text-center">History</h3>
+                <h3 className="text-purple-400 font-bold mb-4 text-center">
+                  History
+                </h3>
                 <div className="space-y-2">
                   {HISTORY.map((result, idx) => (
                     <div
@@ -116,8 +213,8 @@ export default function DragonTiger20() {
                         result.winner === "D"
                           ? "bg-red-900/30 border-red-600"
                           : result.winner === "T"
-                          ? "bg-blue-900/30 border-blue-600"
-                          : "bg-yellow-900/30 border-yellow-600"
+                            ? "bg-blue-900/30 border-blue-600"
+                            : "bg-yellow-900/30 border-yellow-600",
                       )}
                     >
                       <span
@@ -126,13 +223,15 @@ export default function DragonTiger20() {
                           result.winner === "D"
                             ? "text-red-500"
                             : result.winner === "T"
-                            ? "text-blue-500"
-                            : "text-yellow-500"
+                              ? "text-blue-500"
+                              : "text-yellow-500",
                         )}
                       >
                         {result.winner}
                       </span>
-                      {result.suited && <Badge className="bg-purple-600 text-xs">Suited</Badge>}
+                      {result.suited && (
+                        <Badge className="bg-purple-600 text-xs">Suited</Badge>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -146,7 +245,9 @@ export default function DragonTiger20() {
                 {/* Dragon Side (Left - Red) */}
                 <Card className="bg-gradient-to-br from-red-950/50 to-red-900/30 border-red-600/50 p-6">
                   <div className="text-center mb-6">
-                    <h2 className="text-4xl font-bold text-red-500 mb-2">🐉 DRAGON</h2>
+                    <h2 className="text-4xl font-bold text-red-500 mb-2">
+                      🐉 DRAGON
+                    </h2>
                     <Badge className="bg-red-600 text-white">1.95x</Badge>
                   </div>
 
@@ -154,7 +255,7 @@ export default function DragonTiger20() {
                   <div
                     className={cn(
                       "aspect-[3/4] max-w-xs mx-auto bg-white rounded-xl flex items-center justify-center text-9xl shadow-2xl border-4 border-red-500 transition-all duration-500",
-                      isRevealing && "rotate-y-180 scale-110"
+                      isRevealing && "rotate-y-180 scale-110",
                     )}
                   >
                     {dragonCard}
@@ -180,7 +281,9 @@ export default function DragonTiger20() {
                   >
                     Dragon Suited (11x)
                     {bets.dragonSuited > 0 && (
-                      <span className="block text-xs mt-1">₹{bets.dragonSuited}</span>
+                      <span className="block text-xs mt-1">
+                        ₹{bets.dragonSuited}
+                      </span>
                     )}
                   </button>
                 </Card>
@@ -188,7 +291,9 @@ export default function DragonTiger20() {
                 {/* Tiger Side (Right - Blue) */}
                 <Card className="bg-gradient-to-br from-blue-950/50 to-blue-900/30 border-blue-600/50 p-6">
                   <div className="text-center mb-6">
-                    <h2 className="text-4xl font-bold text-blue-500 mb-2">🐯 TIGER</h2>
+                    <h2 className="text-4xl font-bold text-blue-500 mb-2">
+                      🐯 TIGER
+                    </h2>
                     <Badge className="bg-blue-600 text-white">1.95x</Badge>
                   </div>
 
@@ -196,7 +301,7 @@ export default function DragonTiger20() {
                   <div
                     className={cn(
                       "aspect-[3/4] max-w-xs mx-auto bg-white rounded-xl flex items-center justify-center text-9xl shadow-2xl border-4 border-blue-500 transition-all duration-500",
-                      isRevealing && "rotate-y-180 scale-110"
+                      isRevealing && "rotate-y-180 scale-110",
                     )}
                   >
                     {tigerCard}
@@ -222,7 +327,9 @@ export default function DragonTiger20() {
                   >
                     Tiger Suited (11x)
                     {bets.tigerSuited > 0 && (
-                      <span className="block text-xs mt-1">₹{bets.tigerSuited}</span>
+                      <span className="block text-xs mt-1">
+                        ₹{bets.tigerSuited}
+                      </span>
                     )}
                   </button>
                 </Card>
@@ -252,7 +359,7 @@ export default function DragonTiger20() {
                         "w-12 h-12 rounded-full font-bold text-xs border-4 transition-all hover:scale-110",
                         selectedChip === value
                           ? "bg-yellow-600 border-yellow-400 text-white ring-2 ring-yellow-300"
-                          : "bg-gray-700 border-gray-600 text-gray-300"
+                          : "bg-gray-700 border-gray-600 text-gray-300",
                       )}
                     >
                       ₹{value}
@@ -268,10 +375,16 @@ export default function DragonTiger20() {
                   >
                     Clear
                   </Button>
-                  <Button variant="outline" className="border-blue-600 text-blue-500 hover:bg-blue-600/20">
+                  <Button
+                    variant="outline"
+                    className="border-blue-600 text-blue-500 hover:bg-blue-600/20"
+                  >
                     Repeat
                   </Button>
-                  <Button variant="outline" className="border-green-600 text-green-500 hover:bg-green-600/20">
+                  <Button
+                    variant="outline"
+                    className="border-green-600 text-green-500 hover:bg-green-600/20"
+                  >
                     Double
                   </Button>
                 </div>
@@ -280,12 +393,19 @@ export default function DragonTiger20() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-gray-400 text-xs">Total Stake</p>
-                      <p className="text-white font-bold text-2xl">₹{totalStake}</p>
+                      <p className="text-white font-bold text-2xl">
+                        ₹{totalStake}
+                      </p>
                     </div>
                     <div className="text-right">
                       <p className="text-gray-400 text-xs">Potential Win</p>
                       <p className="text-green-500 font-bold text-2xl">
-                        ₹{bets.dragon * 1.95 + bets.tiger * 1.95 + bets.tie * 11 + bets.dragonSuited * 11 + bets.tigerSuited * 11}
+                        ₹
+                        {bets.dragon * 1.95 +
+                          bets.tiger * 1.95 +
+                          bets.tie * 11 +
+                          bets.dragonSuited * 11 +
+                          bets.tigerSuited * 11}
                       </p>
                     </div>
                   </div>
