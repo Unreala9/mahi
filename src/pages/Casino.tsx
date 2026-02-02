@@ -137,10 +137,12 @@ export default function Casino() {
     const tag = tagFilter.toLowerCase();
     return base.filter((game) => {
       const name = game.gname?.toLowerCase() || "";
-      const provider = (game.provider as any)?.toString()?.toLowerCase?.() || "";
+      const provider =
+        (game.provider as any)?.toString()?.toLowerCase?.() || "";
       const id = game.gmid?.toLowerCase() || "";
       // generic contains check
-      if (name.includes(tag) || provider.includes(tag) || id.includes(tag)) return true;
+      if (name.includes(tag) || provider.includes(tag) || id.includes(tag))
+        return true;
       // friendly synonyms mapping
       if (tag === "vip") return name.includes("v vip") || name.includes("vip ");
       if (tag === "premium") return name.includes("premium");
@@ -157,9 +159,11 @@ export default function Casino() {
     const base = gamesByCategory[activeCategory] || [];
     const matchesTag = (tag: string, game: CasinoGame) => {
       const name = game.gname?.toLowerCase() || "";
-      const provider = (game.provider as any)?.toString()?.toLowerCase?.() || "";
+      const provider =
+        (game.provider as any)?.toString()?.toLowerCase?.() || "";
       const id = game.gmid?.toLowerCase() || "";
-      if (name.includes(tag) || provider.includes(tag) || id.includes(tag)) return true;
+      if (name.includes(tag) || provider.includes(tag) || id.includes(tag))
+        return true;
       if (tag === "vip") return name.includes("v vip") || name.includes("vip ");
       if (tag === "premium") return name.includes("premium");
       if (tag === "virtual") return name.includes("virtual");
@@ -170,6 +174,13 @@ export default function Casino() {
     };
     return TAGS.filter((t) => base.some((g) => matchesTag(t.id, g)));
   }, [gamesByCategory, activeCategory]);
+
+  const [visibleCount, setVisibleCount] = useState(30);
+
+  // Reset visibleCount when category or tag changes
+  useEffect(() => {
+    setVisibleCount(30);
+  }, [activeCategory, tagFilter]);
 
   const handlePlay = (game: CasinoGame) => {
     navigate(`/casino/${game.gmid}`);
@@ -245,22 +256,36 @@ export default function Casino() {
           )}
         </div>
 
-      {/* Games Grid */}
-      {filteredGames.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-muted-foreground">No games in this category</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2">
-          {filteredGames.map((game) => (
-            <GameCard
-              key={game.gmid}
-              game={game}
-              onClick={() => handlePlay(game)}
-            />
-          ))}
-        </div>
-      )}
+        {/* Games Grid */}
+        {filteredGames.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-muted-foreground">No games in this category</p>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2">
+              {filteredGames.slice(0, visibleCount).map((game) => (
+                <GameCard
+                  key={game.gmid}
+                  game={game}
+                  onClick={() => handlePlay(game)}
+                />
+              ))}
+            </div>
+
+            {filteredGames.length > visibleCount && (
+              <div className="flex justify-center mt-8 pb-8">
+                <Button
+                  variant="outline"
+                  onClick={() => setVisibleCount((prev) => prev + 30)}
+                  className="min-w-[200px] border-primary/20 hover:bg-primary/10"
+                >
+                  Load More Games ({filteredGames.length - visibleCount} left)
+                </Button>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </MainLayout>
   );
