@@ -8,14 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import {
-  Wifi,
-  WifiOff,
-  TrendingUp,
-  Clock,
-  DollarSign,
-  Target,
-} from "lucide-react";
+import { Wifi, WifiOff, TrendingUp, Clock, DollarSign } from "lucide-react";
 
 interface GenericCardGameProps {
   game: CasinoGame;
@@ -367,7 +360,7 @@ export function GenericCardGame({ game }: GenericCardGameProps) {
                 {markets.map((market: any, index: number) => {
                   // Skip invalid markets
                   if (!market || !market.sid || !market.nat) return null;
-                  
+
                   const betOnThisMarket = bets.find(
                     (b) => b.sid === market.sid,
                   );
@@ -698,4 +691,3 @@ export function GenericCardGame({ game }: GenericCardGameProps) {
     </MainLayout>
   );
 }
-

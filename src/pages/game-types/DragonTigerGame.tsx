@@ -3,10 +3,21 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { useCasinoWebSocket } from "@/hooks/api/useCasinoWebSocket";
 import { CasinoGame } from "@/types/casino";
 import { placeCasinoBet } from "@/services/casino";
+import { bettingService } from "@/services/bettingService";
+import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import { Wifi, WifiOff, Clock, DollarSign, Flame, Zap } from "lucide-react";
+import {
+  Wifi,
+  WifiOff,
+  Clock,
+  DollarSign,
+  Flame,
+  Zap,
+  History,
+  Target,
+} from "lucide-react";
 
 interface DragonTigerGameProps {
   game: CasinoGame;
@@ -21,11 +32,65 @@ interface Bet {
 
 export function DragonTigerGame({ game }: DragonTigerGameProps) {
   const [bets, setBets] = useState<Bet[]>([]);
+  const [placedBets, setPlacedBets] = useState<any[]>([]);
   const [selectedChip, setSelectedChip] = useState(100);
   const [pulseTimer, setPulseTimer] = useState(false);
+  const [userId, setUserId] = useState<string | undefined>();
   const { gameData, resultData, isConnected } = useCasinoWebSocket(game.gmid);
 
   const chips = [100, 500, 1000, 5000, 10000, 25000];
+
+  // Get user ID
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUserId(session?.user?.id);
+    });
+  }, []);
+
+  // Function to fetch placed bets
+  const fetchPlacedBets = async () => {
+    if (!userId) return;
+    try {
+      console.log(
+        "[DragonTiger] Fetching placed bets for user:",
+        userId,
+        "Game:",
+        game.gmid,
+      );
+      const allBets = await bettingService.getMyBets(50, 0);
+      console.log("[DragonTiger] All fetched bets:", allBets);
+
+      // Filter for this specific game only
+      const thisGameBets = allBets.filter((bet) => {
+        const isCasino =
+          bet.game_type === "CASINO" ||
+          bet.sport === "CASINO" ||
+          bet.gameType === "CASINO";
+        const isThisGame =
+          bet.game_id === game.gmid ||
+          bet.gameId === game.gmid ||
+          bet.game === game.gname;
+        return isCasino && isThisGame;
+      });
+
+      console.log(
+        "[DragonTiger] Filtered bets for game",
+        game.gmid,
+        ":",
+        thisGameBets,
+      );
+      setPlacedBets(thisGameBets);
+    } catch (error) {
+      console.error("[DragonTiger] Error fetching placed bets:", error);
+    }
+  };
+
+  // Fetch placed bets when user is authenticated
+  useEffect(() => {
+    if (userId) {
+      fetchPlacedBets();
+    }
+  }, [userId]);
 
   useEffect(() => {
     const timer = gameData?.lt || 0;
@@ -103,6 +168,8 @@ export function DragonTigerGame({ game }: DragonTigerGameProps) {
       });
 
       setBets([]);
+      // Fetch placed bets to update "My Bets" section
+      setTimeout(() => fetchPlacedBets(), 1000);
     } catch (error) {
       toast({
         title: "Error",
@@ -409,10 +476,80 @@ export function DragonTigerGame({ game }: DragonTigerGameProps) {
             >
               Clear All
             </Button>
+
+            {/* My Bets Section */}
+            {userId && (
+              <div className="mt-6 pt-6 border-t-2 border-slate-700">
+                <div className="flex items-center gap-2 mb-4">
+                  <History className="w-5 h-5 text-yellow-500" />
+                  <h3 className="text-white font-bold">My Bets</h3>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={fetchPlacedBets}
+                    className="ml-auto h-6 text-xs text-slate-400 hover:text-white"
+                  >
+                    Refresh
+                  </Button>
+                </div>
+
+                <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                  {placedBets.length === 0 ? (
+                    <Card className="bg-slate-700/50 border-slate-600 p-4 text-center">
+                      <Target className="w-6 h-6 text-slate-500 mx-auto mb-2" />
+                      <p className="text-slate-500 text-xs">
+                        No bets placed yet
+                      </p>
+                    </Card>
+                  ) : (
+                    placedBets.map((bet, index) => (
+                      <Card
+                        key={bet.id || index}
+                        className="p-2 bg-slate-700 border-slate-600 hover:border-slate-500 transition-colors"
+                      >
+                        <div className="flex justify-between items-start mb-1">
+                          <div className="flex-1">
+                            <p className="text-white font-semibold text-xs">
+                              {bet.selection || bet.selection_name}
+                            </p>
+                            <p className="text-slate-400 text-xs">
+                              {bet.market_name || bet.market}
+                            </p>
+                          </div>
+                          <div
+                            className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                              bet.status === "pending"
+                                ? "bg-yellow-600/20 text-yellow-400"
+                                : bet.status === "won" || bet.status === "win"
+                                  ? "bg-green-600/20 text-green-400"
+                                  : bet.status === "lost" ||
+                                      bet.status === "loss"
+                                    ? "bg-red-600/20 text-red-400"
+                                    : "bg-slate-600/20 text-slate-400"
+                            }`}
+                          >
+                            {bet.status?.toUpperCase()}
+                          </div>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-slate-400">
+                            ₹{bet.stake} @ {bet.odds}
+                          </span>
+                          {bet.potential_return && (
+                            <span className="text-green-400 font-semibold">
+                              ₹{bet.potential_return.toFixed(2)}
+                            </span>
+                          )}
+                        </div>
+                      </Card>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
     </MainLayout>
   );
 }
-
