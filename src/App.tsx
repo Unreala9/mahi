@@ -5,12 +5,16 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect } from "react";
 import { diamondWS } from "@/services/websocket";
+import { settlementMonitor } from "@/services/autoSettlementService";
+import { resultWebSocket } from "@/services/resultWebSocket";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Sportsbook from "./pages/Sportsbook";
 import CasinoLive from "./pages/CasinoLive";
 import Casino from "./pages/Casino";
 import CasinoGame from "./pages/CasinoGame";
+import CasinoLobby from "./pages/CasinoLobby";
+import GenericGameTemplate from "./pages/GenericGameTemplate";
 
 import Wallet from "./pages/Wallet";
 import Bets from "./pages/Bets";
@@ -35,6 +39,7 @@ import AdminAuditLogs from "./pages/admin/AdminAuditLogs";
 import AdminWithdrawals from "./pages/admin/AdminWithdrawals";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import TestSettlement from "./pages/TestSettlement";
 
 const queryClient = new QueryClient();
 
@@ -61,6 +66,28 @@ const App = () => {
     };
   }, []); // Empty dependency array - only run once
 
+  // Initialize automatic bet settlement monitor
+  useEffect(() => {
+    console.log("[App] Starting bet settlement monitor...");
+    settlementMonitor.start(3600); // Check every hour for very old bets
+
+    return () => {
+      console.log("[App] Stopping bet settlement monitor...");
+      settlementMonitor.stop();
+    };
+  }, []);
+
+  // Initialize result WebSocket for real-time settlements
+  useEffect(() => {
+    console.log("[App] Starting result WebSocket...");
+    resultWebSocket.start();
+
+    return () => {
+      console.log("[App] Stopping result WebSocket...");
+      resultWebSocket.stop();
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -76,6 +103,7 @@ const App = () => {
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/responsible-gaming" element={<ResponsibleGaming />} />
             <Route path="/api-test" element={<ApiTest />} />
+            <Route path="/test-settlement" element={<TestSettlement />} />
 
             {/* Redirect old dashboard to sports */}
             <Route
@@ -123,7 +151,23 @@ const App = () => {
               }
             />
             <Route
-              path="/casino/:gmid"
+              path="/casino-lobby"
+              element={
+                <ProtectedRoute>
+                  <CasinoLobby />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/:slug"
+              element={
+                <ProtectedRoute>
+                  <GenericGameTemplate />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino-old/:gmid"
               element={
                 <ProtectedRoute>
                   <CasinoGame />

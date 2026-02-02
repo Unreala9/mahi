@@ -8,6 +8,7 @@ import type { CasinoCategoryId } from "@/data/casinoCategories";
 import { fetchCasinoGames } from "@/services/casino";
 import type { CasinoGame } from "@/types/casino";
 import { Button } from "@/components/ui/button";
+import { DebugCasino } from "@/components/casino/DebugCasino";
 
 export default function Casino() {
   const navigate = useNavigate();
@@ -137,10 +138,12 @@ export default function Casino() {
     const tag = tagFilter.toLowerCase();
     return base.filter((game) => {
       const name = game.gname?.toLowerCase() || "";
-      const provider = (game.provider as any)?.toString()?.toLowerCase?.() || "";
+      const provider =
+        (game.provider as any)?.toString()?.toLowerCase?.() || "";
       const id = game.gmid?.toLowerCase() || "";
       // generic contains check
-      if (name.includes(tag) || provider.includes(tag) || id.includes(tag)) return true;
+      if (name.includes(tag) || provider.includes(tag) || id.includes(tag))
+        return true;
       // friendly synonyms mapping
       if (tag === "vip") return name.includes("v vip") || name.includes("vip ");
       if (tag === "premium") return name.includes("premium");
@@ -157,9 +160,11 @@ export default function Casino() {
     const base = gamesByCategory[activeCategory] || [];
     const matchesTag = (tag: string, game: CasinoGame) => {
       const name = game.gname?.toLowerCase() || "";
-      const provider = (game.provider as any)?.toString()?.toLowerCase?.() || "";
+      const provider =
+        (game.provider as any)?.toString()?.toLowerCase?.() || "";
       const id = game.gmid?.toLowerCase() || "";
-      if (name.includes(tag) || provider.includes(tag) || id.includes(tag)) return true;
+      if (name.includes(tag) || provider.includes(tag) || id.includes(tag))
+        return true;
       if (tag === "vip") return name.includes("v vip") || name.includes("vip ");
       if (tag === "premium") return name.includes("premium");
       if (tag === "virtual") return name.includes("virtual");
@@ -199,6 +204,7 @@ export default function Casino() {
   return (
     <MainLayout>
       <div className="w-full mx-auto">
+        <DebugCasino />
         {/* Unified Filters: Categories + Tags in one row */}
         <div className="mb-4 flex flex-wrap items-center gap-2">
           {DISPLAYED_CATEGORIES.map((category) => (
@@ -245,22 +251,22 @@ export default function Casino() {
           )}
         </div>
 
-      {/* Games Grid */}
-      {filteredGames.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-muted-foreground">No games in this category</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2">
-          {filteredGames.map((game) => (
-            <GameCard
-              key={game.gmid}
-              game={game}
-              onClick={() => handlePlay(game)}
-            />
-          ))}
-        </div>
-      )}
+        {/* Games Grid */}
+        {filteredGames.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-muted-foreground">No games in this category</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2">
+            {filteredGames.map((game) => (
+              <GameCard
+                key={game.gmid}
+                game={game}
+                onClick={() => handlePlay(game)}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </MainLayout>
   );
