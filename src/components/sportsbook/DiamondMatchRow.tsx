@@ -233,7 +233,11 @@ function OddsRow({ label, back, lay, runs, onClick }: OddsRowProps) {
           <div className="text-center">
             <div className="font-bold">{backOdds?.price || "-"}</div>
             {backOdds?.size && (
-              <div className="text-xs opacity-80">{backOdds.size}</div>
+              <div className="text-xs opacity-80">
+                {typeof backOdds.size === "object"
+                  ? backOdds.size.size
+                  : backOdds.size}
+              </div>
             )}
           </div>
         </Button>
@@ -248,7 +252,11 @@ function OddsRow({ label, back, lay, runs, onClick }: OddsRowProps) {
           <div className="text-center">
             <div className="font-bold">{layOdds?.price || "-"}</div>
             {layOdds?.size && (
-              <div className="text-xs opacity-80">{layOdds.size}</div>
+              <div className="text-xs opacity-80">
+                {typeof layOdds.size === "object"
+                  ? layOdds.size.size
+                  : layOdds.size}
+              </div>
             )}
           </div>
         </Button>

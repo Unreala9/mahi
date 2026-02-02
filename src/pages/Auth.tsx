@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Lock, Mail, Users, ArrowRight, ShieldCheck } from "lucide-react";
+import { Lock, Mail, Users, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,91 +24,20 @@ const Auth = () => {
           email,
           password,
         });
-        
-        if (error) {
-          console.error("[AUTH] Login error:", error);
-          
-          // Check if user doesn't exist - suggest registration
-          if (error.message.includes("Invalid login credentials")) {
-            toast.error("Invalid credentials. Please check your email/password or register first.");
-            return;
-          }
-          throw error;
-        }
-        
-        console.log("[AUTH] Login successful for user:", data.user?.id);
+        if (error) throw error;
         toast.success("Login successful!");
         navigate("/");
       } else {
-        console.log("[AUTH] Signup attempt for:", email);
-        
-        try {
-          const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              emailRedirectTo: window.location.origin,
-              data: {
-                email: email,
-              }
-            },
-          });
-
-          console.log("[AUTH] SignUp response - data:", data);
-          console.log("[AUTH] SignUp response - error:", error);
-
-          // Handle database trigger errors gracefully
-          if (error) {
-            if (error.message.includes("Database error saving new user")) {
-              console.warn("[AUTH] Database trigger error, but user may be created. Using demo mode.");
-              localStorage.setItem("demo_session", "true");
-              localStorage.setItem("demo_email", email);
-              toast.success("Account created! Logged in as demo user (database setup pending)");
-              navigate("/");
-              return;
-            }
-            throw error;
-          }
-
-          console.log("[AUTH] User created:", data?.user?.id);
-          
-          // Auto-login if session exists
-          if (data.session) {
-            console.log("[AUTH] Session exists, auto-logging in");
-            toast.success("Account created successfully!");
-            navigate("/");
-          } else if (data.user) {
-            // User created but no session (email confirmation required)
-            console.log("[AUTH] User created, email confirmation may be required");
-            toast.success("Account created! You can now login.");
-            setIsLogin(true); // Switch to login mode
-          } else {
-            toast.error("Signup failed. Please try again.");
-          }
-        } catch (signupError: any) {
-          // Catch any signup errors
-          console.error("[AUTH] Signup error:", signupError);
-          
-          if (signupError.message.includes("Database error")) {
-            console.warn("[AUTH] Database error during signup, using demo mode");
-            localStorage.setItem("demo_session", "true");
-            localStorage.setItem("demo_email", email);
-            toast.success("Account created in demo mode! (Database setup pending)");
-            navigate("/");
-            return;
-          }
-          
-          if (signupError.message.includes("already registered")) {
-            toast.error("Email already registered. Please login instead.");
-            setIsLogin(true);
-            return;
-          }
-          
-          throw signupError;
-        }
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+        if (error) throw error;
+        toast.success(
+          "Registration successful! Check your email for confirmation.",
+        );
       }
     } catch (error: any) {
-      console.error("[AUTH] Auth error caught:", error);
       toast.error(error.message || "Authentication failed");
     } finally {
       setLoading(false);
@@ -119,58 +48,90 @@ const Auth = () => {
     setLoading(true);
     setTimeout(() => {
       localStorage.setItem("demo_session", "true");
-      toast.success("Logged in as Demo User (Simulation Mode)");
+      toast.success("Logged in as Demo User");
       navigate("/");
       setLoading(false);
     }, 800);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
-      {/* Dynamic Background Elements */}
-      <div className="absolute top-0 left-0 w-full h-1 bg-primary z-20" />
-      <div className="absolute bottom-0 w-full h-1 bg-primary z-20" />
-      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20" />
+    <div className="min-h-screen flex items-center justify-center bg-[#0a0e27] relative overflow-hidden mt-24">
+      {/* Yellow bars */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-[#FFFF3C] z-20" />
+      <div className="absolute bottom-0 w-full h-1 bg-[#FFFF3C] z-20" />
 
-      <div className="z-10 w-full max-w-md p-4">
-        <div className="bg-card border border-border shadow-2xl relative">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-50" />
-          {/* Header Branding */}
-          <div className="p-8 text-center border-b border-border bg-card/10">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary mb-4 shadow-[0_0_20px_rgba(255,255,60,0.3)]">
-              <span className="text-black font-black text-4xl font-display">
-                M
-              </span>
-            </div>
-            <h1 className="text-4xl font-black text-foreground tracking-tighter mb-2 font-display">
-              MAHI<span className="text-primary">EXCHANGE</span>
-            </h1>
-            <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest">
+      <div className="z-10 w-full max-w-md p-6">
+        <div className="bg-[#1a1f3a] border border-[#2a2f4a] shadow-2xl rounded-lg overflow-hidden">
+          {/* Logo Header */}
+          <div className="p-12 text-center border-b border-[#2a2f4a]">
+            <img
+              src="/mahiex.png"
+              alt="MahiEx"
+              className="h-32 w-auto mx-auto "
+            />
+            <p className="text-gray-400 text-sm font-semibold uppercase tracking-widest">
               Professional Betting Terminal
             </p>
           </div>
 
-          {/* Form Content */}
+          {/* Login/Register Tabs */}
+          <div className="flex border-b border-[#2a2f4a]">
+            <button
+              type="button"
+              onClick={() => setIsLogin(true)}
+              className={`flex-1 py-4 text-sm font-bold uppercase tracking-wider transition-all ${
+                isLogin
+                  ? "bg-[#FFFF3C] text-black"
+                  : "bg-transparent text-gray-400 hover:text-white"
+              }`}
+            >
+              Login
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsLogin(false)}
+              className={`flex-1 py-4 text-sm font-bold uppercase tracking-wider transition-all ${
+                !isLogin
+                  ? "bg-[#FFFF3C] text-black"
+                  : "bg-transparent text-gray-400 hover:text-white"
+              }`}
+            >
+              Register
+            </button>
+          </div>
+
+          {/* Form */}
           <div className="p-8">
-            <form onSubmit={handleAuth} className="space-y-6">
-              <div className="space-y-4">
-                <div className="relative group">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+            <form onSubmit={handleAuth} className="space-y-5">
+              {/* Email */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-400 uppercase mb-2">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
                   <Input
                     type="email"
-                    placeholder="EMAIL ADDRESS"
-                    className="pl-12 bg-input/20 border-border text-foreground h-12 rounded-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50 font-mono text-sm uppercase tracking-wide"
+                    placeholder="your@email.com"
+                    className="pl-11 bg-[#0f1329] border-[#2a2f4a] text-white h-12 rounded-md focus:border-[#FFFF3C] focus:ring-1 focus:ring-[#FFFF3C] placeholder:text-gray-600"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                   />
                 </div>
-                <div className="relative group">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+              </div>
+
+              {/* Password */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-400 uppercase mb-2">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
                   <Input
                     type="password"
-                    placeholder="PASSWORD"
-                    className="pl-12 bg-input/20 border-border text-foreground h-12 rounded-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50 font-mono text-sm uppercase tracking-wide"
+                    placeholder="Enter password"
+                    className="pl-11 bg-[#0f1329] border-[#2a2f4a] text-white h-12 rounded-md focus:border-[#FFFF3C] focus:ring-1 focus:ring-[#FFFF3C] placeholder:text-gray-600"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -178,57 +139,64 @@ const Auth = () => {
                 </div>
               </div>
 
-              <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
-                <span
-                  className="cursor-pointer text-muted-foreground hover:text-foreground transition-colors border-b border-transparent hover:border-primary"
-                  onClick={() => setIsLogin(!isLogin)}
-                >
-                  {isLogin ? "Register New ID" : "Back to Login"}
-                </span>
-                <span className="cursor-pointer text-primary hover:text-foreground transition-colors">
-                  Forgot Password?
-                </span>
-              </div>
+              {/* Forgot Password - Only show on login */}
+              {isLogin && (
+                <div className="text-right">
+                  <button
+                    type="button"
+                    className="text-xs text-[#FFFF3C] hover:text-white font-semibold uppercase"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
+              )}
 
+              {/* Submit Button */}
               <Button
                 type="submit"
-                className="w-full bg-primary text-black hover:bg-white font-black h-12 rounded-none text-sm uppercase tracking-widest shadow-[0_0_15px_rgba(255,255,60,0.2)] active:scale-[0.98] transition-all"
+                className="w-full bg-[#FFFF3C] hover:bg-[#ffff50] text-black font-black h-12 rounded-md text-sm uppercase tracking-wider shadow-lg hover:shadow-xl transition-all"
                 disabled={loading}
               >
                 {loading
-                  ? "AUTHENTICATING..."
+                  ? "Please Wait..."
                   : isLogin
-                    ? "LOGIN TO TERMINAL"
-                    : "CREATE ACCESS ID"}
+                    ? "Login"
+                    : "Create Account"}
               </Button>
 
-              <div className="relative py-2">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-border"></div>
-                </div>
-                <div className="relative flex justify-center text-[10px] uppercase tracking-widest">
-                  <span className="bg-card px-3 text-muted-foreground font-bold">
-                    System Access
-                  </span>
-                </div>
-              </div>
+              {/* Demo Login - Only show on login */}
+              {isLogin && (
+                <>
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-[#2a2f4a]"></div>
+                    </div>
+                    <div className="relative flex justify-center text-xs">
+                      <span className="bg-[#1a1f3a] px-3 text-gray-500 font-semibold uppercase">
+                        Or
+                      </span>
+                    </div>
+                  </div>
 
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full border-border bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-white h-12 rounded-none font-bold flex items-center justify-center gap-2 uppercase text-xs tracking-wider"
-                onClick={handleDemoLogin}
-              >
-                <Users className="w-4 h-4" />
-                DEMO SIMULATION MODE
-                <ArrowRight className="w-4 h-4" />
-              </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full border-[#2a2f4a] bg-transparent text-gray-300 hover:bg-[#2a2f4a] hover:text-white h-12 rounded-md font-semibold flex items-center justify-center gap-2 uppercase text-xs"
+                    onClick={handleDemoLogin}
+                    disabled={loading}
+                  >
+                    <Users className="w-4 h-4" />
+                    Try Demo Mode
+                  </Button>
+                </>
+              )}
             </form>
 
-            <div className="flex items-center justify-center gap-2 mt-8 opacity-50">
-              <ShieldCheck className="w-4 h-4 text-primary" />
-              <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
-                256-BIT ENCRYPTED CONNECTION
+            {/* Security Badge */}
+            <div className="flex items-center justify-center gap-2 mt-6 pt-6 border-t border-[#2a2f4a]/50">
+              <ShieldCheck className="w-4 h-4 text-[#FFFF3C]" />
+              <p className="text-[10px] text-gray-500 font-semibold uppercase tracking-wider">
+                Secure Connection
               </p>
             </div>
           </div>
