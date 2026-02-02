@@ -2,13 +2,11 @@ import { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useCasinoWebSocket } from "@/hooks/api/useCasinoWebSocket";
 import { CasinoGame } from "@/types/casino";
-import { placeCasinoBet } from "@/services/casino";
-import { bettingService } from "@/services/bettingService";
-import { supabase } from "@/integrations/supabase/client";
+import { isMarketActive } from "@/lib/casinoUtils";
+import { casinoBettingService } from "@/services/casinoBettingService";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import { History, Target } from "lucide-react";
 
 interface AndarBaharGameProps {
   game: CasinoGame;
@@ -21,66 +19,43 @@ interface Bet {
   odds: number;
 }
 
-export function AndarBaharGame({ game }: AndarBaharGameProps) {
+export default function AndarBaharGame({ game }: AndarBaharGameProps) {
   const [bets, setBets] = useState<Bet[]>([]);
-  const [placedBets, setPlacedBets] = useState<any[]>([]);
   const [selectedChip, setSelectedChip] = useState(100);
-  const [userId, setUserId] = useState<string | undefined>();
   const { gameData, resultData } = useCasinoWebSocket(game.gmid);
 
-  const chips = [100, 500, 1000, 5000, 10000];
-
-  // Get user ID
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUserId(session?.user?.id);
-    });
-  }, []);
-
-  // Function to fetch placed bets
-  const fetchPlacedBets = async () => {
-    if (!userId) return;
-    try {
-      console.log(
-        "[AndarBahar] Fetching placed bets for user:",
-        userId,
-        "Game:",
-        game.gmid,
-      );
-      const allBets = await bettingService.getMyBets(50, 0);
-      console.log("[AndarBahar] All fetched bets:", allBets);
-
-      // Filter for this specific game only
-      const thisGameBets = allBets.filter((bet) => {
-        const isCasino =
-          bet.game_type === "CASINO" ||
-          bet.sport === "CASINO" ||
-          bet.gameType === "CASINO";
-        const isThisGame =
-          bet.game_id === game.gmid ||
-          bet.gameId === game.gmid ||
-          bet.game === game.gname;
-        return isCasino && isThisGame;
-      });
-
-      console.log(
-        "[AndarBahar] Filtered bets for game",
-        game.gmid,
-        ":",
-        thisGameBets,
-      );
-      setPlacedBets(thisGameBets);
-    } catch (error) {
-      console.error("[AndarBahar] Error fetching placed bets:", error);
+  // Generate chip values based on available markets' min/max limits
+  const generateChipValues = () => {
+    if (!gameData?.sub || gameData.sub.length === 0) {
+      return [100, 500, 1000, 5000, 10000];
     }
+
+    const activeMarkets = gameData.sub.filter(isMarketActive);
+    if (activeMarkets.length === 0) {
+      return [100, 500, 1000, 5000, 10000];
+    }
+
+    const minLimit = Math.min(...activeMarkets.map((m: any) => m.min));
+    const maxLimit = Math.max(...activeMarkets.map((m: any) => m.max));
+
+    const chips: number[] = [minLimit];
+    if (minLimit * 5 <= maxLimit) chips.push(minLimit * 5);
+    if (minLimit * 10 <= maxLimit) chips.push(minLimit * 10);
+    if (minLimit * 50 <= maxLimit) chips.push(minLimit * 50);
+    if (minLimit * 100 <= maxLimit) chips.push(minLimit * 100);
+    if (maxLimit > chips[chips.length - 1] * 1.5) chips.push(maxLimit);
+
+    return chips.slice(0, 6);
   };
 
-  // Fetch placed bets when user is authenticated
+  const chips = generateChipValues();
+
+  // Update selected chip if it becomes invalid
   useEffect(() => {
-    if (userId) {
-      fetchPlacedBets();
+    if (chips.length > 0 && !chips.includes(selectedChip)) {
+      setSelectedChip(chips[0]);
     }
-  }, [userId]);
+  }, [chips, selectedChip]);
 
   const handleMarketClick = (market: any) => {
     if (market.gstatus === "SUSPENDED") {
@@ -116,17 +91,20 @@ export function AndarBaharGame({ game }: AndarBaharGameProps) {
 
     try {
       for (const bet of bets) {
-        await placeCasinoBet({
-          type: game.gmid,
-          mid: gameData?.mid,
-          sid: bet.sid,
+        await casinoBettingService.placeCasinoBet({
+          gameId: game.gmid,
+          gameName: game.gname,
+          roundId: gameData?.mid?.toString() || "",
+          marketId: bet.sid.toString(),
+          marketName: bet.nat,
+          selection: bet.nat,
+          odds: bet.odds,
           stake: bet.stake,
+          betType: "BACK",
         });
       }
       toast({ title: "Bets Placed Successfully" });
       setBets([]);
-      // Fetch placed bets to update "My Bets" section
-      setTimeout(() => fetchPlacedBets(), 1000);
     } catch (error) {
       toast({ title: "Error placing bets", variant: "destructive" });
     }
@@ -355,64 +333,6 @@ export function AndarBaharGame({ game }: AndarBaharGameProps) {
             >
               Clear All
             </Button>
-
-            {/* My Bets Section */}
-            {userId && (
-              <div className="mt-6 pt-6 border-t-2 border-slate-700">
-                <div className="flex items-center gap-2 mb-3">
-                  <History className="w-4 h-4 text-yellow-500" />
-                  <h3 className="text-white font-bold text-sm">My Bets</h3>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={fetchPlacedBets}
-                    className="ml-auto h-6 text-xs text-slate-400 hover:text-white"
-                  >
-                    Refresh
-                  </Button>
-                </div>
-
-                <div className="space-y-2 max-h-[250px] overflow-y-auto">
-                  {placedBets.length === 0 ? (
-                    <Card className="bg-slate-700/50 border-slate-600 p-3 text-center">
-                      <Target className="w-5 h-5 text-slate-500 mx-auto mb-1" />
-                      <p className="text-slate-500 text-xs">No bets placed</p>
-                    </Card>
-                  ) : (
-                    placedBets.map((bet, index) => (
-                      <Card
-                        key={bet.id || index}
-                        className="p-2 bg-slate-700 border-slate-600"
-                      >
-                        <div className="flex justify-between items-start mb-1">
-                          <div className="flex-1">
-                            <p className="text-white font-semibold text-xs">
-                              {bet.selection || bet.selection_name}
-                            </p>
-                          </div>
-                          <div
-                            className={`px-1.5 py-0.5 rounded text-xs font-semibold ${
-                              bet.status === "pending"
-                                ? "bg-yellow-600/20 text-yellow-400"
-                                : bet.status === "won" || bet.status === "win"
-                                  ? "bg-green-600/20 text-green-400"
-                                  : "bg-red-600/20 text-red-400"
-                            }`}
-                          >
-                            {bet.status?.toUpperCase()}
-                          </div>
-                        </div>
-                        <div className="flex justify-between text-xs text-slate-400">
-                          <span>
-                            ₹{bet.stake} @ {bet.odds}
-                          </span>
-                        </div>
-                      </Card>
-                    ))
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>

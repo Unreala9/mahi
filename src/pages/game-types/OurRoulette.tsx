@@ -108,7 +108,7 @@ export default function OurRoulette() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate("/casino-lobby")}
+                onClick={() => navigate("/casino")}
                 className="text-gray-400 hover:text-white"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
@@ -145,7 +145,7 @@ export default function OurRoulette() {
                   <div
                     className={cn(
                       "absolute inset-4 rounded-full bg-gray-900 border-2 border-yellow-500 flex items-center justify-center transition-transform duration-5000",
-                      isSpinning && "animate-spin"
+                      isSpinning && "animate-spin",
                     )}
                   >
                     <div className="text-center">
@@ -161,19 +161,27 @@ export default function OurRoulette() {
                 <div className="grid grid-cols-2 gap-3 mt-4">
                   <div className="bg-gray-900/50 rounded p-3 border border-red-600/30">
                     <p className="text-red-500 text-xs mb-1">Red</p>
-                    <p className="text-white font-bold">{((redCount / 20) * 100).toFixed(0)}%</p>
+                    <p className="text-white font-bold">
+                      {((redCount / 20) * 100).toFixed(0)}%
+                    </p>
                   </div>
                   <div className="bg-gray-900/50 rounded p-3 border border-gray-600/30">
                     <p className="text-gray-400 text-xs mb-1">Black</p>
-                    <p className="text-white font-bold">{((blackCount / 20) * 100).toFixed(0)}%</p>
+                    <p className="text-white font-bold">
+                      {((blackCount / 20) * 100).toFixed(0)}%
+                    </p>
                   </div>
                   <div className="bg-gray-900/50 rounded p-3 border border-blue-600/30">
                     <p className="text-blue-500 text-xs mb-1">Even</p>
-                    <p className="text-white font-bold">{((evenCount / 20) * 100).toFixed(0)}%</p>
+                    <p className="text-white font-bold">
+                      {((evenCount / 20) * 100).toFixed(0)}%
+                    </p>
                   </div>
                   <div className="bg-gray-900/50 rounded p-3 border border-purple-600/30">
                     <p className="text-purple-500 text-xs mb-1">Odd</p>
-                    <p className="text-white font-bold">{((oddCount / 20) * 100).toFixed(0)}%</p>
+                    <p className="text-white font-bold">
+                      {((oddCount / 20) * 100).toFixed(0)}%
+                    </p>
                   </div>
                 </div>
               </Card>
@@ -196,7 +204,7 @@ export default function OurRoulette() {
                         result.color === "red"
                           ? "bg-red-600 text-white"
                           : "bg-gray-900 text-white border border-gray-700",
-                        result.isHot && "ring-2 ring-yellow-500"
+                        result.isHot && "ring-2 ring-yellow-500",
                       )}
                     >
                       {result.number}
@@ -212,7 +220,9 @@ export default function OurRoulette() {
             {/* Right - Betting Grid */}
             <div className="lg:col-span-2">
               <Card className="bg-gray-800/50 border-purple-600/20 p-6">
-                <h3 className="text-purple-400 font-bold mb-4">Betting Table</h3>
+                <h3 className="text-purple-400 font-bold mb-4">
+                  Betting Table
+                </h3>
 
                 {/* Betting Grid */}
                 <div className="bg-green-900/20 rounded-lg p-4 border border-green-600/20 mb-6">
@@ -224,9 +234,12 @@ export default function OurRoulette() {
                         onClick={() => handlePlaceBet(`Number ${num}`, 35)}
                         className={cn(
                           "aspect-square rounded flex items-center justify-center font-bold text-sm transition-all hover:scale-105 border-2",
-                          [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36].includes(num)
+                          [
+                            1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27,
+                            30, 32, 34, 36,
+                          ].includes(num)
                             ? "bg-red-700 hover:bg-red-600 border-red-500 text-white"
-                            : "bg-gray-900 hover:bg-gray-800 border-gray-700 text-white"
+                            : "bg-gray-900 hover:bg-gray-800 border-gray-700 text-white",
                         )}
                       >
                         {num}
@@ -245,8 +258,8 @@ export default function OurRoulette() {
                           bet.color === "red"
                             ? "bg-red-700 hover:bg-red-600 border-red-500 text-white"
                             : bet.color === "black"
-                            ? "bg-gray-900 hover:bg-gray-800 border-gray-700 text-white"
-                            : "bg-blue-700 hover:bg-blue-600 border-blue-500 text-white"
+                              ? "bg-gray-900 hover:bg-gray-800 border-gray-700 text-white"
+                              : "bg-blue-700 hover:bg-blue-600 border-blue-500 text-white",
                         )}
                       >
                         <div>{bet.name}</div>
@@ -280,7 +293,9 @@ export default function OurRoulette() {
 
                 {/* Chip Selector */}
                 <div className="flex items-center gap-2 mb-4 flex-wrap">
-                  <span className="text-gray-400 text-sm mr-2">Select Chip:</span>
+                  <span className="text-gray-400 text-sm mr-2">
+                    Select Chip:
+                  </span>
                   {CHIP_VALUES.map((value) => (
                     <button
                       key={value}
@@ -289,7 +304,7 @@ export default function OurRoulette() {
                         "w-14 h-14 rounded-full font-bold text-sm border-4 transition-all hover:scale-110",
                         selectedChip === value
                           ? "bg-yellow-600 border-yellow-400 text-white ring-2 ring-yellow-300"
-                          : "bg-gray-700 border-gray-600 text-gray-300"
+                          : "bg-gray-700 border-gray-600 text-gray-300",
                       )}
                     >
                       ₹{value}
@@ -299,16 +314,29 @@ export default function OurRoulette() {
 
                 {/* Controls */}
                 <div className="grid grid-cols-4 gap-2 mb-4">
-                  <Button variant="outline" onClick={handleClearBets} className="border-red-600 text-red-500">
+                  <Button
+                    variant="outline"
+                    onClick={handleClearBets}
+                    className="border-red-600 text-red-500"
+                  >
                     Clear
                   </Button>
-                  <Button variant="outline" className="border-blue-600 text-blue-500">
+                  <Button
+                    variant="outline"
+                    className="border-blue-600 text-blue-500"
+                  >
                     Undo
                   </Button>
-                  <Button variant="outline" className="border-green-600 text-green-500">
+                  <Button
+                    variant="outline"
+                    className="border-green-600 text-green-500"
+                  >
                     Rebet
                   </Button>
-                  <Button variant="outline" className="border-purple-600 text-purple-500">
+                  <Button
+                    variant="outline"
+                    className="border-purple-600 text-purple-500"
+                  >
                     Double
                   </Button>
                 </div>
@@ -318,11 +346,15 @@ export default function OurRoulette() {
                   <div className="flex items-center justify-between mb-3">
                     <div>
                       <p className="text-gray-400 text-xs">Total Stake</p>
-                      <p className="text-white font-bold text-xl">₹{totalStake}</p>
+                      <p className="text-white font-bold text-xl">
+                        ₹{totalStake}
+                      </p>
                     </div>
                     <div className="text-right">
                       <p className="text-gray-400 text-xs">Potential Win</p>
-                      <p className="text-green-500 font-bold text-xl">₹{potentialWin}</p>
+                      <p className="text-green-500 font-bold text-xl">
+                        ₹{potentialWin}
+                      </p>
                     </div>
                   </div>
                   <Button

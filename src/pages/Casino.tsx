@@ -8,7 +8,7 @@ import type { CasinoCategoryId } from "@/data/casinoCategories";
 import { fetchCasinoGames } from "@/services/casino";
 import type { CasinoGame } from "@/types/casino";
 import { Button } from "@/components/ui/button";
-import { DebugCasino } from "@/components/casino/DebugCasino";
+import { hasCustomPage } from "@/data/gameRouteMapping";
 
 export default function Casino() {
   const navigate = useNavigate();
@@ -177,7 +177,13 @@ export default function Casino() {
   }, [gamesByCategory, activeCategory]);
 
   const handlePlay = (game: CasinoGame) => {
-    navigate(`/casino/${game.gmid}`);
+    const gameId = game.gmid.toLowerCase();
+    // Check if game has a custom page, otherwise use generic casino game page
+    if (hasCustomPage(gameId)) {
+      navigate(`/casino/${gameId}`);
+    } else {
+      navigate(`/casino/${game.gmid}`);
+    }
   };
 
   if (isLoading) {
@@ -204,7 +210,6 @@ export default function Casino() {
   return (
     <MainLayout>
       <div className="w-full mx-auto">
-        <DebugCasino />
         {/* Unified Filters: Categories + Tags in one row */}
         <div className="mb-4 flex flex-wrap items-center gap-2">
           {DISPLAYED_CATEGORIES.map((category) => (

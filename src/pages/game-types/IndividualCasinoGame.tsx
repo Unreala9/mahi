@@ -18,8 +18,98 @@ import { Lucky7Game } from "./Lucky7Game";
 import { PokerGame } from "./PokerGame";
 import { RouletteGame } from "./RouletteGame";
 import { MatkaGame } from "./MatkaGame";
-import { MogamboGame } from "./MogamboGame";
+import { BallByBallGame } from "./BallByBallGame";
+import { ThreeCardJudgementGame } from "./ThreeCardJudgementGame";
+import { CasinoWarGame } from "./CasinoWarGame";
+import { DragonTigerVariantGame } from "./DragonTigerVariantGame";
+import { AndarBaharVariantGame } from "./AndarBaharVariantGame";
+import { Card32VariantGame } from "./Card32VariantGame";
+import { BaccaratVariantGame } from "./BaccaratVariantGame";
+import { Lucky7EuropeanGame } from "./Lucky7EuropeanGame";
+import { RaceGame } from "./RaceGame";
+import { JokerGame } from "./JokerGame";
+import { KbcGame } from "./KbcGame";
 import { GenericCardGame } from "./GenericCardGame";
+
+// Import new casino games (games 21-30)
+import { SicBoGame } from "./SicBoGame";
+import { SicBoVariantGame } from "./SicBoVariantGame";
+import { FantasyCricketGame } from "./FantasyCricketGame";
+import { CricketMeterGame } from "./CricketMeterGame";
+import { TrapRacingGame } from "./TrapRacingGame";
+import { QueenTeenPattiGame } from "./QueenTeenPattiGame";
+import { BollywoodGameSuite } from "./BollywoodGameSuite";
+import { LottCardGame } from "./LottCardGame";
+import { CricketMeter1Game } from "./CricketMeter1Game";
+import { Dum10Game } from "./Dum10Game";
+import { WorliVariant2Game } from "./WorliVariant2Game";
+import { WorliVariant3Game } from "./WorliVariant3Game";
+import { NotenumGame } from "./NotenumGame";
+import { Teen6Game } from "./Teen6Game";
+import { SuperOver3Game } from "./SuperOver3Game";
+
+// Import new casino games (games 36-40)
+import { Trap20Game } from "./Trap20Game";
+import { Race2Game } from "./Race2Game";
+import { Aaa2Game } from "./Aaa2Game";
+import { Patti2Game } from "./Patti2Game";
+import { Btable2Game } from "./Btable2Game";
+
+// Import new casino games (games 41-45)
+import { TheTrapGame } from "./TheTrapGame";
+import { PoisonGame } from "./PoisonGame";
+import { Poison20Game } from "./Poison20Game";
+import { Joker120Game } from "./Joker120Game";
+import { DolidanaGame } from "./DolidanaGame";
+
+// Import new casino games (games 46-50)
+import { CricketMatchMeterGame } from "./CricketMatchMeterGame";
+import { Teen20BGame } from "./Teen20BGame";
+import { Teen20CGame } from "./Teen20CGame";
+import { CricketV3Game } from "./CricketV3Game";
+
+// Import new casino games (games 51-55)
+import { Teen1Game } from "./Teen1Game";
+import { Teen3Game } from "./Teen3Game";
+import { Teen9Game } from "./Teen9Game";
+import { Teen8Game } from "./Teen8Game";
+import { Lucky7GGame } from "./Lucky7GGame";
+
+// Import new casino games (games 56-60)
+import { Teen32Game } from "./Teen32Game";
+import { Teen33Game } from "./Teen33Game";
+import { Teen41Game } from "./Teen41Game";
+import { Teen42Game } from "./Teen42Game";
+import { Teen120Game } from "./Teen120Game";
+
+// Import new casino games (games 61-65)
+import { DTL20Game } from "./DTL20Game";
+import { DT202Game } from "./DT202Game";
+import { UniqueRouletteGame } from "./UniqueRouletteGame";
+import BeachRouletteGame from "./BeachRouletteGame";
+import { Poker6Game } from "./Poker6Game";
+import { AbjGame } from "./AbjGame";
+
+// Import new casino games (games 66-70)
+import { CricketLineGame } from "./CricketLineGame";
+import { Race17Game } from "./Race17Game";
+import { Lucky7EU2Game } from "./Lucky7EU2Game";
+import { DTL20ProGame } from "./DTL20ProGame";
+
+// Import new casino games (games 71-75)
+import { MogamboGame } from "./MogamboGame";
+import { Baccarat2Game } from "./Baccarat2Game";
+import { Dolidana2Game } from "./Dolidana2Game";
+import { LottCard2Game } from "./LottCard2Game";
+import { Superover2Game } from "./Superover2Game";
+
+// Import new casino games (games 76-81)
+import { TeenPatti1DayGame } from "@/components/casino/TeenPatti1DayGame";
+import { MatkaMarketGame } from "@/components/casino/MatkaMarketGame";
+import { Teenmuf2Game } from "@/components/casino/Teenmuf2Game";
+import { RaceAdvancedGame } from "@/components/casino/RaceAdvancedGame";
+import { CricketLine2Game } from "@/components/casino/CricketLine2Game";
+import { FootballLiveGame } from "@/components/casino/FootballLiveGame";
 
 // Import all universal game templates (these use GenericCardGame)
 import {
@@ -168,7 +258,7 @@ export function IndividualCasinoGame() {
   }
 
   // Crash games
-  if (gmidLower === "aaa" || gmidLower === "bollywood") {
+  if (gmidLower === "aaa") {
     return <CrashGame game={game} />;
   }
 
@@ -313,6 +403,19 @@ export function IndividualCasinoGame() {
     return <AviaBETGame game={game} />;
   }
 
+  // Classic Roulette explicit mappings (common keys used in UI)
+  if (
+    gmidLower === "roulette" ||
+    gmidLower === "roulette1" ||
+    gmidLower === "roulette11" ||
+    gmidLower === "roulette12" ||
+    gmidLower === "roulette13" ||
+    gmidLower === "ourroulette" ||
+    gmidLower === "ourroullete"
+  ) {
+    return <RouletteGame game={game} />;
+  }
+
   if (gmidLower === "goldenroulette") {
     return <GoldenRouletteGame game={game} />;
   }
@@ -353,7 +456,37 @@ export function IndividualCasinoGame() {
     return <HottieCricketCrashGame game={game} />;
   }
 
+  // New Game Variants
+  if (gmidLower === "3cardj") {
+    return <ThreeCardJudgementGame game={game} />;
+  }
+
+  // Dragon Tiger variants
+  if (gmidLower === "dt20") {
+    return <DragonTigerGame game={game} />;
+  }
+
+  if (gmidLower === "war") {
+    return <CasinoWarGame game={game} />;
+  }
+
+  if (gmidLower === "dt6") {
+    return <DragonTigerVariantGame game={game} />;
+  }
+
+  if (gmidLower === "abj") {
+    return <AndarBaharVariantGame game={game} />;
+  }
+
+  if (gmidLower === "card32") {
+    return <Card32VariantGame game={game} />;
+  }
+
   // Cricket
+  if (gmidLower.includes("ballbyball") || gmidLower.includes("ball-by-ball")) {
+    return <BallByBallGame game={game} />;
+  }
+
   if (gmidLower.includes("cricket")) {
     return <CricketGame game={game} />;
   }
@@ -363,26 +496,343 @@ export function IndividualCasinoGame() {
     return <KenoGame game={game} />;
   }
 
+  // NEW CASINO GAMES (Games 21-30)
+  // Sic Bo games
+  if (gmidLower === "sicbo") {
+    return <SicBoGame game={game} />;
+  }
+
+  if (gmidLower === "sicbo2") {
+    return <SicBoVariantGame game={game} />;
+  }
+
+  // Cricket fantasy/meter games
+  if (gmidLower === "cmatch20") {
+    return <FantasyCricketGame game={game} />;
+  }
+
+  if (gmidLower === "cmeter") {
+    return <CricketMeterGame game={game} />;
+  }
+
+  if (gmidLower === "cmeter1") {
+    return <CricketMeter1Game game={game} />;
+  }
+
+  // Trap racing
+  if (gmidLower === "trap") {
+    return <TrapRacingGame game={game} />;
+  }
+
+  // Queen Teen Patti
+  if (gmidLower === "queen") {
+    return <QueenTeenPattiGame game={game} />;
+  }
+
+  // Bollywood game suite
+  if (gmidLower === "bollywood") {
+    return <BollywoodGameSuite game={game} />;
+  }
+
+  // Lottery card game
+  if (gmidLower === "lottcard") {
+    return <LottCardGame game={game} />;
+  }
+
+  // 10-player virtual game
+  if (gmidLower === "dum10") {
+    return <Dum10Game game={game} />;
+  }
+
+  // NEW GAMES 31-35
+  // Worli variants
+  if (gmidLower === "worli2") {
+    return <WorliVariant2Game game={game} />;
+  }
+
+  if (gmidLower === "worli3") {
+    return <WorliVariant3Game game={game} />;
+  }
+
+  // Number lottery
+  if (gmidLower === "notenum") {
+    return <NotenumGame game={game} />;
+  }
+
+  // 6-player Teen Patti
+  if (gmidLower === "teen6") {
+    return <Teen6Game game={game} />;
+  }
+
+  // Super Over cricket
+  if (gmidLower === "superover3") {
+    return <SuperOver3Game game={game} />;
+  }
+
+  // Trap20/AAA - Game 36 (Virtual Greyhound Racing)
+  if (gmidLower === "trap20" || gmidLower === "aaa" || gmidLower === "trap") {
+    return <Trap20Game game={game} />;
+  }
+
+  // Race2 - Game 37 (Virtual Horse/Motor Racing)
+  if (gmidLower === "race2") {
+    return <Race2Game game={game} />;
+  }
+
+  // AAA2 - Game 38 (Multi-Sport Virtual Props)
+  if (gmidLower === "aaa2") {
+    return <Aaa2Game game={game} />;
+  }
+
+  // Patti2/Trio - Game 39 (2-Card Teen Patti)
+  if (gmidLower === "patti2" || gmidLower === "trio") {
+    return <Patti2Game game={game} />;
+  }
+
+  // Btable2/Baccarat29 - Game 40 (Premium Baccarat)
+  if (gmidLower === "btable2" || gmidLower === "baccarat29") {
+    return <Btable2Game game={game} />;
+  }
+
+  // TheTrap - Game 41 (Gamified Trap Racing)
+  if (gmidLower === "thetrap") {
+    return <TheTrapGame game={game} />;
+  }
+
+  // Poison - Game 42 (Dark Teen Patti Variant)
+  if (gmidLower === "poison") {
+    return <PoisonGame game={game} />;
+  }
+
+  // Poison20 - Game 43 (High-Speed Poison Teen Patti)
+  if (gmidLower === "poison20") {
+    return <Poison20Game game={game} />;
+  }
+
+  // Joker120/Joker1/Joker20 - Game 44 (Unlimited Joker Teen Patti)
+  if (
+    gmidLower === "joker120" ||
+    gmidLower === "joker1" ||
+    gmidLower === "joker20"
+  ) {
+    return <Joker120Game game={game} />;
+  }
+
+  // Dolidana - Game 45 (Festival-themed Color Prediction)
+  if (gmidLower === "dolidana") {
+    return <DolidanaGame game={game} />;
+  }
+
+  // Game 46: Cricket Match Meter - cmatch20
+  if (gmidLower === "cmatch20") {
+    return <CricketMatchMeterGame game={game} />;
+  }
+
+  // Game 47: Teen Patti 20B - teen20b
+  if (gmidLower === "teen20b") {
+    return <Teen20BGame game={game} />;
+  }
+
+  // Game 48: Teen Patti 20C - teen20c
+  if (gmidLower === "teen20c") {
+    return <Teen20CGame game={game} />;
+  }
+
+  // Game 49: Cricket V3 - cricketv3
+  if (gmidLower === "cricketv3") {
+    return <CricketV3Game game={game} />;
+  }
+
+  // Game 50: Golden Roulette - goldenroulette (or goldrroulette, goldroulette)
+  if (
+    gmidLower === "goldenroulette" ||
+    gmidLower === "goldrroulette" ||
+    gmidLower === "goldroulette"
+  ) {
+    return <GoldenRouletteGame game={game} />;
+  }
+
+  // Game 51: Teen Patti 1 - teen1 (Beginner-friendly Teen Patti)
+  if (gmidLower === "teen1") {
+    return <Teen1Game game={game} />;
+  }
+
+  // Game 52: Teen Patti 3 - teen3 (Enhanced Teen Patti with analytics)
+  if (gmidLower === "teen3") {
+    return <Teen3Game game={game} />;
+  }
+
+  // Game 53: Teen Patti 9 - teen9 (9-player maximum capacity)
+  if (gmidLower === "teen9") {
+    return <Teen9Game game={game} />;
+  }
+
+  // Game 54: Teen Patti 8 - teen8 (8-player fast aggressive)
+  if (gmidLower === "teen8") {
+    return <Teen8Game game={game} />;
+  }
+
+  // Game 55: Beach Lucky 7 - lucky7g, lucky7-g (Beach-themed Lucky 7)
+  if (gmidLower === "lucky7g" || gmidLower === "lucky7-g") {
+    return <Lucky7GGame game={game} />;
+  }
+
+  // Game: Beach Roulette - beachroulette (seaside themed roulette)
+  if (gmidLower === "beachroulette") {
+    return <BeachRouletteGame game={game} />;
+  }
+
+  // Game 56: Teen Patti 32 - teen32 (High-stakes with VIP tracking)
+  if (gmidLower === "teen32") {
+    return <Teen32Game game={game} />;
+  }
+
+  // Game 57: Teen Patti 33 - teen33 (Tournament fast-action)
+  if (gmidLower === "teen33") {
+    return <Teen33Game game={game} />;
+  }
+
+  // Game 58: Teen Patti 41 - teen41 (Premium side-bets)
+  if (gmidLower === "teen41") {
+    return <Teen41Game game={game} />;
+  }
+
+  // Game 59: Teen Patti 42 - teen42 (Social casual gaming)
+  if (gmidLower === "teen42") {
+    return <Teen42Game game={game} />;
+  }
+
+  // Game 60: Teen Patti 120 - teen120 (Ultra-fast unlimited)
+  if (gmidLower === "teen120") {
+    return <Teen120Game game={game} />;
+  }
+
+  // Game 61: Dragon Tiger Low - dtl20 (Low card focus)
+  if (gmidLower === "dtl20") {
+    return <DTL20Game game={game} />;
+  }
+
+  // Game 62: Dragon Tiger 202 - dt202 (Premium multi-tier)
+  if (gmidLower === "dt202") {
+    return <DT202Game game={game} />;
+  }
+
+  // Game 63: Unique Roulette - uniqueroulette (Progressive jackpot)
+  if (gmidLower === "uniqueroulette") {
+    return <UniqueRouletteGame game={game} />;
+  }
+
+  // Game 64: Poker 6 - poker6 (6-max Texas Hold'em)
+  if (gmidLower === "poker6") {
+    return <Poker6Game game={game} />;
+  }
+
+  // Game 65: Andar Bahar Joker - abj (Joker multiplier variant)
+  if (gmidLower === "abj") {
+    return <AbjGame game={game} />;
+  }
+
+  // Game 66: Goal - goal (Virtual football betting)
+  if (gmidLower === "goal") {
+    return <GoalGame game={game} />;
+  }
+
+  // Game 67: Cricket Line - cricketline (Cricket ladder betting)
+  if (gmidLower === "cricketline") {
+    return <CricketLineGame game={game} />;
+  }
+
+  // Game 68: Race 17 - race17 (17-second horse racing)
+  if (gmidLower === "race17") {
+    return <Race17Game game={game} />;
+  }
+
+  // Game 69: Lucky 7 European 2 - lucky7eu2 (Premium European Lucky 7)
+  if (gmidLower === "lucky7eu2") {
+    return <Lucky7EU2Game game={game} />;
+  }
+
+  // Game 70: DTL20 Pro - dtl20pro, dtlavanced (Advanced Dragon Tiger Low)
+  if (gmidLower === "dtl20pro" || gmidLower === "dtlavanced") {
+    return <DTL20ProGame game={game} />;
+  }
+
+  // Game 71: Mogambo - mogambo (Villain-themed Teen Patti)
+  if (gmidLower === "mogambo") {
+    return <MogamboGame game={game} />;
+  }
+
+  // Game 72: Baccarat 2 - baccarat2 (Enhanced Baccarat)
+  if (gmidLower === "baccarat2") {
+    return <Baccarat2Game game={game} />;
+  }
+
+  // Game 73: Dolidana 2 - dolidana2 (Festival variant)
+  if (gmidLower === "dolidana2") {
+    return <Dolidana2Game game={game} />;
+  }
+
+  // Game 74: Lottery Card 2 - lottcard2 (Multi-tier lottery)
+  if (gmidLower === "lottcard2") {
+    return <LottCard2Game game={game} />;
+  }
+
+  // Game 75: Superover 2 - superover2 (Extended Super Over)
+  if (gmidLower === "superover2") {
+    return <Superover2Game game={game} />;
+  }
+
+  // Game 76: Teen Patti 1 Day - teenpatti1day / vippatti1day (VIP High Roller Event)
+  if (gmidLower === "teenpatti1day" || gmidLower === "vippatti1day") {
+    return <TeenPatti1DayGame game={game} />;
+  }
+
+  // Game 77: Matka Market - matkamarket (Open/Close market betting)
+  if (gmidLower === "matkamarket" || gmidLower === "matka-market") {
+    return <MatkaMarketGame game={game} />;
+  }
+
+  // Game 78: Teenmuf 2 - teenmuf2 / muflismax (Reverse-ranking Teen Patti)
+  if (gmidLower === "teenmuf2" || gmidLower === "muflismax") {
+    return <Teenmuf2Game game={game} />;
+  }
+
+  // Game 79: Race Advanced - race-pro / raceadvanced (Professional horse racing)
+  if (gmidLower === "race-pro" || gmidLower === "raceadvanced") {
+    return <RaceAdvancedGame game={game} />;
+  }
+
+  // Game 80: Cricket Line 2 - cricketline2 / cricketladder (Advanced cricket prediction ladder)
+  if (gmidLower === "cricketline2" || gmidLower === "cricketladder") {
+    return <CricketLine2Game game={game} />;
+  }
+
+  // Game 81: Football Live - footballlive / soccerpro (Live soccer betting)
+  if (gmidLower === "footballlive" || gmidLower === "soccerpro") {
+    return <FootballLiveGame game={game} />;
+  }
+
   // Matka/Worli
-  if (gmidLower.includes("worli")) {
+  if (gmidLower.includes("worli") || gmidLower.includes("matka")) {
     return <MatkaGame game={game} />;
   }
 
   // Mines
-  if (gmidLower === "trap" || gmidLower === "mines") {
+  if (gmidLower === "mines") {
     return <MinesGame game={game} />;
   }
 
-  // Mogambo/Dolidana/Cards Meter
-  if (gmidLower === "mogambo" || gmidLower === "dolidana") {
-    return <MogamboGame game={game} />;
+  // Dolidana (original)
+  if (gmidLower === "dolidana") {
+    return <DolidanaGame game={game} />;
   }
 
+  // Cricket Match Meter
   if (
     gmidLower.startsWith("c") &&
     (gmidLower.includes("meter") || gmidLower.includes("match"))
   ) {
-    return <MogamboGame game={game} />;
+    return <CricketMatchMeterGame game={game} />;
   }
 
   // Plinko
@@ -395,14 +845,39 @@ export function IndividualCasinoGame() {
     return <PokerGame game={game} />;
   }
 
+  // Baccarat Variant (btable)
+  if (gmidLower === "btable") {
+    return <BaccaratVariantGame game={game} />;
+  }
+
   // Roulette
-  if (gmidLower.includes("roulette") || gmidLower === "btable") {
+  if (gmidLower.includes("roulette")) {
     return <RouletteGame game={game} />;
   }
 
   // Slot/Race games
-  if (gmidLower.includes("race") || gmidLower.includes("superover")) {
+  if (gmidLower.includes("superover")) {
     return <SlotGame game={game} />;
+  }
+
+  // Race Game (race20)
+  if (gmidLower === "race20" || gmidLower.includes("race")) {
+    return <RaceGame game={game} />;
+  }
+
+  // Lucky 7 European (lucky7eu)
+  if (gmidLower === "lucky7eu") {
+    return <Lucky7EuropeanGame game={game} />;
+  }
+
+  // Joker Game (joker20)
+  if (gmidLower === "joker20") {
+    return <JokerGame game={game} />;
+  }
+
+  // KBC Game (kbc)
+  if (gmidLower === "kbc") {
+    return <KbcGame game={game} />;
   }
 
   // Default fallback

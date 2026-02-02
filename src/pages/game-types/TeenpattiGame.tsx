@@ -2,14 +2,13 @@ import { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useCasinoWebSocket } from "@/hooks/api/useCasinoWebSocket";
 import { CasinoGame } from "@/types/casino";
+import { isMarketActive } from "@/lib/casinoUtils";
 import { useCasinoBetting } from "@/services/casinoBettingService";
-import { bettingService } from "@/services/bettingService";
 import { useWalletBalance } from "@/hooks/api/useWallet";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import { History, Target } from "lucide-react";
 
 interface TeenpattiGameProps {
   game: CasinoGame;
@@ -22,9 +21,8 @@ interface Bet {
   odds: number;
 }
 
-export function TeenpattiGame({ game }: TeenpattiGameProps) {
+export default function TeenpattiGame({ game }: TeenpattiGameProps) {
   const [bets, setBets] = useState<Bet[]>([]);
-  const [placedBets, setPlacedBets] = useState<any[]>([]);
   const [selectedChip, setSelectedChip] = useState(100);
   const [userId, setUserId] = useState<string | undefined>();
   const { gameData, resultData, isConnected } = useCasinoWebSocket(game.gmid);
@@ -32,7 +30,31 @@ export function TeenpattiGame({ game }: TeenpattiGameProps) {
   const { data: walletBalance = 0, refetch: refetchBalance } =
     useWalletBalance();
 
-  const chips = [100, 500, 1000, 5000, 10000, 25000];
+  // Generate chip values based on available markets' min/max limits
+  const generateChipValues = () => {
+    if (!gameData?.sub || gameData.sub.length === 0) {
+      return [100, 500, 1000, 5000, 10000];
+    }
+
+    const activeMarkets = gameData.sub.filter(isMarketActive);
+    if (activeMarkets.length === 0) {
+      return [100, 500, 1000, 5000, 10000];
+    }
+
+    const minLimit = Math.min(...activeMarkets.map((m: any) => m.min));
+    const maxLimit = Math.max(...activeMarkets.map((m: any) => m.max));
+
+    const chips: number[] = [minLimit];
+    if (minLimit * 5 <= maxLimit) chips.push(minLimit * 5);
+    if (minLimit * 10 <= maxLimit) chips.push(minLimit * 10);
+    if (minLimit * 50 <= maxLimit) chips.push(minLimit * 50);
+    if (minLimit * 100 <= maxLimit) chips.push(minLimit * 100);
+    if (maxLimit > chips[chips.length - 1] * 1.5) chips.push(maxLimit);
+
+    return chips.slice(0, 6);
+  };
+
+  const chips = generateChipValues();
 
   // Get user ID
   useEffect(() => {
@@ -41,50 +63,12 @@ export function TeenpattiGame({ game }: TeenpattiGameProps) {
     });
   }, []);
 
-  // Function to fetch placed bets
-  const fetchPlacedBets = async () => {
-    if (!userId) return;
-    try {
-      console.log(
-        "[Teenpatti] Fetching placed bets for user:",
-        userId,
-        "Game:",
-        game.gmid,
-      );
-      const allBets = await bettingService.getMyBets(50, 0);
-      console.log("[Teenpatti] All fetched bets:", allBets);
-
-      // Filter for this specific game only
-      const thisGameBets = allBets.filter((bet) => {
-        const isCasino =
-          bet.game_type === "CASINO" ||
-          bet.sport === "CASINO" ||
-          bet.gameType === "CASINO";
-        const isThisGame =
-          bet.game_id === game.gmid ||
-          bet.gameId === game.gmid ||
-          bet.game === game.gname;
-        return isCasino && isThisGame;
-      });
-
-      console.log(
-        "[Teenpatti] Filtered bets for game",
-        game.gmid,
-        ":",
-        thisGameBets,
-      );
-      setPlacedBets(thisGameBets);
-    } catch (error) {
-      console.error("[Teenpatti] Error fetching placed bets:", error);
-    }
-  };
-
-  // Fetch placed bets when user is authenticated
+  // Update selected chip if it becomes invalid
   useEffect(() => {
-    if (userId) {
-      fetchPlacedBets();
+    if (chips.length > 0 && !chips.includes(selectedChip)) {
+      setSelectedChip(chips[0]);
     }
-  }, [userId]);
+  }, [chips, selectedChip]);
 
   const handleMarketClick = (market: any) => {
     if (market.gstatus === "SUSPENDED") {
@@ -174,8 +158,6 @@ export function TeenpattiGame({ game }: TeenpattiGameProps) {
         });
         setBets([]);
         refetchBalance();
-        // Fetch placed bets to update "My Bets" section
-        setTimeout(() => fetchPlacedBets(), 1000);
       }
 
       if (failCount > 0) {
@@ -472,64 +454,6 @@ export function TeenpattiGame({ game }: TeenpattiGameProps) {
             >
               Clear All
             </Button>
-
-            {/* My Bets Section */}
-            {userId && (
-              <div className="mt-6 pt-6 border-t-2 border-slate-700">
-                <div className="flex items-center gap-2 mb-3">
-                  <History className="w-4 h-4 text-yellow-500" />
-                  <h3 className="text-white font-bold text-sm">My Bets</h3>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={fetchPlacedBets}
-                    className="ml-auto h-6 text-xs text-slate-400 hover:text-white"
-                  >
-                    Refresh
-                  </Button>
-                </div>
-
-                <div className="space-y-2 max-h-[250px] overflow-y-auto">
-                  {placedBets.length === 0 ? (
-                    <Card className="bg-slate-700/50 border-slate-600 p-3 text-center">
-                      <Target className="w-5 h-5 text-slate-500 mx-auto mb-1" />
-                      <p className="text-slate-500 text-xs">No bets placed</p>
-                    </Card>
-                  ) : (
-                    placedBets.map((bet, index) => (
-                      <Card
-                        key={bet.id || index}
-                        className="p-2 bg-slate-700 border-slate-600"
-                      >
-                        <div className="flex justify-between items-start mb-1">
-                          <div className="flex-1">
-                            <p className="text-white font-semibold text-xs">
-                              {bet.selection || bet.selection_name}
-                            </p>
-                          </div>
-                          <div
-                            className={`px-1.5 py-0.5 rounded text-xs font-semibold ${
-                              bet.status === "pending"
-                                ? "bg-yellow-600/20 text-yellow-400"
-                                : bet.status === "won" || bet.status === "win"
-                                  ? "bg-green-600/20 text-green-400"
-                                  : "bg-red-600/20 text-red-400"
-                            }`}
-                          >
-                            {bet.status?.toUpperCase()}
-                          </div>
-                        </div>
-                        <div className="flex justify-between text-xs text-slate-400">
-                          <span>
-                            ₹{bet.stake} @ {bet.odds}
-                          </span>
-                        </div>
-                      </Card>
-                    ))
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>

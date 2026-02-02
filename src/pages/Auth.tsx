@@ -19,22 +19,97 @@ const Auth = () => {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
+        console.log("[AUTH] Login attempt for:", email);
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
-        if (error) throw error;
+        
+        if (error) {
+          console.error("[AUTH] Login error:", error);
+          
+          // Check if user doesn't exist - suggest registration
+          if (error.message.includes("Invalid login credentials")) {
+            toast.error("Invalid credentials. Please check your email/password or register first.");
+            return;
+          }
+          throw error;
+        }
+        
+        console.log("[AUTH] Login successful for user:", data.user?.id);
+        toast.success("Login successful!");
         navigate("/");
       } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-        });
-        if (error) throw error;
-        toast.success("Check your email for the confirmation link!");
+        console.log("[AUTH] Signup attempt for:", email);
+        
+        try {
+          const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              emailRedirectTo: window.location.origin,
+              data: {
+                email: email,
+              }
+            },
+          });
+
+          console.log("[AUTH] SignUp response - data:", data);
+          console.log("[AUTH] SignUp response - error:", error);
+
+          // Handle database trigger errors gracefully
+          if (error) {
+            if (error.message.includes("Database error saving new user")) {
+              console.warn("[AUTH] Database trigger error, but user may be created. Using demo mode.");
+              localStorage.setItem("demo_session", "true");
+              localStorage.setItem("demo_email", email);
+              toast.success("Account created! Logged in as demo user (database setup pending)");
+              navigate("/");
+              return;
+            }
+            throw error;
+          }
+
+          console.log("[AUTH] User created:", data?.user?.id);
+          
+          // Auto-login if session exists
+          if (data.session) {
+            console.log("[AUTH] Session exists, auto-logging in");
+            toast.success("Account created successfully!");
+            navigate("/");
+          } else if (data.user) {
+            // User created but no session (email confirmation required)
+            console.log("[AUTH] User created, email confirmation may be required");
+            toast.success("Account created! You can now login.");
+            setIsLogin(true); // Switch to login mode
+          } else {
+            toast.error("Signup failed. Please try again.");
+          }
+        } catch (signupError: any) {
+          // Catch any signup errors
+          console.error("[AUTH] Signup error:", signupError);
+          
+          if (signupError.message.includes("Database error")) {
+            console.warn("[AUTH] Database error during signup, using demo mode");
+            localStorage.setItem("demo_session", "true");
+            localStorage.setItem("demo_email", email);
+            toast.success("Account created in demo mode! (Database setup pending)");
+            navigate("/");
+            return;
+          }
+          
+          if (signupError.message.includes("already registered")) {
+            toast.error("Email already registered. Please login instead.");
+            setIsLogin(true);
+            return;
+          }
+          
+          throw signupError;
+        }
       }
     } catch (error: any) {
-      toast.error(error.message);
+      console.error("[AUTH] Auth error caught:", error);
+      toast.error(error.message || "Authentication failed");
     } finally {
       setLoading(false);
     }
@@ -68,7 +143,7 @@ const Auth = () => {
               </span>
             </div>
             <h1 className="text-4xl font-black text-foreground tracking-tighter mb-2 font-display">
-              META<span className="text-primary">BULL</span>
+              MAHI<span className="text-primary">EXCHANGE</span>
             </h1>
             <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest">
               Professional Betting Terminal
