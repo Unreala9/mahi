@@ -6,6 +6,19 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect } from "react";
 import { diamondWS } from "@/services/websocket";
+<<<<<<< HEAD
+=======
+import { settlementMonitor } from "@/services/autoSettlementService";
+import { resultWebSocket } from "@/services/resultWebSocket";
+import Index from "./pages/Index";
+import Auth from "./pages/Auth";
+import Sportsbook from "./pages/Sportsbook";
+import CasinoLive from "./pages/CasinoLive";
+import Casino from "./pages/Casino";
+import CasinoGame from "./pages/CasinoGame";
+import CasinoLobby from "./pages/CasinoLobby";
+import GenericGameTemplate from "./pages/GenericGameTemplate";
+>>>>>>> 8913c804a0072c7a75fad46c0eb1cd32592acb6f
 
 // Lazy load page components
 const Index = lazy(() => import("./pages/Index"));
@@ -36,6 +49,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 
 import AdminLayout from "./components/admin/AdminLayout";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import TestSettlement from "./pages/TestSettlement";
 
 // Loading fallback component
 const PageLoader = () => (
@@ -72,12 +86,35 @@ const App = () => {
     };
   }, []); // Empty dependency array - only run once
 
+  // Initialize automatic bet settlement monitor
+  useEffect(() => {
+    console.log("[App] Starting bet settlement monitor...");
+    settlementMonitor.start(3600); // Check every hour for very old bets
+
+    return () => {
+      console.log("[App] Stopping bet settlement monitor...");
+      settlementMonitor.stop();
+    };
+  }, []);
+
+  // Initialize result WebSocket for real-time settlements
+  useEffect(() => {
+    console.log("[App] Starting result WebSocket...");
+    resultWebSocket.start();
+
+    return () => {
+      console.log("[App] Stopping result WebSocket...");
+      resultWebSocket.stop();
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
+<<<<<<< HEAD
           <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/" element={<Index />} />
@@ -145,6 +182,88 @@ const App = () => {
                   </ProtectedRoute>
                 }
               />
+=======
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/responsible-gaming" element={<ResponsibleGaming />} />
+            <Route path="/api-test" element={<ApiTest />} />
+            <Route path="/test-settlement" element={<TestSettlement />} />
+
+            {/* Redirect old dashboard to sports */}
+            <Route
+              path="/dashboard"
+              element={<Navigate to="/sports" replace />}
+            />
+            <Route
+              path="/sports"
+              element={
+                <ProtectedRoute>
+                  <Sportsbook />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/match/:gmid/:sid"
+              element={
+                <ProtectedRoute>
+                  <DiamondMatch />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/match/:gmid"
+              element={
+                <ProtectedRoute>
+                  <DiamondMatch />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino-live"
+              element={
+                <ProtectedRoute>
+                  <CasinoLive />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino"
+              element={
+                <ProtectedRoute>
+                  <Casino />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino-lobby"
+              element={
+                <ProtectedRoute>
+                  <CasinoLobby />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/:slug"
+              element={
+                <ProtectedRoute>
+                  <GenericGameTemplate />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino-old/:gmid"
+              element={
+                <ProtectedRoute>
+                  <CasinoGame />
+                </ProtectedRoute>
+              }
+            />
+>>>>>>> 8913c804a0072c7a75fad46c0eb1cd32592acb6f
 
               <Route
                 path="/wallet"

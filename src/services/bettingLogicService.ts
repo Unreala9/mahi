@@ -83,7 +83,7 @@ export function validateBet(
   return { valid: true };
 }
 
-export function useBettingLogic(userId?: string) {
+export function useBettingLogic(userId?: string, eventId?: number) {
   const [betSlip, setBetSlip] = useState<BetSlipItem[]>([]);
   const [placedBets, setPlacedBets] = useState<PlacedBet[]>([]);
   const [isPlacingBet, setIsPlacingBet] = useState(false);
@@ -183,6 +183,46 @@ export function useBettingLogic(userId?: string) {
 
   const clearBetSlip = useCallback(() => setBetSlip([]), []);
 
+  const fetchMyBets = useCallback(async () => {
+    if (!userId) {
+      console.log("[BettingLogic] No userId, skipping fetch");
+      return;
+    }
+    try {
+      console.log(
+        "[BettingLogic] Fetching my bets for userId:",
+        userId,
+        "eventId:",
+        eventId,
+      );
+      const allBets = await bettingService.getMyBets(50, 0);
+      console.log("[BettingLogic] All fetched bets:", allBets);
+
+      // Filter for this specific event if eventId provided
+      const filteredBets = eventId
+        ? allBets.filter((bet) => {
+            // Check various possible field names for event_id
+            const betEventId =
+              bet.event_id || bet.eventId || bet.match_id || bet.matchId;
+            // Compare as both number and string since backend might store as string
+            return (
+              betEventId == eventId || String(betEventId) === String(eventId)
+            );
+          })
+        : allBets;
+
+      console.log(
+        "[BettingLogic] Filtered bets for event",
+        eventId,
+        ":",
+        filteredBets,
+      );
+      setPlacedBets(filteredBets);
+    } catch (error) {
+      console.error("Failed to fetch bets", error);
+    }
+  }, [userId, eventId]);
+
   const placeBets = useCallback(async () => {
     if (betSlip.length === 0) {
       toast({
@@ -253,27 +293,17 @@ export function useBettingLogic(userId?: string) {
       try {
         const parsed = JSON.parse(String(err?.message || err));
         msg = parsed?.body?.error || parsed?.message || msg;
-      } catch { }
+      } catch {}
 
       toast({ title: "Error", description: msg, variant: "destructive" });
     } finally {
       setIsPlacingBet(false);
-      // Refresh bets
-      fetchMyBets();
+      // Refresh bets after a short delay to ensure backend has processed
+      setTimeout(() => {
+        fetchMyBets();
+      }, 500);
     }
-  }, [betSlip, balance, userId, clearBetSlip]);
-
-  const fetchMyBets = useCallback(async () => {
-    if (!userId) return;
-    try {
-      console.log("[BettingLogic] Fetching my bets for userId:", userId);
-      const bets = await bettingService.getMyBets(50, 0, "pending");
-      console.log("[BettingLogic] Fetched bets:", bets);
-      setPlacedBets(bets);
-    } catch (error) {
-      console.error("Failed to fetch bets", error);
-    }
-  }, [userId]);
+  }, [betSlip, balance, userId, clearBetSlip, fetchMyBets]);
 
   useEffect(() => {
     fetchMyBets();

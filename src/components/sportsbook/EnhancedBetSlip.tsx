@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { X, Trash2, Check } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { BetSlipItem, PlacedBet } from "@/types/sports-betting";
 import { cn } from "@/lib/utils";
 import { MARKET_RULES } from "@/services/bettingLogicService";
@@ -26,7 +25,6 @@ interface EnhancedBetSlipProps {
   onUpdateStake: (index: number, stake: number) => void;
   onPlaceBets: () => void;
   onClear: () => void;
-  placedBets?: PlacedBet[];
 }
 
 export function EnhancedBetSlip({
@@ -40,39 +38,23 @@ export function EnhancedBetSlip({
   onUpdateStake,
   onPlaceBets,
   onClear,
-  placedBets = [],
 }: EnhancedBetSlipProps) {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   return (
     <Card className="overflow-hidden bg-card">
-      <Tabs defaultValue="betslip" className="w-full">
-        <div className="bg-primary text-primary-foreground p-1">
-          <TabsList className="grid w-full grid-cols-2 bg-primary/20">
-            <TabsTrigger
-              value="betslip"
-              className="data-[state=active]:bg-background data-[state=active]:text-foreground"
-            >
-              Bet Slip ({betSlip.length})
-            </TabsTrigger>
-            <TabsTrigger
-              value="mybets"
-              className="data-[state=active]:bg-background data-[state=active]:text-foreground"
-            >
-              My Bets ({placedBets.length})
-            </TabsTrigger>
-          </TabsList>
-        </div>
+      <div className="bg-primary text-primary-foreground p-3">
+        <h3 className="font-bold">Bet Slip ({betSlip.length})</h3>
+      </div>
 
-        <TabsContent value="betslip" className="m-0">
-          {betSlip.length === 0 ? (
-            <div className="p-6 text-center text-muted-foreground min-h-[200px] flex flex-col justify-center">
-              <p className="text-sm">Your bet slip is empty</p>
-              <p className="text-xs mt-2">Click on odds to add bets</p>
-            </div>
-          ) : (
-            <>
-              {/* Header Actions */}
+      {betSlip.length === 0 ? (
+        <div className="p-6 text-center text-muted-foreground min-h-[200px] flex flex-col justify-center">
+          <p className="text-sm">Your bet slip is empty</p>
+          <p className="text-xs mt-2">Click on odds to add bets</p>
+        </div>
+      ) : (
+        <>
+          {/* Header Actions */}
               <div className="p-2 flex justify-end border-b">
                 <Button
                   variant="ghost"
@@ -247,58 +229,6 @@ export function EnhancedBetSlip({
               </div>
             </>
           )}
-        </TabsContent>
-
-        <TabsContent value="mybets" className="m-0">
-          <ScrollArea className="h-[600px]">
-            {placedBets.length === 0 ? (
-              <div className="p-8 text-center text-muted-foreground">
-                <p className="text-sm">No open bets found</p>
-              </div>
-            ) : (
-              <div className="divide-y">
-                {placedBets.map((bet, i) => (
-                  <div key={i} className="p-3 text-sm hover:bg-muted/50">
-                    <div className="flex justify-between items-start mb-1">
-                      <div>
-                        <span
-                          className={cn(
-                            "font-bold px-1.5 py-0.5 rounded text-[10px] mr-2 text-white",
-                            bet.bet_type === "BACK"
-                              ? "bg-blue-500"
-                              : "bg-pink-500",
-                          )}
-                        >
-                          {bet.bet_type}
-                        </span>
-                        <span className="font-medium">{bet.selection}</span>
-                      </div>
-                      <span className="font-mono font-bold">@{bet.odds}</span>
-                    </div>
-                    <div className="text-xs text-muted-foreground mb-1">
-                      {bet.market_name}
-                    </div>
-                    <div className="flex justify-between text-xs mt-2">
-                      <span>
-                        Stake: <span className="font-medium">₹{bet.stake}</span>
-                      </span>
-                      <span>
-                        Profit:{" "}
-                        <span className="font-medium text-green-600">
-                          ₹{bet.potential_payout}
-                        </span>
-                      </span>
-                    </div>
-                    <div className="mt-1 text-[10px] text-right text-muted-foreground">
-                      {new Date(bet.created_at).toLocaleTimeString()}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </ScrollArea>
-        </TabsContent>
-      </Tabs>
     </Card>
   );
 }

@@ -102,8 +102,7 @@ export default function DiamondMatch() {
     updateStake,
     clearBetSlip,
     placeBets,
-  } = useBettingLogic(user?.id || ""); 
-
+  } = useBettingLogic(user?.id || undefined, gmidNum || undefined);
 
   // Subscribe to real-time updates
   useEffect(() => {
@@ -235,72 +234,71 @@ export default function DiamondMatch() {
               <LiveScoreDisplay gmid={gmidNum} sid={sidForQueries} />
             )}
 
-            {/* Live TV & Stream */}
-            {(liveScoreUrl || liveStreamUrl) && (
-              <Card className="overflow-hidden">
-                <Tabs defaultValue="stream" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 rounded-none">
-                    <TabsTrigger value="stream">Live Stream</TabsTrigger>
-                    <TabsTrigger value="score">Live Score</TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="stream" className="m-0">
-                    {liveStreamUrl ? (
-                      <div className="w-full h-[400px] relative">
-                        <iframe
-                          src={liveStreamUrl}
-                          className="w-full h-full border-0"
-                          title="Live Match Stream"
-                          allow="autoplay; fullscreen"
-                          allowFullScreen
-                          onLoad={() => {
-                            setStreamLoaded(true);
-                            console.log("[DiamondMatch] Stream loaded successfully");
-                          }}
-                          onError={(e) => {
-                            console.warn(
-                              "[DiamondMatch] Stream iframe failed to load",
-                            );
-                            setStreamLoaded(false);
-                          }}
-                        />
-                        {!streamLoaded && (
-                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <p className="text-xs text-muted-foreground bg-background/80 px-3 py-2 rounded">
-                              If stream doesn't load, it may not be available for
-                              this match
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="p-6 text-center text-muted-foreground">
-                        Live stream not available
+            {/* Live Stream */}
+            {liveStreamUrl && (
+              <Card className="overflow-hidden mb-4">
+                {details?.is_live ? (
+                  <div className="w-full h-[400px] relative">
+                    <iframe
+                      src={liveStreamUrl}
+                      className="w-full h-full border-0"
+                      title="Live Match Stream"
+                      allow="autoplay; fullscreen"
+                      allowFullScreen
+                      onLoad={() => {
+                        setStreamLoaded(true);
+                        console.log(
+                          "[DiamondMatch] Stream loaded successfully",
+                        );
+                      }}
+                      onError={(e) => {
+                        console.warn(
+                          "[DiamondMatch] Stream iframe failed to load",
+                        );
+                        setStreamLoaded(false);
+                      }}
+                    />
+                    {!streamLoaded && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <p className="text-xs text-muted-foreground bg-background/80 px-3 py-2 rounded">
+                          Stream currently unavailable
+                        </p>
                       </div>
                     )}
-                  </TabsContent>
+                  </div>
+                ) : (
+                  <div className="w-full h-[400px] flex items-center justify-center bg-slate-100 dark:bg-slate-800">
+                    <p className="text-lg font-semibold text-muted-foreground">
+                      Match is Not Live
+                    </p>
+                  </div>
+                )}
+              </Card>
+            )}
 
-                  <TabsContent value="score" className="m-0">
-                    {liveScoreUrl ? (
-                      <div className="w-full h-[400px]">
-                        <iframe
-                          src={liveScoreUrl}
-                          className="w-full h-full border-0"
-                          title="Live Match Score"
-                          onError={(e) => {
-                            console.warn(
-                              "[DiamondMatch] Score iframe failed to load",
-                            );
-                          }}
-                        />
-                      </div>
-                    ) : (
-                      <div className="p-6 text-center text-muted-foreground">
-                        Live score not available
-                      </div>
-                    )}
-                  </TabsContent>
-                </Tabs>
+            {/* Live Score Iframe */}
+            {liveScoreUrl && (
+              <Card className="overflow-hidden mb-4">
+                {details?.is_live ? (
+                  <div className="w-full h-[200px]">
+                    <iframe
+                      src={liveScoreUrl}
+                      className="w-full h-full border-0"
+                      title="Live Match Score"
+                      onError={(e) => {
+                        console.warn(
+                          "[DiamondMatch] Score iframe failed to load",
+                        );
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className="w-full h-[200px] flex items-center justify-center bg-slate-100 dark:bg-slate-800">
+                    <p className="text-lg font-semibold text-muted-foreground">
+                      Match is Not Live
+                    </p>
+                  </div>
+                )}
               </Card>
             )}
 

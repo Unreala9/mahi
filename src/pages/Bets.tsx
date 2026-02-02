@@ -9,13 +9,65 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Clock,
+  RefreshCcw,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { settlementMonitor, settleSportsBets, settleCasinoBets } from "@/services/autoSettlementService";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 const Bets = () => {
   const { data: bets = [], isLoading, error, refetch } = useMyBets();
+  const { toast } = useToast();
+  const [isSettling, setIsSettling] = useState(false);
+
+  const handleManualSettlement = async () => {
+    setIsSettling(true);
+    toast({
+      title: "Settlement Started",
+      description: "Checking all pending bets...",
+    });
+
+    try {
+      // Get all unique event/game IDs from pending bets
+      const pendingBets = bets.filter((b: any) => b.status === 'pending');
+      const eventIds = new Set(pendingBets.filter((b: any) => b.event_id).map((b: any) => b.event_id));
+      const gameIds = new Set(pendingBets.filter((b: any) => b.game_id).map((b: any) => b.game_id));
+
+      let settledCount = 0;
+
+      // Settle sports bets
+      for (const eventId of eventIds) {
+        await settleSportsBets(Number(eventId));
+        settledCount++;
+      }
+
+      // Settle casino bets
+      for (const gameId of gameIds) {
+        await settleCasinoBets(String(gameId));
+        settledCount++;
+      }
+
+      // Refresh the bet list
+      await refetch();
+
+      toast({
+        title: "Settlement Complete",
+        description: `Processed ${settledCount} events/games. Check your bets!`,
+      });
+    } catch (error) {
+      console.error('[ManualSettlement] Error:', error);
+      toast({
+        title: "Settlement Failed",
+        description: "Could not settle bets. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSettling(false);
+    }
+  };
 
   const stats = {
     total: bets.length,
@@ -60,13 +112,34 @@ const Bets = () => {
             <h3 className="font-display font-bold text-lg text-foreground">
               Betting History
             </h3>
-            <button
-              onClick={() => refetch()}
-              className="p-2 hover:bg-muted rounded-full transition-colors"
-              title="Refresh Bets"
-            >
-              <History className="w-5 h-5 text-primary" />
-            </button>
+            <div className="flex gap-2">
+              <Button
+                onClick={handleManualSettlement}
+                disabled={isSettling}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
+                {isSettling ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Settling...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCcw className="w-4 h-4" />
+                    Settle Bets
+                  </>
+                )}
+              </Button>
+              <button
+                onClick={() => refetch()}
+                className="p-2 hover:bg-muted rounded-full transition-colors"
+                title="Refresh Bets"
+              >
+                <History className="w-5 h-5 text-primary" />
+              </button>
+            </div>
           </div>
 
           {isLoading ? (
