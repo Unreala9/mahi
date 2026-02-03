@@ -27,57 +27,6 @@ interface Bet {
   odds: number;
 }
 
-const PLAYERS = [
-  {
-    id: 1,
-    name: "Player 1",
-    position: "top",
-    status: "active",
-    cards: 3,
-    chips: 9400,
-  },
-  {
-    id: 2,
-    name: "Player 2",
-    position: "right",
-    status: "active",
-    cards: 3,
-    chips: 7200,
-  },
-  {
-    id: 3,
-    name: "Player 3",
-    position: "bottom-right",
-    status: "active",
-    cards: 3,
-    chips: 11800,
-  },
-  {
-    id: 4,
-    name: "You",
-    position: "bottom",
-    status: "playing",
-    cards: 3,
-    chips: 14500,
-  },
-  {
-    id: 5,
-    name: "Player 5",
-    position: "bottom-left",
-    status: "folded",
-    cards: 0,
-    chips: 3100,
-  },
-  {
-    id: 6,
-    name: "Player 6",
-    position: "left",
-    status: "active",
-    cards: 3,
-    chips: 8600,
-  },
-];
-
 const JOKER_CARDS = ["🃏", "A♠", "K♥", "Q♦"];
 
 export default function Joker120Game({ game }: Joker120GameProps) {

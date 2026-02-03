@@ -50,15 +50,6 @@ const GROUPS = [
   },
 ];
 
-const HISTORY = Array.from({ length: 12 }, () => {
-  const groups = ["8", "9", "10", "11"];
-  const cards = ["A♣", "7♥", "Q♦", "5♠", "3♦"];
-  return {
-    group: groups[Math.floor(Math.random() * groups.length)],
-    card: cards[Math.floor(Math.random() * cards.length)],
-  };
-});
-
 export default function Card32J() {
   const navigate = useNavigate();
   // ✅ LIVE API INTEGRATION
@@ -332,33 +323,39 @@ export default function Card32J() {
                   Last 12 Results
                 </h3>
                 <div className="space-y-2">
-                  {HISTORY.map((result, idx) => {
-                    const group = GROUPS.find((g) => g.id === result.group);
-                    return (
-                      <div
-                        key={idx}
-                        className={cn(
-                          "p-3 rounded border-2 transition-all hover:scale-105 bg-gradient-to-r",
-                          group?.color,
-                          "border-gray-600",
-                        )}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-white font-bold text-sm">
-                              {group?.name}
-                            </p>
-                            <p className="text-white/70 text-xs">
-                              {result.card}
-                            </p>
+                  {/* History will be populated from live API data */}
+                  <p className="text-gray-400 text-sm text-center">
+                    No history available
+                  </p>
+                  {/*
+                    {HISTORY.map((result, idx) => {
+                      const group = GROUPS.find((g) => g.id === result.group);
+                      return (
+                        <div
+                          key={idx}
+                          className={cn(
+                            "p-3 rounded border-2 transition-all hover:scale-105 bg-gradient-to-r",
+                            group?.color,
+                            "border-gray-600",
+                          )}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-white font-bold text-sm">
+                                {group?.name}
+                              </p>
+                              <p className="text-white/70 text-xs">
+                                {result.card}
+                              </p>
+                            </div>
+                            <Badge className="bg-white/20 text-white text-xs">
+                              {group?.odds}
+                            </Badge>
                           </div>
-                          <Badge className="bg-white/20 text-white text-xs">
-                            {group?.odds}
-                          </Badge>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  */}
                 </div>
               </Card>
             </div>

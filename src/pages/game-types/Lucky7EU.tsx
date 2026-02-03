@@ -46,23 +46,6 @@ const BETTING_PANELS = [
   },
 ];
 
-const HISTORY = Array.from({ length: 10 }, () => {
-  const value = Math.floor(Math.random() * 13) + 1;
-  return {
-    value:
-      value === 1
-        ? "A"
-        : value === 11
-          ? "J"
-          : value === 12
-            ? "Q"
-            : value === 13
-              ? "K"
-              : value.toString(),
-    result: value < 7 ? "Below" : value === 7 ? "Exact" : "Above",
-  };
-});
-
 export default function Lucky7EU() {
   const navigate = useNavigate();
   // ✅ LIVE API INTEGRATION

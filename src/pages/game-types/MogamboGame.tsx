@@ -29,44 +29,6 @@ interface Bet {
   odds: number;
 }
 
-const PLAYER_SEATS = [
-  {
-    id: 1,
-    name: "Player 1",
-    position: "top-[10%] left-[50%] -translate-x-1/2",
-    avatar: "😈",
-  },
-  { id: 2, name: "Player 2", position: "top-[30%] left-[15%]", avatar: "💀" },
-  {
-    id: 3,
-    name: "Player 3",
-    position: "bottom-[30%] left-[15%]",
-    avatar: "👹",
-  },
-  {
-    id: 4,
-    name: "Player 4",
-    position: "bottom-[10%] left-[50%] -translate-x-1/2",
-    avatar: "🎭",
-  },
-  {
-    id: 5,
-    name: "Player 5",
-    position: "bottom-[30%] right-[15%]",
-    avatar: "🔥",
-  },
-  { id: 6, name: "Player 6", position: "top-[30%] right-[15%]", avatar: "⚡" },
-];
-
-const HAND_RANKINGS = [
-  { rank: 1, name: "Trail", example: "A-A-A", icon: "👑" },
-  { rank: 2, name: "Pure Sequence", example: "A-K-Q", icon: "💎" },
-  { rank: 3, name: "Sequence", example: "9-8-7", icon: "⚔️" },
-  { rank: 4, name: "Color", example: "K-10-8", icon: "🔴" },
-  { rank: 5, name: "Pair", example: "9-9-5", icon: "🎲" },
-  { rank: 6, name: "High Card", example: "K-J-9", icon: "🃏" },
-];
-
 export default function MogamboGame({ game }: MogamboGameProps) {
   const [bets, setBets] = useState<Bet[]>([]);
   const [selectedChip, setSelectedChip] = useState(100);

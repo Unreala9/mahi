@@ -38,59 +38,6 @@ const BET_PANELS = [
   },
 ];
 
-const HISTORY = [
-  {
-    card: { suit: "hearts" as const, value: "K" },
-    result: "above",
-    pool: "₹4200",
-  },
-  {
-    card: { suit: "diamonds" as const, value: "3" },
-    result: "below",
-    pool: "₹3800",
-  },
-  {
-    card: { suit: "spades" as const, value: "7" },
-    result: "exactly",
-    pool: "₹12400",
-  },
-  {
-    card: { suit: "clubs" as const, value: "Q" },
-    result: "above",
-    pool: "₹5100",
-  },
-  {
-    card: { suit: "hearts" as const, value: "2" },
-    result: "below",
-    pool: "₹2900",
-  },
-  {
-    card: { suit: "diamonds" as const, value: "9" },
-    result: "above",
-    pool: "₹4600",
-  },
-  {
-    card: { suit: "spades" as const, value: "5" },
-    result: "below",
-    pool: "₹3400",
-  },
-  {
-    card: { suit: "clubs" as const, value: "A" },
-    result: "below",
-    pool: "₹2800",
-  },
-  {
-    card: { suit: "hearts" as const, value: "10" },
-    result: "above",
-    pool: "₹5200",
-  },
-  {
-    card: { suit: "diamonds" as const, value: "6" },
-    result: "below",
-    pool: "₹3700",
-  },
-];
-
 export default function Lucky7() {
   const navigate = useNavigate();
   const [countdown, setCountdown] = useState(15);
@@ -389,50 +336,11 @@ export default function Lucky7() {
                   Recent Results
                 </h3>
                 <div className="space-y-2">
-                  {HISTORY.map((result, idx) => (
-                    <div
-                      key={idx}
-                      className={cn(
-                        "p-3 rounded-lg border-2 transition-all hover:scale-105",
-                        result.result === "below"
-                          ? "bg-blue-900/30 border-blue-600"
-                          : result.result === "exactly"
-                            ? "bg-yellow-900/30 border-yellow-600"
-                            : "bg-red-900/30 border-red-600",
-                      )}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex-1">
-                          <PlayingCard
-                            suit={result.card.suit}
-                            value={result.card.value}
-                            size="sm"
-                          />
-                        </div>
-                        <div className="text-right flex-1">
-                          <Badge
-                            className={cn(
-                              "text-xs",
-                              result.result === "below"
-                                ? "bg-blue-600"
-                                : result.result === "exactly"
-                                  ? "bg-yellow-600"
-                                  : "bg-red-600",
-                            )}
-                          >
-                            {result.result === "below"
-                              ? "< 7"
-                              : result.result === "exactly"
-                                ? "= 7"
-                                : "> 7"}
-                          </Badge>
-                          <p className="text-white text-xs mt-1 font-bold">
-                            {result.pool}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                  {/* History will be populated from live API data */}
+                  <p className="text-gray-400 text-sm text-center">
+                    No history available
+                  </p>
+                  {/* {HISTORY.map((result, idx) => (...))} */}
                 </div>
 
                 {/* Stats */}
@@ -443,21 +351,15 @@ export default function Lucky7() {
                   <div className="space-y-2 text-xs">
                     <div className="flex justify-between">
                       <span className="text-blue-400">Below 7:</span>
-                      <span className="text-white font-bold">
-                        {HISTORY.filter((h) => h.result === "below").length}
-                      </span>
+                      <span className="text-white font-bold">0</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-yellow-400">Exactly 7:</span>
-                      <span className="text-white font-bold">
-                        {HISTORY.filter((h) => h.result === "exactly").length}
-                      </span>
+                      <span className="text-white font-bold">0</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-red-400">Above 7:</span>
-                      <span className="text-white font-bold">
-                        {HISTORY.filter((h) => h.result === "above").length}
-                      </span>
+                      <span className="text-white font-bold">0</span>
                     </div>
                   </div>
                 </div>

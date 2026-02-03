@@ -29,30 +29,42 @@ export const useAdminTransactions = () => {
     queryFn: async () => {
       console.log("🔍 [useAdminTransactions] Fetching all transactions...");
 
-      const { data, error } = await supabase
-        .from("wallet_transactions")
-        .select(
-          `
-          *,
-          profiles!wallet_transactions_user_id_fkey (
-            email,
-            full_name
-          )
-        `,
-        )
-        .order("created_at", { ascending: false });
+      try {
+        // Fetch transactions
+        const { data: transactions, error: txError } = await supabase
+          .from("transactions")
+          .select("*")
+          .order("created_at", { ascending: false });
 
-      if (error) {
+        if (txError) throw txError;
+
+        // Fetch all profiles for mapping
+        const { data: profiles, error: profileError } = await supabase
+          .from("profiles")
+          .select("id, email, full_name");
+
+        if (profileError) throw profileError;
+
+        // Map profiles to transactions
+        const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
+        const enrichedData =
+          transactions?.map((tx) => ({
+            ...tx,
+            profiles: profileMap.get(tx.user_id),
+          })) || [];
+
+        console.log(
+          "✅ [useAdminTransactions] Fetched transactions:",
+          enrichedData?.length,
+        );
+        return enrichedData;
+      } catch (error: any) {
         console.error("❌ [useAdminTransactions] Error:", error);
         throw error;
       }
-
-      console.log(
-        "✅ [useAdminTransactions] Fetched transactions:",
-        data?.length,
-      );
-      return data || [];
     },
+    retry: 1,
+    retryDelay: 1000,
   });
 };
 
@@ -62,27 +74,39 @@ export const useAdminBets = () => {
     queryFn: async () => {
       console.log("🔍 [useAdminBets] Fetching all bets...");
 
-      const { data, error } = await supabase
-        .from("bets")
-        .select(
-          `
-          *,
-          profiles!bets_user_id_fkey (
-            email,
-            full_name
-          )
-        `,
-        )
-        .order("created_at", { ascending: false });
+      try {
+        // Fetch bets
+        const { data: bets, error: betsError } = await supabase
+          .from("bets")
+          .select("*")
+          .order("created_at", { ascending: false });
 
-      if (error) {
+        if (betsError) throw betsError;
+
+        // Fetch all profiles for mapping
+        const { data: profiles, error: profileError } = await supabase
+          .from("profiles")
+          .select("id, email, full_name");
+
+        if (profileError) throw profileError;
+
+        // Map profiles to bets
+        const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
+        const enrichedData =
+          bets?.map((bet) => ({
+            ...bet,
+            profiles: profileMap.get(bet.user_id),
+          })) || [];
+
+        console.log("✅ [useAdminBets] Fetched bets:", enrichedData?.length);
+        return enrichedData;
+      } catch (error: any) {
         console.error("❌ [useAdminBets] Error:", error);
         throw error;
       }
-
-      console.log("✅ [useAdminBets] Fetched bets:", data?.length);
-      return data || [];
     },
+    retry: 1,
+    retryDelay: 1000,
   });
 };
 

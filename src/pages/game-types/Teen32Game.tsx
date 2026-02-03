@@ -113,15 +113,6 @@ const PLAYERS: Player[] = [
   },
 ];
 
-const HAND_RANKINGS = [
-  { rank: 1, name: "Trail/Trio", example: "A-A-A", icon: "🔥" },
-  { rank: 2, name: "Pure Sequence", example: "A-K-Q", icon: "💎" },
-  { rank: 3, name: "Sequence", example: "K-Q-J", icon: "📊" },
-  { rank: 4, name: "Color/Flush", example: "A-K-10", icon: "🎨" },
-  { rank: 5, name: "Pair", example: "K-K-7", icon: "👥" },
-  { rank: 6, name: "High Card", example: "A-K-J", icon: "🃏" },
-];
-
 const CHIP_VALUES = [50000, 100000, 250000, 500000, 1000000, 2500000];
 
 export default function Teen32Game({ game }: Teen32GameProps) {

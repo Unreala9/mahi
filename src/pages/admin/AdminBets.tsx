@@ -1,8 +1,9 @@
 import { Loader2, TrendingUp, Clock, CheckCircle, XCircle } from "lucide-react";
 import { useAdminBets } from "@/hooks/api/useAdmin";
+import { AdminErrorAlert } from "@/components/admin/AdminErrorAlert";
 
 const AdminBets = () => {
-  const { data: bets = [], isLoading } = useAdminBets();
+  const { data: bets = [], isLoading, error } = useAdminBets();
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -28,18 +29,22 @@ const AdminBets = () => {
           </span>
         );
       default:
-        return <span className="px-3 py-1 rounded-lg text-xs font-medium bg-gray-500/10 text-gray-400 border border-gray-500/20">{status}</span>;
+        return (
+          <span className="px-3 py-1 rounded-lg text-xs font-medium bg-gray-500/10 text-gray-400 border border-gray-500/20">
+            {status}
+          </span>
+        );
     }
   };
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-white mb-2">
-          All Bets
-        </h1>
+        <h1 className="text-3xl font-bold text-white mb-2">All Bets</h1>
         <p className="text-gray-400">View and manage all betting activity</p>
       </div>
+
+      {error && <AdminErrorAlert error={error} context="bets" />}
 
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
@@ -79,7 +84,10 @@ const AdminBets = () => {
               </thead>
               <tbody className="divide-y divide-white/5">
                 {bets.map((bet: any) => (
-                  <tr key={bet.id} className="hover:bg-white/5 transition-colors">
+                  <tr
+                    key={bet.id}
+                    className="hover:bg-white/5 transition-colors"
+                  >
                     <td className="px-6 py-4 text-xs font-mono text-gray-400">
                       {bet.id.slice(0, 8)}...
                     </td>
@@ -91,15 +99,15 @@ const AdminBets = () => {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <span className="text-white">{bet.selection}</span>
-                        <span className="text-blue-400 font-medium">@ {bet.odds}</span>
+                        <span className="text-blue-400 font-medium">
+                          @ {bet.odds}
+                        </span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <span className="font-bold text-white">₹{bet.stake}</span>
                     </td>
-                    <td className="px-6 py-4">
-                      {getStatusBadge(bet.status)}
-                    </td>
+                    <td className="px-6 py-4">{getStatusBadge(bet.status)}</td>
                     <td className="px-6 py-4 text-sm text-gray-400">
                       {new Date(bet.created_at).toLocaleString()}
                     </td>
@@ -115,4 +123,3 @@ const AdminBets = () => {
 };
 
 export default AdminBets;
-

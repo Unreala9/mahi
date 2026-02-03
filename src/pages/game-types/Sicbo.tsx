@@ -29,12 +29,6 @@ const BETTING_ZONES = [
   { id: "triple", name: "Any Triple", odds: 30.0, section: "special" },
 ];
 
-const HISTORY = Array.from({ length: 10 }, () => [
-  Math.floor(Math.random() * 6) + 1,
-  Math.floor(Math.random() * 6) + 1,
-  Math.floor(Math.random() * 6) + 1,
-]);
-
 export default function Sicbo() {
   const navigate = useNavigate();
   // ✅ LIVE API INTEGRATION

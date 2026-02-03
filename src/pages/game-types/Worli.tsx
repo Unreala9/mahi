@@ -47,22 +47,6 @@ const COMBO_PANELS = [
   },
 ];
 
-const HISTORY = [
-  { round: "#4582", number: "7", winning: ["7", "odd", "high"], pool: "₹8400" },
-  { round: "#4581", number: "2", winning: ["2", "even", "low"], pool: "₹6200" },
-  { round: "#4580", number: "9", winning: ["9", "odd", "high"], pool: "₹7800" },
-  { round: "#4579", number: "0", winning: ["0", "even", "low"], pool: "₹5900" },
-  { round: "#4578", number: "5", winning: ["5", "odd", "high"], pool: "₹9200" },
-  { round: "#4577", number: "3", winning: ["3", "odd", "low"], pool: "₹7100" },
-  {
-    round: "#4576",
-    number: "8",
-    winning: ["8", "even", "high"],
-    pool: "₹8600",
-  },
-  { round: "#4575", number: "1", winning: ["1", "odd", "low"], pool: "₹6800" },
-];
-
 export default function Worli() {
   const navigate = useNavigate();
   // ✅ LIVE API INTEGRATION

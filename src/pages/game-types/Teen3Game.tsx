@@ -142,15 +142,6 @@ const PLAYERS: Player[] = [
   },
 ];
 
-const HAND_RANKINGS = [
-  { rank: 1, name: "Trail", multiplier: "5x" },
-  { rank: 2, name: "Pure Sequence", multiplier: "4x" },
-  { rank: 3, name: "Sequence", multiplier: "3x" },
-  { rank: 4, name: "Color", multiplier: "2.5x" },
-  { rank: 5, name: "Pair", multiplier: "2x" },
-  { rank: 6, name: "High Card", multiplier: "1.5x" },
-];
-
 const Teen3Game = ({ game }: Teen3GameProps) => {
   const gameId = game?.gmid || "teen3";
   const gameName = game?.gname || "Teen 3";

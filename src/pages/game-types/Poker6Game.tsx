@@ -32,65 +32,6 @@ interface HandHistory {
   winningHand: string;
 }
 
-const INITIAL_PLAYERS: Player[] = [
-  {
-    id: 1,
-    name: "You",
-    chips: 25000,
-    position: "BTN",
-    hand: [],
-    status: "active",
-    bet: 0,
-  },
-  {
-    id: 2,
-    name: "Player2",
-    chips: 18500,
-    position: "SB",
-    hand: [],
-    status: "active",
-    bet: 50,
-  },
-  {
-    id: 3,
-    name: "Player3",
-    chips: 32000,
-    position: "BB",
-    hand: [],
-    status: "active",
-    bet: 100,
-  },
-  {
-    id: 4,
-    name: "Player4",
-    chips: 15000,
-    position: "UTG",
-    hand: [],
-    status: "folded",
-    bet: 0,
-  },
-  {
-    id: 5,
-    name: "Player5",
-    chips: 28000,
-    position: "MP",
-    hand: [],
-    status: "active",
-    bet: 0,
-  },
-  {
-    id: 6,
-    name: "Player6",
-    chips: 21500,
-    position: "CO",
-    hand: [],
-    status: "active",
-    bet: 0,
-  },
-];
-
-const COMMUNITY_CARDS = ["A♠", "K♦", "Q♥", "J♣", "10♠"];
-
 const STRATEGY_TIPS = [
   {
     title: "Position is Power",
@@ -111,30 +52,6 @@ const STRATEGY_TIPS = [
     title: "Pot Control",
     tip: "Check behind with marginal made hands OOP on turn",
     icon: "🛡️",
-  },
-];
-
-const HAND_RANKINGS = [
-  { rank: "Royal Flush", example: "A♥ K♥ Q♥ J♥ 10♥" },
-  { rank: "Straight Flush", example: "9♠ 8♠ 7♠ 6♠ 5♠" },
-  { rank: "Four of a Kind", example: "K♦ K♣ K♥ K♠ A♦" },
-  { rank: "Full House", example: "Q♦ Q♣ Q♥ 7♠ 7♦" },
-  { rank: "Flush", example: "A♣ J♣ 9♣ 5♣ 3♣" },
-  { rank: "Straight", example: "10♦ 9♠ 8♥ 7♣ 6♦" },
-  { rank: "Three of a Kind", example: "8♦ 8♣ 8♥ A♦ K♠" },
-  { rank: "Two Pair", example: "J♦ J♣ 6♥ 6♠ A♦" },
-  { rank: "One Pair", example: "A♦ A♣ K♥ Q♠ 9♦" },
-  { rank: "High Card", example: "A♦ K♣ Q♥ J♠ 9♦" },
-];
-
-const HAND_HISTORY_DATA: HandHistory[] = [
-  { handNum: 147, winner: "Player2", pot: 3200, winningHand: "Flush, A-high" },
-  { handNum: 146, winner: "You", pot: 2800, winningHand: "Two Pair, KK77" },
-  {
-    handNum: 145,
-    winner: "Player5",
-    pot: 5400,
-    winningHand: "Straight, 10-high",
   },
 ];
 

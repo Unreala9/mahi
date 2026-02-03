@@ -37,11 +37,6 @@ const BETTING_OPTIONS = [
   },
 ];
 
-const HISTORY = Array.from({ length: 8 }, () => {
-  const outcomes = ["Player", "Banker", "Tie", "Joker"];
-  return outcomes[Math.floor(Math.random() * outcomes.length)];
-});
-
 export default function Joker20() {
   const navigate = useNavigate();
   // ✅ LIVE API INTEGRATION

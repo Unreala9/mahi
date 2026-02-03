@@ -15,24 +15,6 @@ import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
-const HAND_RANKINGS = [
-  "Trail (AAA)",
-  "Pure Sequence (A23)",
-  "Sequence (AK2)",
-  "Color (All Same)",
-  "Pair (AA5)",
-  "High Card",
-];
-
-const HISTORY = [
-  { winner: "A", handA: "Trail", handB: "Pair" },
-  { winner: "B", handA: "Color", handB: "Pure Seq" },
-  { winner: "A", handA: "Sequence", handB: "High Card" },
-  { winner: "Tie", handA: "Pair", handB: "Pair" },
-  { winner: "B", handA: "High Card", handB: "Color" },
-  { winner: "A", handA: "Pure Seq", handB: "Sequence" },
-];
-
 export default function ThreeCardJ() {
   const navigate = useNavigate();
   // ✅ LIVE API INTEGRATION

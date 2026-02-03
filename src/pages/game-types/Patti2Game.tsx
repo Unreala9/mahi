@@ -19,57 +19,6 @@ interface Bet {
   odds: number;
 }
 
-const PLAYERS = [
-  {
-    id: 1,
-    name: "Player 1",
-    position: "top",
-    status: "active",
-    cards: 2,
-    chips: 5400,
-  },
-  {
-    id: 2,
-    name: "Player 2",
-    position: "right",
-    status: "folded",
-    cards: 0,
-    chips: 3200,
-  },
-  {
-    id: 3,
-    name: "Player 3",
-    position: "bottom-right",
-    status: "active",
-    cards: 2,
-    chips: 7800,
-  },
-  {
-    id: 4,
-    name: "You",
-    position: "bottom",
-    status: "playing",
-    cards: 2,
-    chips: 8500,
-  },
-  {
-    id: 5,
-    name: "Player 5",
-    position: "bottom-left",
-    status: "active",
-    cards: 2,
-    chips: 4100,
-  },
-  {
-    id: 6,
-    name: "Player 6",
-    position: "left",
-    status: "active",
-    cards: 2,
-    chips: 6200,
-  },
-];
-
 export default function Patti2Game({ game }: Patti2GameProps) {
   const gmid = game?.gmid || "patti2";
   const [bets, setBets] = useState<Bet[]>([]);

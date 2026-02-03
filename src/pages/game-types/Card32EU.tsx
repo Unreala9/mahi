@@ -42,19 +42,6 @@ const PANELS = [
 
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
-const HISTORY = [
-  { winner: "A", card: "🂮", payout: "₹2800" },
-  { winner: "C", card: "🃋", payout: "₹1500" },
-  { winner: "B", card: "🂫", payout: "₹3200" },
-  { winner: "D", card: "🂷", payout: "₹2100" },
-  { winner: "A", card: "🂡", payout: "₹4500" },
-  { winner: "C", card: "🃁", payout: "₹1800" },
-  { winner: "B", card: "🃑", payout: "₹2900" },
-  { winner: "D", card: "🂾", payout: "₹3600" },
-  { winner: "A", card: "🃛", payout: "₹2400" },
-  { winner: "B", card: "🂻", payout: "₹3100" },
-];
-
 export default function Card32EU() {
   const navigate = useNavigate();
   // ✅ LIVE API INTEGRATION

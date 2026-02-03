@@ -149,6 +149,8 @@ const Profile = () => {
   };
 
   const handleSignOut = async () => {
+    localStorage.removeItem("demo_session");
+    localStorage.removeItem("demo_email");
     await supabase.auth.signOut();
     navigate("/auth");
   };

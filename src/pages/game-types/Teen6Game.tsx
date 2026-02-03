@@ -94,15 +94,6 @@ const VIRTUAL_PLAYERS: Player[] = [
   },
 ];
 
-const HAND_RANKINGS = [
-  "Trail (Three of a Kind)",
-  "Pure Sequence",
-  "Sequence (Straight)",
-  "Color (Flush)",
-  "Pair",
-  "High Card",
-];
-
 export default function Teen6Game({ game }: Teen6GameProps) {
   const gameId = game?.gmid || "teen6";
   const gameName = game?.gname || "Teen 6";

@@ -38,14 +38,6 @@ const HORSES: Horse[] = [
   { id: 5, name: "Bolt", color: "bg-purple-600", position: 0, odds: 3.8 },
 ];
 
-const RECENT_WINNERS = [
-  { raceId: 8471, winner: "Storm", payout: 2.8 },
-  { raceId: 8470, winner: "Thunder", payout: 3.2 },
-  { raceId: 8469, winner: "Flash", payout: 5.0 },
-  { raceId: 8468, winner: "Lightning", payout: 4.5 },
-  { raceId: 8467, winner: "Bolt", payout: 3.8 },
-];
-
 const CHIP_VALUES = [100, 500, 1000, 5000, 10000];
 
 export default function Race17Game({ game }: Race17GameProps) {

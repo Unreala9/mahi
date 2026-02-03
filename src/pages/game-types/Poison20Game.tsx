@@ -27,15 +27,6 @@ interface Bet {
   odds: number;
 }
 
-const PLAYERS = [
-  { id: 1, name: "P1", status: "active", cards: 3, chips: 12400 },
-  { id: 2, name: "P2", status: "active", cards: 3, chips: 8200 },
-  { id: 3, name: "P3", status: "folded", cards: 0, chips: 4100 },
-  { id: 4, name: "YOU", status: "playing", cards: 3, chips: 15500 },
-  { id: 5, name: "P5", status: "active", cards: 3, chips: 9800 },
-  { id: 6, name: "P6", status: "active", cards: 3, chips: 7600 },
-];
-
 export default function Poison20Game({ game }: Poison20GameProps) {
   const [bets, setBets] = useState<Bet[]>([]);
   const [selectedChip, setSelectedChip] = useState(500);

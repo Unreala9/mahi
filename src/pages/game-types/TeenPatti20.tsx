@@ -23,38 +23,6 @@ const HAND_RANKINGS = [
   { name: "High Card", desc: "Highest card", icon: "🃏" },
 ];
 
-const PLAYER_SEATS = [
-  {
-    id: 1,
-    username: "Player1",
-    chips: 2500,
-    lastAction: "Chaal",
-    avatar: "👤",
-  },
-  { id: 2, username: "Player2", chips: 3200, lastAction: "Pack", avatar: "👨" },
-  { id: 3, username: "Player3", chips: 1800, lastAction: "Show", avatar: "👩" },
-  {
-    id: 4,
-    username: "Player4",
-    chips: 4100,
-    lastAction: "Chaal",
-    avatar: "🧑",
-  },
-  {
-    id: 5,
-    username: "Player5",
-    chips: 2900,
-    lastAction: "Chaal",
-    avatar: "👴",
-  },
-];
-
-const HISTORY_HANDS = [
-  { round: "#1234", winner: "Player3", amount: 850 },
-  { round: "#1233", winner: "You", amount: 1200 },
-  { round: "#1232", winner: "Player1", amount: 650 },
-];
-
 export default function TeenPatti20() {
   const navigate = useNavigate();
   // ✅ LIVE API INTEGRATION

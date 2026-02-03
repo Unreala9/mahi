@@ -10,27 +10,6 @@ import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
 import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
-const CARD_TIMELINE = [
-  { side: "A", card: "🂡" },
-  { side: "B", card: "🂮" },
-  { side: "A", card: "🃋" },
-  { side: "B", card: "🂫" },
-  { side: "A", card: "🃁" },
-  { side: "B", card: "🂷" },
-  { side: "A", card: "🃑" },
-];
-
-const HISTORY = [
-  { winner: "A", cards: 8 },
-  { winner: "B", cards: 12 },
-  { winner: "A", cards: 5 },
-  { winner: "B", cards: 9 },
-  { winner: "A", cards: 7 },
-  { winner: "B", cards: 11 },
-  { winner: "A", cards: 6 },
-  { winner: "B", cards: 10 },
-];
-
 export default function AndarBahar20() {
   const navigate = useNavigate();
 

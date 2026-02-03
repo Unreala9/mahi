@@ -39,8 +39,10 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
 
   const handleLogout = async () => {
     localStorage.removeItem("demo_session");
+    localStorage.removeItem("demo_email");
     await supabase.auth.signOut();
-    navigate("/");
+    setSession(null);
+    navigate("/auth");
   };
 
   if (loading) {
