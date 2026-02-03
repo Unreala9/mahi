@@ -72,18 +72,7 @@ export default function AndarBaharJ() {
     return () => clearInterval(timer);
   }, []);
 
-  const placeBet = (betType: "andar" | "bahar") => {
-    setBets((prev) => ({ ...prev, [betType]: prev[betType] + selectedChip }));
-    setSelectedSide(betType);
-  };
-
-  const clearBets = () => {
-    setBets({ andar: 0, bahar: 0 });
-    setSelectedSide(null);
-  };
-
   const handlePlaceBets = async () => {
-    const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
     if (totalStake === 0) {
       toast({ title: "Please place a bet first", variant: "destructive" });
       return;
@@ -131,9 +120,6 @@ export default function AndarBaharJ() {
       toast({ title: "Failed to place bets", variant: "destructive" });
     }
   };
-
-  const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
-  const potentialWin = bets.andar * 1.9 + bets.bahar * 1.9;
 
   return (
     <MainLayout>

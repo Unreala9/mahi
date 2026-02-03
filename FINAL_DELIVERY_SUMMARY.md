@@ -116,25 +116,27 @@ Documentation (9 files):
 ## 🎯 Core Features Breakdown
 
 ### 1️⃣ useUniversalCasinoGame Hook
+
 ```typescript
 const {
-  gameData,        // 📊 Live game data
-  result,          // 🏆 Last round result
-  isConnected,     // 🔌 API connection status
-  markets,         // 💹 All betting markets with odds
-  roundId,         // 🆔 Current round ID
-  placeBet,        // 🎲 Place bet function
-  placedBets,      // 📝 Map of placed bets
-  clearBets,       // 🗑️ Clear all bets
-  totalStake,      // 💰 Total amount staked
-  potentialWin,    // 🎁 Total potential winning
-  isSuspended,     // ⛔ Market suspension status
-  activeMarkets,   // ✅ Non-suspended markets
-  suspendedMarkets,// ❌ Suspended markets
-} = useUniversalCasinoGame({ gameType, gameName })
+  gameData, // 📊 Live game data
+  result, // 🏆 Last round result
+  isConnected, // 🔌 API connection status
+  markets, // 💹 All betting markets with odds
+  roundId, // 🆔 Current round ID
+  placeBet, // 🎲 Place bet function
+  placedBets, // 📝 Map of placed bets
+  clearBets, // 🗑️ Clear all bets
+  totalStake, // 💰 Total amount staked
+  potentialWin, // 🎁 Total potential winning
+  isSuspended, // ⛔ Market suspension status
+  activeMarkets, // ✅ Non-suspended markets
+  suspendedMarkets, // ❌ Suspended markets
+} = useUniversalCasinoGame({ gameType, gameName });
 ```
 
 ### 2️⃣ CasinoBettingPanel Component
+
 ```jsx
 <CasinoBettingPanel
   markets={markets}
@@ -149,6 +151,7 @@ const {
 ```
 
 Displays:
+
 ```
 ┌─────────────────────────────────┐
 │ Round: 12345  🔴 Live           │
@@ -167,6 +170,7 @@ Displays:
 ```
 
 ### 3️⃣ Quick Action Buttons
+
 ```
 🔁 REPEAT     → Remembers last bet amount
              Example: Last bet ₹100 → Chip becomes ₹100
@@ -237,6 +241,7 @@ User can place another bet or leave
 ## 💻 Integration Steps (3 Simple Steps)
 
 ### Step 1: Add Hook
+
 ```tsx
 const { markets, roundId, placeBet, ... } = useUniversalCasinoGame({
   gameType: "ab20",
@@ -245,6 +250,7 @@ const { markets, roundId, placeBet, ... } = useUniversalCasinoGame({
 ```
 
 ### Step 2: Add Panel
+
 ```tsx
 <CasinoBettingPanel
   markets={markets}
@@ -259,13 +265,16 @@ const { markets, roundId, placeBet, ... } = useUniversalCasinoGame({
 ```
 
 ### Step 3: Display Markets
+
 ```tsx
-{markets.map(market => (
-  <div key={market.sid}>
-    <h2>{market.nat}</h2>
-    <p>{(market.b / 100).toFixed(2)}x</p>
-  </div>
-))}
+{
+  markets.map((market) => (
+    <div key={market.sid}>
+      <h2>{market.nat}</h2>
+      <p>{(market.b / 100).toFixed(2)}x</p>
+    </div>
+  ));
+}
 ```
 
 **Done!** Your game now has live betting with quick actions. 🎉
@@ -274,18 +283,18 @@ const { markets, roundId, placeBet, ... } = useUniversalCasinoGame({
 
 ## 📈 Statistics
 
-| Metric | Count |
-|--------|-------|
-| **Games Integrated** | 24/76 (32%) ✅ |
-| **Hook Lines** | 150+ lines |
-| **Component Lines** | 336 lines |
-| **Documentation Pages** | 9 files |
-| **Code Examples** | 5+ complete examples |
-| **API Endpoints** | 3 active endpoints |
-| **Game Type Codes** | 30+ codes |
-| **Quick Actions** | 5 working buttons |
-| **Quick References** | 2 guides |
-| **Templates Provided** | 1 complete template |
+| Metric                  | Count                |
+| ----------------------- | -------------------- |
+| **Games Integrated**    | 24/76 (32%) ✅       |
+| **Hook Lines**          | 150+ lines           |
+| **Component Lines**     | 336 lines            |
+| **Documentation Pages** | 9 files              |
+| **Code Examples**       | 5+ complete examples |
+| **API Endpoints**       | 3 active endpoints   |
+| **Game Type Codes**     | 30+ codes            |
+| **Quick Actions**       | 5 working buttons    |
+| **Quick References**    | 2 guides             |
+| **Templates Provided**  | 1 complete template  |
 
 ---
 
@@ -325,33 +334,36 @@ const { markets, roundId, placeBet, ... } = useUniversalCasinoGame({
 
 ## 📚 Documentation Quick Links
 
-| Need | Link |
-|------|------|
-| Quick overview | [EXECUTIVE_SUMMARY.md](./EXECUTIVE_SUMMARY.md) |
-| How to integrate | [COMPLETE_IMPLEMENTATION_GUIDE_FINAL.md](./COMPLETE_IMPLEMENTATION_GUIDE_FINAL.md) |
-| Copy-paste template | [UPDATED_ANDARBAHAR20_TEMPLATE.md](./UPDATED_ANDARBAHAR20_TEMPLATE.md) |
-| Game codes reference | [QUICK_REFERENCE_CARD.md](./QUICK_REFERENCE_CARD.md) |
-| Verification tests | [VERIFICATION_CHECKLIST_FINAL.md](./VERIFICATION_CHECKLIST_FINAL.md) |
-| Documentation index | [DOCUMENTATION_INDEX.md](./DOCUMENTATION_INDEX.md) |
-| Hindi guide | [README_CASINO_INTEGRATION_HINDI.md](./README_CASINO_INTEGRATION_HINDI.md) |
+| Need                 | Link                                                                               |
+| -------------------- | ---------------------------------------------------------------------------------- |
+| Quick overview       | [EXECUTIVE_SUMMARY.md](./EXECUTIVE_SUMMARY.md)                                     |
+| How to integrate     | [COMPLETE_IMPLEMENTATION_GUIDE_FINAL.md](./COMPLETE_IMPLEMENTATION_GUIDE_FINAL.md) |
+| Copy-paste template  | [UPDATED_ANDARBAHAR20_TEMPLATE.md](./UPDATED_ANDARBAHAR20_TEMPLATE.md)             |
+| Game codes reference | [QUICK_REFERENCE_CARD.md](./QUICK_REFERENCE_CARD.md)                               |
+| Verification tests   | [VERIFICATION_CHECKLIST_FINAL.md](./VERIFICATION_CHECKLIST_FINAL.md)               |
+| Documentation index  | [DOCUMENTATION_INDEX.md](./DOCUMENTATION_INDEX.md)                                 |
+| Hindi guide          | [README_CASINO_INTEGRATION_HINDI.md](./README_CASINO_INTEGRATION_HINDI.md)         |
 
 ---
 
 ## 🚀 Next Steps
 
 ### For Immediate Use:
+
 1. Test the 24 integrated games
 2. Verify quick action buttons work
 3. Check betting functionality
 4. Validate wallet integration
 
 ### For Remaining Games (52):
+
 1. Use [UPDATED_ANDARBAHAR20_TEMPLATE.md](./UPDATED_ANDARBAHAR20_TEMPLATE.md)
 2. Follow [COMPLETE_IMPLEMENTATION_GUIDE_FINAL.md](./COMPLETE_IMPLEMENTATION_GUIDE_FINAL.md)
 3. Replace game type codes
 4. Test using [VERIFICATION_CHECKLIST_FINAL.md](./VERIFICATION_CHECKLIST_FINAL.md)
 
 ### Estimated Time:
+
 - ⏱️ Per game: ~20-30 minutes
 - ⏱️ All 52 games: ~2-3 hours
 - ⏱️ Total integration: ~100% in ~1-2 working days
@@ -386,7 +398,7 @@ const { markets, roundId, placeBet, ... } = useUniversalCasinoGame({
 
 ---
 
-*Document Version: 1.0*  
-*Delivery Date: February 2025*  
-*Integration Level: 32% (24/76 games)*  
-*Status: Production Ready* ✅
+_Document Version: 1.0_
+_Delivery Date: February 2025_
+_Integration Level: 32% (24/76 games)_
+_Status: Production Ready_ ✅

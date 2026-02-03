@@ -269,7 +269,6 @@ export default function Casino() {
             <p className="text-muted-foreground">No games in this category</p>
           </div>
         ) : (
-<<<<<<< HEAD
           <>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2">
               {filteredGames.slice(0, visibleCount).map((game) => (
@@ -293,17 +292,6 @@ export default function Casino() {
               </div>
             )}
           </>
-=======
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2">
-            {filteredGames.map((game) => (
-              <GameCard
-                key={game.gmid}
-                game={game}
-                onClick={() => handlePlay(game)}
-              />
-            ))}
-          </div>
->>>>>>> 8913c804a0072c7a75fad46c0eb1cd32592acb6f
         )}
       </div>
     </MainLayout>

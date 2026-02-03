@@ -82,9 +82,6 @@ export default function OurRoulette() {
   const [countdown, setCountdown] = useState(30);
   const [isSpinning, setIsSpinning] = useState(false);
   const [selectedChip, setSelectedChip] = useState(100);
-  const [totalStake, setTotalStake] = useState(0);
-  const [potentialWin, setPotentialWin] = useState(0);
-  const [placedBets, setPlacedBets] = useState<any[]>([]);
 
   const redCount = WINNING_HISTORY.filter((h) => h.color === "red").length;
   const blackCount = WINNING_HISTORY.filter((h) => h.color === "black").length;

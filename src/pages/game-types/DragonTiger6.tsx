@@ -59,13 +59,6 @@ export default function DragonTiger6() {
     return () => clearInterval(timer);
   }, []);
 
-  const placeBet = (betType: keyof typeof bets) => {
-    setBets((prev) => ({ ...prev, [betType]: prev[betType] + selectedChip }));
-  };
-
-  const clearBets = () => setBets({ dragon: 0, tiger: 0, tie: 0 });
-  const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
-
   const handlePlaceBets = async () => {
     if (totalStake === 0) {
       toast({ title: "Please place a bet first", variant: "destructive" });

@@ -76,16 +76,9 @@ export default function KBC() {
     return () => clearInterval(timer);
   }, []);
 
-  const placeBet = (optionId: string) => {
-    setBets((prev) => ({ ...prev, [optionId]: prev[optionId] + selectedChip }));
-  };
-
-  const clearBets = () =>
-    setBets({ option1: 0, option2: 0, option3: 0, option4: 0 });
-
   const handlePlaceBets = async () => {
-    const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
-    if (totalStake === 0) {
+    const totalStakeAmount = Object.values(bets).reduce((a, b) => a + b, 0);
+    if (totalStakeAmount === 0) {
       toast({ title: "Please place a bet first", variant: "destructive" });
       return;
     }
@@ -118,12 +111,6 @@ export default function KBC() {
     }
   };
 
-  const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
-  const potentialWin = OPTIONS.reduce(
-    (sum, opt) => sum + bets[opt.id] * opt.odds,
-    0,
-  );
-
   return (
     <MainLayout>
       <div className="min-h-screen bg-gradient-to-b from-blue-950 via-purple-950 to-black relative overflow-hidden">
@@ -133,10 +120,12 @@ export default function KBC() {
           <div
             className="absolute top-0 right-1/4 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl animate-pulse"
             style={{ animationDelay: "1s" }}
+            role="presentation"
           ></div>
           <div
             className="absolute bottom-0 left-1/3 w-64 h-64 bg-pink-500/20 rounded-full blur-3xl animate-pulse"
             style={{ animationDelay: "2s" }}
+            role="presentation"
           ></div>
         </div>
 

@@ -130,6 +130,8 @@ export default function Poker20() {
                           top: `${pos.y}%`,
                           transform: "translate(-50%, -50%)",
                         }}
+                        role="img"
+                        aria-label={`Player ${player.seat}`}
                       >
                         <Card
                           className={cn(
@@ -316,6 +318,7 @@ export default function Poker20() {
                       value={betAmount}
                       onChange={(e) => setBetAmount(Number(e.target.value))}
                       className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                      title="Bet Amount Slider"
                     />
                     <div className="flex justify-between gap-2 mt-2">
                       <Button

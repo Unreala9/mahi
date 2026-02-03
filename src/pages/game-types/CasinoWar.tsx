@@ -75,17 +75,6 @@ export default function CasinoWar() {
     return () => clearInterval(timer);
   }, []);
 
-  const placeBet = (betType: keyof typeof bets) => {
-    setBets((prev) => ({ ...prev, [betType]: prev[betType] + selectedChip }));
-  };
-
-  const clearBets = () => {
-    setBets({ war: 0, surrender: 0, tie: 0 });
-  };
-
-  const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
-  const potentialWin = bets.war * 2 + bets.surrender * 0.5 + bets.tie * 11;
-
   return (
     <MainLayout>
       <div className="min-h-screen bg-gradient-to-b from-gray-900 via-red-900/10 to-gray-900">

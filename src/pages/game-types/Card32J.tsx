@@ -105,12 +105,6 @@ export default function Card32J() {
     return () => clearInterval(timer);
   }, []);
 
-  const placeBet = (groupId: string) => {
-    setBets((prev) => ({ ...prev, [groupId]: prev[groupId] + selectedChip }));
-  };
-
-  const clearBets = () => setBets({ "8": 0, "9": 0, "10": 0, "11": 0 });
-
   const handlePlaceBets = async () => {
     if (totalStake === 0) {
       toast({ title: "Please place a bet first", variant: "destructive" });
@@ -151,15 +145,6 @@ export default function Card32J() {
       console.error("Failed to place bets:", error);
     }
   };
-
-  const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
-  const potentialWin = Object.entries(bets).reduce(
-    (total, [groupId, amount]) => {
-      const group = GROUPS.find((g) => g.id === groupId);
-      return total + amount * parseFloat(group?.odds || "0");
-    },
-    0,
-  );
 
   return (
     <MainLayout>

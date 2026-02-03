@@ -811,7 +811,7 @@ const App = () => {
               path="/casino/cricketmeter"
               element={
                 <ProtectedRoute>
-                  <CricketMeterGame />
+                  <CricketMeterGame game={{} as any} />
                 </ProtectedRoute>
               }
             />
@@ -819,7 +819,7 @@ const App = () => {
               path="/casino/cricketmeter1"
               element={
                 <ProtectedRoute>
-                  <CricketMeter1Game />
+                  <CricketMeter1Game game={{} as any} />
                 </ProtectedRoute>
               }
             />

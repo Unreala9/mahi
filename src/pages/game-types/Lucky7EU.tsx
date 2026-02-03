@@ -107,16 +107,9 @@ export default function Lucky7EU() {
     return () => clearInterval(timer);
   }, []);
 
-  const placeBet = (betType: keyof typeof bets) => {
-    setBets((prev) => ({ ...prev, [betType]: prev[betType] + selectedChip }));
-  };
-
-  const clearBets = () =>
-    setBets({ below7: 0, exactly7: 0, above7: 0, even: 0 });
-
   const handlePlaceBets = async () => {
-    const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
-    if (totalStake === 0) {
+    const totalStakeAmount = Object.values(bets).reduce((a, b) => a + b, 0);
+    if (totalStakeAmount === 0) {
       toast({ title: "Please place a bet first", variant: "destructive" });
       return;
     }
@@ -148,13 +141,6 @@ export default function Lucky7EU() {
       console.error("Failed to place bets:", error);
     }
   };
-
-  const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
-  const potentialWin =
-    bets.below7 * 1.95 +
-    bets.exactly7 * 11 +
-    bets.above7 * 1.95 +
-    bets.even * 2;
 
   return (
     <MainLayout>

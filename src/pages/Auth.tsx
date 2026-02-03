@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Lock, Mail, Users, ShieldCheck } from "lucide-react";
+import { Lock, Mail, Users, ShieldCheck, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,13 +30,15 @@ const Auth = () => {
 
           // Check if user doesn't exist - suggest registration
           if (error.message.includes("Invalid login credentials")) {
-            toast.error("Invalid credentials. Please check your email/password or register first.");
+            toast.error(
+              "Invalid credentials. Please check your email/password or register first.",
+            );
             return;
           }
           throw error;
         }
 
-        console.log("[AUTH] Login successful for user:", data.user?.id);
+        console.log("[AUTH] Login successful");
         toast.success("Login successful!");
         navigate("/");
       } else {
@@ -50,7 +52,7 @@ const Auth = () => {
               emailRedirectTo: window.location.origin,
               data: {
                 email: email,
-              }
+              },
             },
           });
 
@@ -60,10 +62,14 @@ const Auth = () => {
           // Handle database trigger errors gracefully
           if (error) {
             if (error.message.includes("Database error saving new user")) {
-              console.warn("[AUTH] Database trigger error, but user may be created. Using demo mode.");
+              console.warn(
+                "[AUTH] Database trigger error, but user may be created. Using demo mode.",
+              );
               localStorage.setItem("demo_session", "true");
               localStorage.setItem("demo_email", email);
-              toast.success("Account created! Logged in as demo user (database setup pending)");
+              toast.success(
+                "Account created! Logged in as demo user (database setup pending)",
+              );
               navigate("/");
               return;
             }
@@ -79,7 +85,9 @@ const Auth = () => {
             navigate("/");
           } else if (data.user) {
             // User created but no session (email confirmation required)
-            console.log("[AUTH] User created, email confirmation may be required");
+            console.log(
+              "[AUTH] User created, email confirmation may be required",
+            );
             toast.success("Account created! You can now login.");
             setIsLogin(true); // Switch to login mode
           } else {
@@ -90,10 +98,14 @@ const Auth = () => {
           console.error("[AUTH] Signup error:", signupError);
 
           if (signupError.message.includes("Database error")) {
-            console.warn("[AUTH] Database error during signup, using demo mode");
+            console.warn(
+              "[AUTH] Database error during signup, using demo mode",
+            );
             localStorage.setItem("demo_session", "true");
             localStorage.setItem("demo_email", email);
-            toast.success("Account created in demo mode! (Database setup pending)");
+            toast.success(
+              "Account created in demo mode! (Database setup pending)",
+            );
             navigate("/");
             return;
           }
@@ -203,28 +215,27 @@ const Auth = () => {
               </Button>
             </form>
 
-              <div className="relative py-2">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-border"></div>
-                </div>
-                <div className="relative flex justify-center text-[10px] uppercase tracking-widest">
-                  <span className="bg-card px-3 text-muted-foreground font-bold">
-                    System Access
-                  </span>
-                </div>
+            <div className="relative py-2">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border"></div>
               </div>
+              <div className="relative flex justify-center text-[10px] uppercase tracking-widest">
+                <span className="bg-card px-3 text-muted-foreground font-bold">
+                  System Access
+                </span>
+              </div>
+            </div>
 
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full border-border bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-white h-12 rounded-none font-bold flex items-center justify-center gap-2 uppercase text-xs tracking-wider"
-                onClick={handleDemoLogin}
-              >
-                <Users className="w-4 h-4" />
-                DEMO SIMULATION MODE
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            </form>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full border-border bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-white h-12 rounded-none font-bold flex items-center justify-center gap-2 uppercase text-xs tracking-wider"
+              onClick={handleDemoLogin}
+            >
+              <Users className="w-4 h-4" />
+              DEMO SIMULATION MODE
+              <ArrowRight className="w-4 h-4" />
+            </Button>
 
             <div className="flex items-center justify-center gap-2 mt-8 opacity-50">
               <ShieldCheck className="w-4 h-4 text-primary" />

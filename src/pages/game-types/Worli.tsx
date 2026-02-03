@@ -109,19 +109,6 @@ export default function Worli() {
     return () => clearInterval(timer);
   }, [currentRound]);
 
-  const placeBet = (panelId: string) => {
-    setBets((prev) => ({
-      ...prev,
-      [panelId]: (prev[panelId] || 0) + selectedChip,
-    }));
-  };
-
-  const clearBets = () => {
-    setBets({});
-  };
-
-  const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
-
   return (
     <MainLayout>
       <div className="min-h-screen bg-gradient-to-b from-gray-900 via-indigo-900/20 to-black">

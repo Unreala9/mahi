@@ -152,15 +152,6 @@ export default function Worli3() {
     return () => clearInterval(timer);
   }, []);
 
-  const placeBet = (panelId: string) => {
-    setBets((prev) => ({
-      ...prev,
-      [panelId]: (prev[panelId] || 0) + selectedChip,
-    }));
-  };
-
-  const clearBets = () => setBets({});
-
   const quickSelect = (type: string) => {
     const newBets: Record<string, number> = {};
     if (type === "hot") {
@@ -217,14 +208,6 @@ export default function Worli3() {
       console.error("Failed to place bets:", error);
     }
   };
-
-  const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
-  const potentialWin = Object.entries(bets).reduce((sum, [panelId, stake]) => {
-    const panel = [...NUMBER_PANELS, ...COMBO_PANELS, ...SPECIAL_COMBOS].find(
-      (p) => p.id === panelId,
-    );
-    return sum + (panel ? stake * panel.odds : 0);
-  }, 0);
 
   return (
     <MainLayout>

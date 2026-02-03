@@ -76,17 +76,6 @@ export default function ThreeCardJ() {
     return () => clearInterval(timer);
   }, []);
 
-  const placeBet = (betType: keyof typeof bets) => {
-    setBets((prev) => ({ ...prev, [betType]: prev[betType] + selectedChip }));
-  };
-
-  const clearBets = () => {
-    setBets({ handA: 0, handB: 0, tie: 0 });
-  };
-
-  const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
-  const potentialWin = bets.handA * 1.98 + bets.handB * 1.98 + bets.tie * 11;
-
   return (
     <MainLayout>
       <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900/10 to-gray-900">

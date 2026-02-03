@@ -83,15 +83,6 @@ export default function Sicbo() {
     return () => clearInterval(timer);
   }, []);
 
-  const placeBet = (zoneId: string) => {
-    setBets((prev) => ({
-      ...prev,
-      [zoneId]: (prev[zoneId] || 0) + selectedChip,
-    }));
-  };
-
-  const clearBets = () => setBets({});
-
   const handlePlaceBets = async () => {
     const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
     if (totalStake === 0) {
@@ -128,12 +119,6 @@ export default function Sicbo() {
       console.error("Failed to place bets:", error);
     }
   };
-
-  const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
-  const potentialWin = Object.entries(bets).reduce((sum, [zoneId, stake]) => {
-    const zone = BETTING_ZONES.find((z) => z.id === zoneId);
-    return sum + (zone ? stake * zone.odds : 0);
-  }, 0);
 
   return (
     <MainLayout>

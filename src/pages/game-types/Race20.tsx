@@ -92,16 +92,6 @@ export default function Race20() {
     setTimeout(() => clearInterval(interval), 8000);
   };
 
-  const placeBet = (marketId: string, runnerId: number) => {
-    const betKey = `${marketId}-${runnerId}`;
-    setBets((prev) => ({
-      ...prev,
-      [betKey]: (prev[betKey] || 0) + selectedChip,
-    }));
-  };
-
-  const clearBets = () => setBets({});
-
   const handlePlaceBets = async () => {
     const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
     if (totalStake === 0) {
@@ -143,13 +133,6 @@ export default function Race20() {
       console.error("Failed to place bets:", error);
     }
   };
-
-  const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
-  const potentialWin = Object.entries(bets).reduce((sum, [betKey, stake]) => {
-    const runnerId = parseInt(betKey.split("-")[1]);
-    const runner = RUNNERS.find((r) => r.id === runnerId);
-    return sum + (runner ? stake * runner.odds : 0);
-  }, 0);
 
   return (
     <MainLayout>

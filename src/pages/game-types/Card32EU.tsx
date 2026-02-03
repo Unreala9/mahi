@@ -119,12 +119,7 @@ export default function Card32EU() {
     return () => clearInterval(timer);
   }, []);
 
-  const placeBet = (panel: "A" | "B" | "C" | "D") => {
-    setBets((prev) => ({ ...prev, [panel]: prev[panel] + selectedChip }));
-  };
-
   const handlePlaceBets = async () => {
-    const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
     if (totalStake === 0) {
       toast({ title: "Please place a bet first", variant: "destructive" });
       return;
@@ -164,13 +159,6 @@ export default function Card32EU() {
       console.error("Failed to place bets:", error);
     }
   };
-
-  const clearBets = () => {
-    setBets({ A: 0, B: 0, C: 0, D: 0 });
-  };
-
-  const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
-  const potentialWin = totalStake * 3.8;
 
   return (
     <MainLayout>
