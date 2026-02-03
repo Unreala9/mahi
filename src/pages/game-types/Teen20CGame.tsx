@@ -94,50 +94,7 @@ const PLAYERS: Player[] = [
   },
 ];
 
-const HAND_RANKINGS = [
-  {
-    rank: 1,
-    name: "Trail (Three of a Kind)",
-    example: "A♠ A♥ A♦",
-    description: "Three cards of the same rank. Highest possible hand.",
-    multiplier: "5x",
-  },
-  {
-    rank: 2,
-    name: "Pure Sequence (Straight Flush)",
-    example: "A♠ K♠ Q♠",
-    description: "Three consecutive cards of the same suit.",
-    multiplier: "4x",
-  },
-  {
-    rank: 3,
-    name: "Sequence (Straight)",
-    example: "A♠ K♥ Q♦",
-    description: "Three consecutive cards of different suits.",
-    multiplier: "3x",
-  },
-  {
-    rank: 4,
-    name: "Color (Flush)",
-    example: "A♠ 10♠ 8♠",
-    description: "Three cards of the same suit but not in sequence.",
-    multiplier: "2.5x",
-  },
-  {
-    rank: 5,
-    name: "Pair",
-    example: "A♠ A♥ K♦",
-    description: "Two cards of the same rank plus one different card.",
-    multiplier: "2x",
-  },
-  {
-    rank: 6,
-    name: "High Card",
-    example: "A♠ K♥ J♦",
-    description: "No matching cards. Highest card determines strength.",
-    multiplier: "1.5x",
-  },
-];
+const CHIP_VALUES = [5000, 10000, 25000, 50000, 100000];
 
 const TUTORIAL_TOOLTIPS = [
   {

@@ -102,6 +102,7 @@ import FAQ from "./pages/FAQ";
 
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminLogin from "./pages/admin/AdminLogin";
+import AdminSetup from "./pages/admin/AdminSetup";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminTransactions from "./pages/admin/AdminTransactions";
@@ -904,6 +905,9 @@ const App = () => {
 
             {/* Admin Login - Public */}
             <Route path="/admin/login" element={<AdminLogin />} />
+
+            {/* Admin Setup - Public (for initial admin configuration) */}
+            <Route path="/admin/setup" element={<AdminSetup />} />
 
             {/* Protected Admin Routes */}
             <Route

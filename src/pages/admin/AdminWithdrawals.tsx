@@ -47,7 +47,8 @@ interface Transaction {
 export default function AdminWithdrawals() {
   const [withdrawals, setWithdrawals] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedWithdrawal, setSelectedWithdrawal] = useState<Transaction | null>(null);
+  const [selectedWithdrawal, setSelectedWithdrawal] =
+    useState<Transaction | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [adminNotes, setAdminNotes] = useState("");
   const [processing, setProcessing] = useState(false);
@@ -55,8 +56,8 @@ export default function AdminWithdrawals() {
 
   useEffect(() => {
     fetchWithdrawals();
-    
-    // Real-time subscription
+
+    // Real-time subscription for withdraw transactions
     const subscription = supabase
       .channel("transactions_changes")
       .on(
@@ -65,14 +66,14 @@ export default function AdminWithdrawals() {
           event: "*",
           schema: "public",
           table: "transactions",
-          filter: "type=eq.withdrawal",
+          filter: "type=eq.withdraw",
         },
         () => {
           fetchWithdrawals();
           // Play notification sound for new requests
           const audio = new Audio("/notification.mp3");
           audio.play().catch(() => {});
-        }
+        },
       )
       .subscribe();
 
@@ -83,17 +84,17 @@ export default function AdminWithdrawals() {
 
   const fetchWithdrawals = async () => {
     try {
-      // Fetch transactions
+      // Fetch transactions with type 'withdraw' (not 'withdrawal')
       const { data: transactions, error: txError } = await supabase
         .from("transactions")
         .select("*")
-        .eq("type", "withdrawal")
+        .eq("type", "withdraw")
         .order("created_at", { ascending: false });
 
       if (txError) throw txError;
 
       // Fetch user profiles for each transaction
-      const userIds = [...new Set(transactions?.map(t => t.user_id) || [])];
+      const userIds = [...new Set(transactions?.map((t) => t.user_id) || [])];
       const { data: profiles, error: profileError } = await supabase
         .from("profiles")
         .select("id, full_name, email")
@@ -102,11 +103,12 @@ export default function AdminWithdrawals() {
       if (profileError) throw profileError;
 
       // Merge data
-      const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
-      const enrichedData = transactions?.map(tx => ({
-        ...tx,
-        profiles: profileMap.get(tx.user_id)
-      })) || [];
+      const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
+      const enrichedData =
+        transactions?.map((tx) => ({
+          ...tx,
+          profiles: profileMap.get(tx.user_id),
+        })) || [];
 
       setWithdrawals(enrichedData);
     } catch (error: any) {
@@ -167,7 +169,12 @@ export default function AdminWithdrawals() {
   };
 
   const handleReject = async (transactionId: string) => {
-    if (!confirm("Are you sure you want to reject this withdrawal? The amount will be refunded to user.")) return;
+    if (
+      !confirm(
+        "Are you sure you want to reject this withdrawal? The amount will be refunded to user.",
+      )
+    )
+      return;
 
     try {
       // Call existing RPC function to reject (refund)
@@ -197,21 +204,30 @@ export default function AdminWithdrawals() {
     switch (status) {
       case "pending":
         return (
-          <Badge variant="outline" className="border-yellow-500 text-yellow-500">
+          <Badge
+            variant="outline"
+            className="border-yellow-500 text-yellow-500"
+          >
             <Clock className="w-3 h-3 mr-1" />
             Pending
           </Badge>
         );
       case "completed":
         return (
-          <Badge variant="outline" className="border-green-500 text-green-500 bg-green-500/10">
+          <Badge
+            variant="outline"
+            className="border-green-500 text-green-500 bg-green-500/10"
+          >
             <CheckCircle className="w-3 h-3 mr-1" />
             Completed
           </Badge>
         );
       case "failed":
         return (
-          <Badge variant="outline" className="border-red-500 text-red-500 bg-red-500/10">
+          <Badge
+            variant="outline"
+            className="border-red-500 text-red-500 bg-red-500/10"
+          >
             <XCircle className="w-3 h-3 mr-1" />
             Rejected
           </Badge>
@@ -261,13 +277,19 @@ export default function AdminWithdrawals() {
               <TableBody>
                 {withdrawals.length === 0 ? (
                   <TableRow className="border-white/5 hover:bg-white/5">
-                    <TableCell colSpan={6} className="text-center py-8 text-gray-400">
+                    <TableCell
+                      colSpan={6}
+                      className="text-center py-8 text-gray-400"
+                    >
                       No withdrawal requests found
                     </TableCell>
                   </TableRow>
                 ) : (
                   withdrawals.map((withdrawal) => (
-                    <TableRow key={withdrawal.id} className="border-white/5 hover:bg-white/5 transition-colors">
+                    <TableRow
+                      key={withdrawal.id}
+                      className="border-white/5 hover:bg-white/5 transition-colors"
+                    >
                       <TableCell>
                         <div>
                           <div className="font-medium text-white">
@@ -279,7 +301,9 @@ export default function AdminWithdrawals() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="font-semibold text-white">₹{withdrawal.amount.toFixed(2)}</div>
+                        <div className="font-semibold text-white">
+                          ₹{withdrawal.amount.toFixed(2)}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <div className="text-sm max-w-xs text-gray-300">
@@ -335,7 +359,9 @@ export default function AdminWithdrawals() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="bg-[#131824] border-white/10">
           <DialogHeader>
-            <DialogTitle className="text-white">Approve UPI Withdrawal</DialogTitle>
+            <DialogTitle className="text-white">
+              Approve UPI Withdrawal
+            </DialogTitle>
             <DialogDescription className="text-gray-400">
               Confirm that you have sent money to the user's UPI ID
             </DialogDescription>
@@ -345,18 +371,23 @@ export default function AdminWithdrawals() {
             <div className="space-y-4">
               <div className="bg-white/5 p-4 rounded-lg space-y-2">
                 <div className="text-gray-300">
-                  <strong className="text-white">Amount:</strong> ₹{selectedWithdrawal.amount.toFixed(2)}
+                  <strong className="text-white">Amount:</strong> ₹
+                  {selectedWithdrawal.amount.toFixed(2)}
                 </div>
                 <div className="text-gray-300">
-                  <strong className="text-white">User:</strong> {selectedWithdrawal.profiles?.full_name}
+                  <strong className="text-white">User:</strong>{" "}
+                  {selectedWithdrawal.profiles?.full_name}
                 </div>
                 <div className="text-gray-300">
-                  <strong className="text-white">UPI ID:</strong> {selectedWithdrawal.payment_details}
+                  <strong className="text-white">UPI ID:</strong>{" "}
+                  {selectedWithdrawal.payment_details}
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-white">Admin Notes (Optional)</label>
+                <label className="text-sm font-medium text-white">
+                  Admin Notes (Optional)
+                </label>
                 <Textarea
                   value={adminNotes}
                   onChange={(e) => setAdminNotes(e.target.value)}
@@ -377,7 +408,11 @@ export default function AdminWithdrawals() {
             >
               Cancel
             </Button>
-            <Button onClick={confirmApproval} disabled={processing} className="bg-blue-500 hover:bg-blue-600 text-white">
+            <Button
+              onClick={confirmApproval}
+              disabled={processing}
+              className="bg-blue-500 hover:bg-blue-600 text-white"
+            >
               {processing ? "Processing..." : "Confirm Transfer"}
             </Button>
           </DialogFooter>

@@ -104,22 +104,6 @@ const LEVEL_3_BETS = [
 
 const CHIP_VALUES = [100, 500, 1000, 5000, 10000, 50000];
 
-const INITIAL_SHOE: ShoeComposition[] = [
-  { rank: "A", remaining: 32, probability: "6.15%" },
-  { rank: "2", remaining: 32, probability: "6.15%" },
-  { rank: "3", remaining: 32, probability: "6.15%" },
-  { rank: "4", remaining: 32, probability: "6.15%" },
-  { rank: "5", remaining: 32, probability: "6.15%" },
-  { rank: "6", remaining: 32, probability: "6.15%" },
-  { rank: "7", remaining: 32, probability: "6.15%" },
-  { rank: "8", remaining: 32, probability: "6.15%" },
-  { rank: "9", remaining: 32, probability: "6.15%" },
-  { rank: "10", remaining: 32, probability: "6.15%" },
-  { rank: "J", remaining: 32, probability: "6.15%" },
-  { rank: "Q", remaining: 32, probability: "6.15%" },
-  { rank: "K", remaining: 32, probability: "6.15%" },
-];
-
 export default function DT202Game({ game }: DT202GameProps) {
   const [bets, setBets] = useState<Bet[]>([]);
   const [selectedChip, setSelectedChip] = useState<number>(1000);

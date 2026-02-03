@@ -15,11 +15,6 @@ import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 
 const CHIP_VALUES = [50, 100, 500, 1000, 5000];
 
-const HISTORY = Array.from({ length: 20 }, (_, i) => {
-  const outcomes = ["D", "T", "Tie"];
-  return outcomes[Math.floor(Math.random() * outcomes.length)];
-});
-
 export default function DragonTiger6() {
   const navigate = useNavigate();
   // ✅ LIVE API INTEGRATION

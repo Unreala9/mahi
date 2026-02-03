@@ -12,19 +12,6 @@ import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
 import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
-const HISTORY = [
-  { winner: "D", suited: false },
-  { winner: "T", suited: true },
-  { winner: "D", suited: false },
-  { winner: "Tie", suited: false },
-  { winner: "T", suited: false },
-  { winner: "D", suited: true },
-  { winner: "T", suited: false },
-  { winner: "D", suited: false },
-  { winner: "T", suited: false },
-  { winner: "D", suited: false },
-];
-
 export default function DragonTiger20() {
   const navigate = useNavigate();
 
@@ -220,35 +207,13 @@ export default function DragonTiger20() {
                   History
                 </h3>
                 <div className="space-y-2">
-                  {HISTORY.map((result, idx) => (
-                    <div
-                      key={idx}
-                      className={cn(
-                        "p-3 rounded-lg flex items-center justify-between border-2",
-                        result.winner === "D"
-                          ? "bg-red-900/30 border-red-600"
-                          : result.winner === "T"
-                            ? "bg-blue-900/30 border-blue-600"
-                            : "bg-yellow-900/30 border-yellow-600",
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          "font-bold text-xl",
-                          result.winner === "D"
-                            ? "text-red-500"
-                            : result.winner === "T"
-                              ? "text-blue-500"
-                              : "text-yellow-500",
-                        )}
-                      >
-                        {result.winner}
-                      </span>
-                      {result.suited && (
-                        <Badge className="bg-purple-600 text-xs">Suited</Badge>
-                      )}
-                    </div>
-                  ))}
+                  {/* History will be populated from live API data */}
+                  <p className="text-gray-400 text-sm text-center">
+                    No history available
+                  </p>
+                  {/* {HISTORY.map((result, idx) => (
+                    ...
+                  ))} */}
                 </div>
               </Card>
             </div>

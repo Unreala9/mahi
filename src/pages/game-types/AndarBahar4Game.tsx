@@ -12,14 +12,6 @@ import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
-const HISTORY = [
-  { winner: "B", cards: 9 },
-  { winner: "A", cards: 6 },
-  { winner: "B", cards: 11 },
-  { winner: "A", cards: 4 },
-  { winner: "B", cards: 8 },
-];
-
 export default function AndarBahar4Game() {
   const navigate = useNavigate();
   // ✅ LIVE API INTEGRATION

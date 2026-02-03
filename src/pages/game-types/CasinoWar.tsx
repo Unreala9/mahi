@@ -15,17 +15,6 @@ import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
-const HISTORY = [
-  { result: "Player", war: false },
-  { result: "Dealer", war: false },
-  { result: "Player", war: true },
-  { result: "Tie", war: false },
-  { result: "Dealer", war: false },
-  { result: "Player", war: false },
-  { result: "Player", war: true },
-  { result: "Dealer", war: false },
-];
-
 export default function CasinoWar() {
   const navigate = useNavigate();
   // ✅ LIVE API INTEGRATION
@@ -319,39 +308,45 @@ export default function CasinoWar() {
                   History
                 </h3>
                 <div className="space-y-2">
-                  {HISTORY.map((result, idx) => (
-                    <div
-                      key={idx}
-                      className={cn(
-                        "p-3 rounded border-2 transition-all",
-                        result.result === "Player"
-                          ? "bg-blue-900/30 border-blue-600"
-                          : result.result === "Dealer"
-                            ? "bg-red-900/30 border-red-600"
-                            : "bg-green-900/30 border-green-600",
-                      )}
-                    >
-                      <div className="flex items-center justify-between">
-                        <Badge
-                          className={cn(
-                            result.result === "Player"
-                              ? "bg-blue-600"
-                              : result.result === "Dealer"
-                                ? "bg-red-600"
-                                : "bg-green-600",
-                          )}
-                        >
-                          {result.result}
-                        </Badge>
-                        {result.war && (
-                          <Badge className="bg-yellow-600 text-xs flex items-center gap-1">
-                            <Swords className="w-3 h-3" />
-                            War
-                          </Badge>
+                  {/* History will be populated from live API data */}
+                  <p className="text-gray-400 text-sm text-center">
+                    No history available
+                  </p>
+                  {/*
+                    {HISTORY.map((result, idx) => (
+                      <div
+                        key={idx}
+                        className={cn(
+                          "p-3 rounded border-2 transition-all",
+                          result.result === "Player"
+                            ? "bg-blue-900/30 border-blue-600"
+                            : result.result === "Dealer"
+                              ? "bg-red-900/30 border-red-600"
+                              : "bg-green-900/30 border-green-600",
                         )}
+                      >
+                        <div className="flex items-center justify-between">
+                          <Badge
+                            className={cn(
+                              result.result === "Player"
+                                ? "bg-blue-600"
+                                : result.result === "Dealer"
+                                  ? "bg-red-600"
+                                  : "bg-green-600",
+                            )}
+                          >
+                            {result.result}
+                          </Badge>
+                          {result.war && (
+                            <Badge className="bg-yellow-600 text-xs flex items-center gap-1">
+                              <Swords className="w-3 h-3" />
+                              War
+                            </Badge>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  */}
                 </div>
               </Card>
             </div>

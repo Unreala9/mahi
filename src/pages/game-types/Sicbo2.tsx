@@ -23,12 +23,6 @@ const MAIN_BETS = [
   { id: "total12", name: "Total 12", odds: 6.0 },
 ];
 
-const HISTORY = Array.from({ length: 10 }, () => [
-  Math.floor(Math.random() * 6) + 1,
-  Math.floor(Math.random() * 6) + 1,
-  Math.floor(Math.random() * 6) + 1,
-]);
-
 export default function Sicbo2() {
   const navigate = useNavigate();
   // ✅ LIVE API INTEGRATION

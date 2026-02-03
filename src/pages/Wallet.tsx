@@ -91,9 +91,9 @@ const Wallet = () => {
   };
 
   const fetchTransactions = async (userId: string) => {
-    // Fetch deposit/withdrawal transactions
+    // Fetch deposit/withdrawal transactions (use `transactions` table)
     const { data: txData } = await (supabase
-      .from("wallet_transactions")
+      .from("transactions")
       .select("*")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
@@ -147,34 +147,59 @@ const Wallet = () => {
       setLoading(true);
 
       if (selectedGateway === "stripe") {
-        const { data, error } = await supabase.functions.invoke(
-          "create-payment-intent",
-          {
-            body: {
-              amount: parseFloat(depositAmount),
-              currency: "INR",
-              provider: "stripe",
-            },
-          },
-        );
+        const res = await supabase.functions.invoke("create-payment-intent", {
+          body: JSON.stringify({
+            amount: parseFloat(depositAmount),
+            currency: "INR",
+            provider: "stripe",
+          }),
+          headers: { "Content-Type": "application/json" },
+        });
 
-        if (error) throw error;
+        if (res.error) {
+          console.error(
+            "[Functions] create-payment-intent (stripe) error:",
+            res.error,
+            res.data,
+          );
+          toast({
+            title: "Payment Error",
+            description: res.error.message || "Failed to create payment intent",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        const data = res.data;
         toast({
           title: "Initiating Stripe",
           description: "Redirecting to payment gateway...",
         });
       } else if (selectedGateway === "razorpay") {
-        const { data, error } = await supabase.functions.invoke(
-          "create-payment-intent",
-          {
-            body: {
-              amount: parseFloat(depositAmount),
-              currency: "INR",
-              provider: "razorpay",
-            },
-          },
-        );
-        if (error) throw error;
+        const res = await supabase.functions.invoke("create-payment-intent", {
+          body: JSON.stringify({
+            amount: parseFloat(depositAmount),
+            currency: "INR",
+            provider: "razorpay",
+          }),
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (res.error) {
+          console.error(
+            "[Functions] create-payment-intent (razorpay) error:",
+            res.error,
+            res.data,
+          );
+          toast({
+            title: "Payment Error",
+            description: res.error.message || "Failed to create payment intent",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        const data = res.data;
 
         const options = {
           key: import.meta.env.VITE_RAZORPAY_KEY_ID,
@@ -226,36 +251,49 @@ const Wallet = () => {
 
   const verifyPayment = async (response: any, provider: string) => {
     try {
-      const { error } = await supabase.functions.invoke("handle-webhook", {
-        body: { ...response, provider },
+      const res = await supabase.functions.invoke("handle-webhook", {
+        body: JSON.stringify({ ...response, provider }),
+        headers: { "Content-Type": "application/json" },
       });
-      if (error) throw error;
+      if (res.error) {
+        console.error("[Functions] handle-webhook error:", res.error, res.data);
+        throw res.error;
+      }
+
       toast({ title: "Success", description: "Deposit successful!" });
       fetchWalletData(user!.id);
       fetchTransactions(user!.id);
       setDepositAmount("");
-    } catch (err) {
+    } catch (err: any) {
+      console.error("Payment verification failed:", err);
       toast({
         title: "Error",
-        description: "Payment verification failed",
+        description: err?.message || "Payment verification failed",
         variant: "destructive",
       });
     }
   };
 
   const createPayPalOrder = async () => {
-    const { data, error } = await supabase.functions.invoke(
-      "create-payment-intent",
-      {
-        body: {
-          amount: parseFloat(depositAmount),
-          currency: "INR",
-          provider: "paypal",
-        },
-      },
-    );
-    if (error) throw error;
-    return data.order_id;
+    const res = await supabase.functions.invoke("create-payment-intent", {
+      body: JSON.stringify({
+        amount: parseFloat(depositAmount),
+        currency: "INR",
+        provider: "paypal",
+      }),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (res.error) {
+      console.error(
+        "[Functions] create-payment-intent (paypal) error:",
+        res.error,
+        res.data,
+      );
+      throw res.error;
+    }
+
+    return res.data.order_id;
   };
 
   const onPayPalApprove = async (data: any) => {
@@ -278,12 +316,22 @@ const Wallet = () => {
       return;
     }
 
+    // Validate UPI ID
+    if (!upiId || upiId.trim() === '') {
+      toast({
+        title: "⚠️ UPI ID Required",
+        description: "Please enter your UPI ID",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Call Secure RPC with UPI details
     try {
       setLoading(true);
 
       // Store bank details in transaction description/metadata
-      const bankInfo = `Bank: ${bankAccountDetails.bankName} | A/C: ${bankAccountDetails.accountNumber} | IFSC: ${bankAccountDetails.ifscCode} | Holder: ${bankAccountDetails.accountHolderName}`;
+      const bankInfo = `Bank: ${bankDetails?.bankName || ""} | A/C: ${bankDetails?.accountNumber || ""} | IFSC: ${bankDetails?.ifscCode || ""} | Holder: ${bankDetails?.accountHolderName || ""}`;
 
       const { data, error } = await supabase.rpc("request_withdrawal", {
         p_user_id: user?.id,
@@ -293,9 +341,9 @@ const Wallet = () => {
 
       if (error) throw error;
 
-      // Optionally store bank details separately
+      // Optionally store bank details in transaction description
       await supabase
-        .from("wallet_transactions")
+        .from("transactions")
         .update({
           description: `Withdrawal Request - ${bankInfo}`,
         })
@@ -303,7 +351,8 @@ const Wallet = () => {
 
       toast({
         title: "Success",
-        description: "Withdrawal request submitted. Admin will process UPI payment within 24 hours.",
+        description:
+          "Withdrawal request submitted. Admin will process UPI payment within 24 hours.",
       });
 
       // Reset form
@@ -321,6 +370,11 @@ const Wallet = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Compatibility wrapper: UI calls `handleWithdraw` — ensure it exists
+  const handleWithdraw = async () => {
+    await handleWithdrawAmountSubmit();
   };
 
   return (
@@ -370,7 +424,11 @@ const Wallet = () => {
                     Total Funds
                   </p>
                   <h2 className="text-5xl font-black text-primary font-display tracking-tight leading-none">
-                    <ChipAmount amount={walletData?.balance ?? 0} size="lg" className="text-5xl" />
+                    <ChipAmount
+                      amount={walletData?.balance ?? 0}
+                      size="lg"
+                      className="text-5xl"
+                    />
                   </h2>
                   <p className="text-[10px] text-green-500 font-bold uppercase mt-2 flex items-center gap-1">
                     <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />{" "}
@@ -415,9 +473,7 @@ const Wallet = () => {
                       Enter Deposit Amount
                     </label>
                     <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary text-lg font-bold">
-                        
-                      </span>
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary text-lg font-bold"></span>
                       <Input
                         type="number"
                         value={depositAmount}
@@ -541,7 +597,8 @@ const Wallet = () => {
                         UPI Withdrawal
                       </h4>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Admin will send money to your UPI ID within 24 hours. Make sure your UPI ID is correct.
+                        Admin will send money to your UPI ID within 24 hours.
+                        Make sure your UPI ID is correct.
                       </p>
                     </div>
 
@@ -574,9 +631,7 @@ const Wallet = () => {
                       Withdrawal Amount
                     </label>
                     <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary text-lg font-bold">
-                        
-                      </span>
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary text-lg font-bold"></span>
                       <Input
                         type="number"
                         value={withdrawAmount}
@@ -720,7 +775,11 @@ const Wallet = () => {
                                   : "text-foreground",
                             )}
                           >
-                            {(isDeposit || isWin) ? "+" : "-"} <ChipAmount amount={tx.display_amount || tx.amount} size="sm" />
+                            {isDeposit || isWin ? "+" : "-"}{" "}
+                            <ChipAmount
+                              amount={tx.display_amount || tx.amount}
+                              size="sm"
+                            />
                           </span>
                           {tx.status && (
                             <span

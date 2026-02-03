@@ -89,23 +89,6 @@ const PLAYERS: Player[] = [
   },
 ];
 
-const HAND_RANKINGS = [
-  { rank: 1, name: "Trail", multiplier: "5x" },
-  { rank: 2, name: "Pure Seq", multiplier: "4x" },
-  { rank: 3, name: "Sequence", multiplier: "3x" },
-  { rank: 4, name: "Color", multiplier: "2.5x" },
-  { rank: 5, name: "Pair", multiplier: "2x" },
-  { rank: 6, name: "High Card", multiplier: "1.5x" },
-];
-
-const ACTION_HISTORY = [
-  { player: "P4", action: "Raise ₹5k", time: "2s ago" },
-  { player: "P7", action: "Call ₹5k", time: "5s ago" },
-  { player: "P2", action: "Raise ₹2.5k", time: "8s ago" },
-  { player: "P6", action: "Call ₹2.5k", time: "12s ago" },
-  { player: "P1", action: "Fold", time: "15s ago" },
-];
-
 const Teen9Game = ({ game }: Teen9GameProps) => {
   const [bets, setBets] = useState<Bet[]>([]);
   const [selectedChip, setSelectedChip] = useState(5000);

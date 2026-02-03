@@ -104,15 +104,6 @@ const PLAYERS: Player[] = [
   },
 ];
 
-const HAND_RANKINGS = [
-  { name: "Trail", multiplier: "5x" },
-  { name: "Pure Seq", multiplier: "4x" },
-  { name: "Sequence", multiplier: "3x" },
-  { name: "Color", multiplier: "2.5x" },
-  { name: "Pair", multiplier: "2x" },
-  { name: "High Card", multiplier: "1.5x" },
-];
-
 const Teen8Game = ({ game }: Teen8GameProps) => {
   const [bets, setBets] = useState<Bet[]>([]);
   const [selectedChip, setSelectedChip] = useState(10000);

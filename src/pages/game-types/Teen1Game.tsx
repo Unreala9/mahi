@@ -63,51 +63,6 @@ const PLAYERS: Player[] = [
   },
 ];
 
-const HAND_RANKINGS = [
-  {
-    rank: 1,
-    name: "Trail",
-    example: "A-A-A, K-K-K",
-    icon: "🔥",
-    description: "Three cards of the same rank",
-  },
-  {
-    rank: 2,
-    name: "Pure Sequence",
-    example: "A-K-Q (same suit)",
-    icon: "💎",
-    description: "Three consecutive cards, same suit",
-  },
-  {
-    rank: 3,
-    name: "Sequence",
-    example: "A-K-Q (mixed)",
-    icon: "📊",
-    description: "Three consecutive cards, mixed suits",
-  },
-  {
-    rank: 4,
-    name: "Color",
-    example: "A-10-8 (same suit)",
-    icon: "🎨",
-    description: "Three cards of the same suit",
-  },
-  {
-    rank: 5,
-    name: "Pair",
-    example: "A-A-K",
-    icon: "👥",
-    description: "Two cards of the same rank",
-  },
-  {
-    rank: 6,
-    name: "High Card",
-    example: "A-K-J",
-    icon: "🃏",
-    description: "No matching cards",
-  },
-];
-
 const CONTROLS_HELP = [
   {
     action: "Pack",

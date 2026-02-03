@@ -153,6 +153,19 @@ CREATE TABLE IF NOT EXISTS public.transactions (
 );
 
 -- Table: games
+CREATE TABLE IF NOT EXISTS public.games (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  game_id text NOT NULL UNIQUE,
+  name text NOT NULL,
+  provider text NOT NULL,
+  category text NOT NULL,
+  image_url text,
+  status game_status DEFAULT 'active'::game_status,
+  featured boolean DEFAULT false,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT games_pkey PRIMARY KEY (id)
+);
 
 -- Create indexes for better query performance
 CREATE INDEX IF NOT EXISTS idx_audit_logs_actor_id ON public.audit_logs(actor_id);

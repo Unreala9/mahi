@@ -86,35 +86,6 @@ const PLAYERS: Player[] = [
   },
 ];
 
-const HAND_RANKINGS = [
-  {
-    rank: 1,
-    name: "Trail (Three of a Kind)",
-    example: "A-A-A, K-K-K",
-    multiplier: "5x",
-  },
-  {
-    rank: 2,
-    name: "Pure Sequence (Straight Flush)",
-    example: "A-K-Q same suit",
-    multiplier: "4x",
-  },
-  {
-    rank: 3,
-    name: "Sequence (Straight)",
-    example: "A-K-Q mixed",
-    multiplier: "3x",
-  },
-  {
-    rank: 4,
-    name: "Color (Flush)",
-    example: "A-10-8 same suit",
-    multiplier: "2.5x",
-  },
-  { rank: 5, name: "Pair", example: "A-A-K", multiplier: "2x" },
-  { rank: 6, name: "High Card", example: "A-K-J", multiplier: "1.5x" },
-];
-
 const Teen20BGame = ({ game }: Teen20BGameProps) => {
   const gameId = game?.gmid || "teen20b";
   const gameName = game?.gname || "Teen 20 B";

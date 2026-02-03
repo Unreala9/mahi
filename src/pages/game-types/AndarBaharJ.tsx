@@ -13,22 +13,6 @@ import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
-const CARD_SEQUENCE = [
-  { side: "A", card: "🂳" },
-  { side: "B", card: "🃇" },
-  { side: "A", card: "🃙" },
-  { side: "B", card: "🂢" },
-  { side: "A", card: "🂻" },
-];
-
-const HISTORY = [
-  { winner: "A", cards: 7 },
-  { winner: "B", cards: 11 },
-  { winner: "A", cards: 5 },
-  { winner: "B", cards: 9 },
-  { winner: "A", cards: 6 },
-];
-
 export default function AndarBaharJ() {
   const navigate = useNavigate();
   // ✅ LIVE API INTEGRATION
@@ -230,16 +214,9 @@ export default function AndarBaharJ() {
                   <div className="bg-blue-950/50 rounded-lg p-3">
                     <p className="text-blue-400 text-xs mb-2">Andar Cards:</p>
                     <div className="flex flex-wrap gap-1">
-                      {CARD_SEQUENCE.filter((c) => c.side === "A").map(
-                        (card, idx) => (
-                          <div
-                            key={idx}
-                            className="w-10 h-14 bg-white rounded flex items-center justify-center text-2xl border-2 border-blue-400"
-                          >
-                            {card.card}
-                          </div>
-                        ),
-                      )}
+                      {/* Cards will be populated from live API data */}
+                      <p className="text-gray-400 text-xs">No cards yet</p>
+                      {/* {CARD_SEQUENCE.filter((c) => c.side === "A").map(...)} */}
                     </div>
                   </div>
                 </Card>
@@ -278,16 +255,20 @@ export default function AndarBaharJ() {
                   <div className="bg-green-950/50 rounded-lg p-3">
                     <p className="text-green-400 text-xs mb-2">Bahar Cards:</p>
                     <div className="flex flex-wrap gap-1">
-                      {CARD_SEQUENCE.filter((c) => c.side === "B").map(
-                        (card, idx) => (
-                          <div
-                            key={idx}
-                            className="w-10 h-14 bg-white rounded flex items-center justify-center text-2xl border-2 border-green-400"
-                          >
-                            {card.card}
-                          </div>
-                        ),
-                      )}
+                      {/* Cards will be populated from live API data */}
+                      <p className="text-gray-400 text-xs">No cards yet</p>
+                      {/*
+                        {CARD_SEQUENCE.filter((c) => c.side === "B").map(
+                          (card, idx) => (
+                            <div
+                              key={idx}
+                              className="w-10 h-14 bg-white rounded flex items-center justify-center text-2xl border-2 border-green-400"
+                            >
+                              {card.card}
+                            </div>
+                          ),
+                        )}
+                      */}
                     </div>
                   </div>
                 </Card>
@@ -299,23 +280,9 @@ export default function AndarBaharJ() {
                   Dealing Sequence
                 </h3>
                 <div className="flex gap-2 overflow-x-auto pb-2">
-                  {CARD_SEQUENCE.map((card, idx) => (
-                    <div key={idx} className="flex-shrink-0">
-                      <div className="w-16 h-24 bg-white rounded flex items-center justify-center text-4xl border-4 border-purple-500">
-                        {card.card}
-                      </div>
-                      <p
-                        className={cn(
-                          "text-center text-xs font-bold mt-1",
-                          card.side === "A"
-                            ? "text-blue-500"
-                            : "text-green-500",
-                        )}
-                      >
-                        {card.side === "A" ? "Andar" : "Bahar"}
-                      </p>
-                    </div>
-                  ))}
+                  {/* Sequence will be populated from live API data */}
+                  <p className="text-gray-400 text-sm">No cards dealt yet</p>
+                  {/* {CARD_SEQUENCE.map((card, idx) => (...)} */}
                 </div>
               </Card>
 
@@ -395,32 +362,11 @@ export default function AndarBaharJ() {
                   Recent History
                 </h3>
                 <div className="space-y-2">
-                  {HISTORY.map((result, idx) => (
-                    <div
-                      key={idx}
-                      className={cn(
-                        "p-3 rounded border-2 transition-all hover:scale-105",
-                        result.winner === "A"
-                          ? "bg-blue-900/30 border-blue-600"
-                          : "bg-green-900/30 border-green-600",
-                      )}
-                    >
-                      <div className="flex items-center justify-between">
-                        <Badge
-                          className={
-                            result.winner === "A"
-                              ? "bg-blue-600"
-                              : "bg-green-600"
-                          }
-                        >
-                          {result.winner === "A" ? "Andar" : "Bahar"}
-                        </Badge>
-                        <Badge className="bg-purple-600 text-xs">
-                          {result.cards} cards
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
+                  {/* History will be populated from live API data */}
+                  <p className="text-gray-400 text-sm text-center">
+                    No history available
+                  </p>
+                  {/* {HISTORY.map((result, idx) => (...)} */}
                 </div>
               </Card>
             </div>

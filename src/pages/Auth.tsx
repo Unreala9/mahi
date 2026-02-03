@@ -45,6 +45,19 @@ const Auth = () => {
         console.log("[AUTH] Signup attempt for:", email);
 
         try {
+          // Check if user already exists
+          const { data: existingUser } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("email", email)
+            .single();
+
+          if (existingUser) {
+            toast.error("Email already registered. Please login instead.");
+            setIsLogin(true);
+            return;
+          }
+
           const { data, error } = await supabase.auth.signUp({
             email,
             password,
@@ -52,6 +65,7 @@ const Auth = () => {
               emailRedirectTo: window.location.origin,
               data: {
                 email: email,
+                full_name: email.split("@")[0],
               },
             },
           });
@@ -61,16 +75,22 @@ const Auth = () => {
 
           // Handle database trigger errors gracefully
           if (error) {
-            if (error.message.includes("Database error saving new user")) {
+            if (error.message.includes("User already registered")) {
+              toast.error("Email already registered. Please login instead.");
+              setIsLogin(true);
+              return;
+            }
+            if (
+              error.message.includes("Database error") ||
+              error.message.includes("relation")
+            ) {
               console.warn(
-                "[AUTH] Database trigger error, but user may be created. Using demo mode.",
+                "[AUTH] Database trigger error, but user may be created.",
               );
-              localStorage.setItem("demo_session", "true");
-              localStorage.setItem("demo_email", email);
               toast.success(
-                "Account created! Logged in as demo user (database setup pending)",
+                "Account created! Please login with your credentials.",
               );
-              navigate("/");
+              setIsLogin(true);
               return;
             }
             throw error;
@@ -78,18 +98,34 @@ const Auth = () => {
 
           console.log("[AUTH] User created:", data?.user?.id);
 
-          // Auto-login if session exists
-          if (data.session) {
-            console.log("[AUTH] Session exists, auto-logging in");
-            toast.success("Account created successfully!");
-            navigate("/");
-          } else if (data.user) {
-            // User created but no session (email confirmation required)
-            console.log(
-              "[AUTH] User created, email confirmation may be required",
-            );
-            toast.success("Account created! You can now login.");
-            setIsLogin(true); // Switch to login mode
+          // Check if profile was created
+          if (data.user) {
+            // Wait a moment for the trigger to execute
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+
+            const { data: profile, error: profileError } = await supabase
+              .from("profiles")
+              .select("id")
+              .eq("id", data.user.id)
+              .single();
+
+            if (profileError && !profileError.message.includes("row")) {
+              console.warn("[AUTH] Profile check warning:", profileError);
+            }
+
+            // Auto-login if session exists
+            if (data.session) {
+              console.log("[AUTH] Session exists, auto-logging in");
+              toast.success("Account created and logged in successfully!");
+              navigate("/");
+            } else {
+              // User created but no session (email confirmation might be required)
+              console.log("[AUTH] User created, please login");
+              toast.success(
+                "Account created! Please login with your credentials.",
+              );
+              setIsLogin(true); // Switch to login mode
+            }
           } else {
             toast.error("Signup failed. Please try again.");
           }

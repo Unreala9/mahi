@@ -21,11 +21,6 @@ const OPTIONS = [
   { id: "option4", label: "Option 4", odds: 5.0, pool: 75000 },
 ];
 
-const HISTORY = Array.from({ length: 8 }, () => ({
-  round: Math.floor(Math.random() * 1000) + 1,
-  winner: `Option ${Math.floor(Math.random() * 4) + 1}`,
-}));
-
 export default function KBC() {
   const navigate = useNavigate();
   // ✅ LIVE API INTEGRATION

@@ -57,7 +57,7 @@ serve(async (req) => {
 
       // Check wallet balance first
       const { data: transactions } = await serviceClient
-        .from("wallet_transactions")
+        .from("transactions")
         .select("amount, type")
         .eq("user_id", user.id)
         .eq("status", "completed");
@@ -111,12 +111,13 @@ serve(async (req) => {
       if (error) throw error;
 
       // Deduct from wallet
-      await serviceClient.from("wallet_transactions").insert({
+      await serviceClient.from("transactions").insert({
         user_id: user.id,
         type: "bet",
         amount: stake,
         status: "completed",
-        reference: providerBetId,
+        provider: "internal",
+        provider_ref_id: providerBetId,
         description: `Bet on ${selectionName || selectionId} @ ${odds}`,
       });
 

@@ -13,35 +13,6 @@ import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
-const PLAYERS = [
-  { seat: 1, name: "Player1", stack: 5200, status: "folded", position: "UTG" },
-  {
-    seat: 2,
-    name: "Player2",
-    stack: 8500,
-    status: "active",
-    position: "UTG+1",
-  },
-  { seat: 3, name: "Player3", stack: 3400, status: "folded", position: "MP" },
-  { seat: 4, name: "Player4", stack: 12000, status: "active", position: "CO" },
-  { seat: 5, name: "Player5", stack: 6800, status: "acting", position: "BTN" },
-  { seat: 6, name: "Player6", stack: 4200, status: "active", position: "SB" },
-  { seat: 7, name: "Player7", stack: 9100, status: "active", position: "BB" },
-  { seat: 8, name: "Player8", stack: 7500, status: "folded", position: "UTG" },
-];
-
-const COMMUNITY_CARDS = [
-  { suit: "hearts" as const, value: "A" },
-  { suit: "diamonds" as const, value: "K" },
-  { suit: "clubs" as const, value: "Q" },
-];
-
-const HISTORY = [
-  { winner: "Player5", amount: "₹4500", hand: "Full House" },
-  { winner: "Player2", amount: "₹2800", hand: "Two Pair" },
-  { winner: "Player4", amount: "₹6200", hand: "Straight" },
-];
-
 export default function Poker20() {
   const navigate = useNavigate();
   const [countdown, setCountdown] = useState(25);
@@ -118,114 +89,19 @@ export default function Poker20() {
               <Card className="bg-gradient-to-br from-green-900/40 to-green-800/20 border-blue-600/30 p-6 min-h-[600px]">
                 {/* Oval Table with Players */}
                 <div className="relative aspect-[16/10] bg-gradient-to-br from-green-800/50 to-green-900/50 rounded-[50%] border-8 border-yellow-700/50 shadow-2xl">
-                  {/* Players positioned around oval */}
-                  {PLAYERS.map((player, idx) => {
-                    const pos = getOvalPosition(idx, PLAYERS.length);
-                    return (
-                      <div
-                        key={player.seat}
-                        className="absolute"
-                        style={{
-                          left: `${pos.x}%`,
-                          top: `${pos.y}%`,
-                          transform: "translate(-50%, -50%)",
-                        }}
-                        role="img"
-                        aria-label={`Player ${player.seat}`}
-                      >
-                        <Card
-                          className={cn(
-                            "bg-gray-900/90 border-2 p-2 min-w-[120px] transition-all",
-                            player.status === "acting"
-                              ? "border-yellow-500 ring-2 ring-yellow-500 ring-offset-2 ring-offset-green-900"
-                              : player.status === "folded"
-                                ? "border-gray-700 opacity-50"
-                                : "border-blue-600",
-                          )}
-                        >
-                          {/* Timer Ring for Acting Player */}
-                          {player.status === "acting" && (
-                            <div className="absolute -top-1 -right-1 w-8 h-8">
-                              <svg
-                                className="transform -rotate-90"
-                                viewBox="0 0 32 32"
-                              >
-                                <circle
-                                  cx="16"
-                                  cy="16"
-                                  r="14"
-                                  fill="none"
-                                  stroke="#FCD34D"
-                                  strokeWidth="3"
-                                  strokeDasharray={`${(countdown / 25) * 88} 88`}
-                                  className="transition-all duration-1000"
-                                />
-                              </svg>
-                              <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-yellow-500">
-                                {countdown}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Player Info */}
-                          <div className="text-center">
-                            <div className="flex items-center justify-center gap-2 mb-1">
-                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-lg">
-                                👤
-                              </div>
-                              {player.position === "BTN" && (
-                                <Badge className="bg-yellow-600 text-xs">
-                                  D
-                                </Badge>
-                              )}
-                              {player.position === "SB" && (
-                                <Badge className="bg-blue-600 text-xs">
-                                  SB
-                                </Badge>
-                              )}
-                              {player.position === "BB" && (
-                                <Badge className="bg-red-600 text-xs">BB</Badge>
-                              )}
-                            </div>
-                            <p className="text-white text-sm font-bold">
-                              {player.name}
-                            </p>
-                            <p className="text-green-400 text-xs font-bold">
-                              ₹{player.stack}
-                            </p>
-                            {player.status === "folded" && (
-                              <Badge className="bg-gray-700 text-xs mt-1">
-                                Folded
-                              </Badge>
-                            )}
-                            {player.status === "active" && (
-                              <Badge className="bg-blue-600 text-xs mt-1">
-                                In Hand
-                              </Badge>
-                            )}
-                            {player.status === "acting" && (
-                              <Badge className="bg-yellow-600 text-xs mt-1 animate-pulse">
-                                Thinking...
-                              </Badge>
-                            )}
-                          </div>
-
-                          {/* Player Cards (if not folded) */}
-                          {player.status !== "folded" && (
-                            <div className="flex justify-center gap-1 mt-2">
-                              <PlayingCard faceDown size="sm" />
-                              <PlayingCard faceDown size="sm" />
-                            </div>
-                          )}
-                        </Card>
-                      </div>
-                    );
-                  })}
+                  {/* Players will be populated from live API data */}
+                  <p className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-400 text-center">
+                    Waiting for players...
+                  </p>
 
                   {/* Center - Community Cards & Pot */}
-                  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+                  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center mt-32">
                     {/* Community Cards */}
                     <div className="flex justify-center gap-2 mb-4">
+                      {/* Cards will be populated from live API data */}
+                      <p className="text-gray-400 text-sm">
+                        No community cards yet
+                      </p>
                       {COMMUNITY_CARDS.map((card, idx) => (
                         <PlayingCard
                           key={idx}

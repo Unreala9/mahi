@@ -165,21 +165,6 @@ const SIDE_BETS: SideBet[] = [
 
 const CHIP_VALUES = [1000, 2500, 5000, 10000, 25000];
 
-const HAND_RANKINGS = [
-  {
-    rank: 1,
-    name: "Mini Royal (Suited A-K-Q)",
-    multiplier: "100x",
-    icon: "👑",
-  },
-  { rank: 2, name: "Straight Flush", multiplier: "40x", icon: "🔥" },
-  { rank: 3, name: "Three of a Kind", multiplier: "30x", icon: "💎" },
-  { rank: 4, name: "Straight", multiplier: "6x", icon: "📊" },
-  { rank: 5, name: "Flush", multiplier: "4x", icon: "🎨" },
-  { rank: 6, name: "Pair", multiplier: "1x", icon: "👥" },
-  { rank: 7, name: "High Card", multiplier: "1x", icon: "🃏" },
-];
-
 export default function Teen41Game({ game }: Teen41GameProps) {
   const [bets, setBets] = useState<Bet[]>([]);
   const [selectedChip, setSelectedChip] = useState<number>(5000);
