@@ -4,11 +4,13 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Clock } from "lucide-react";
+import { ArrowLeft, Clock, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PlayingCard } from "@/components/casino/PlayingCard";
 import { BettingChip } from "@/components/casino/BettingChip";
 import { toast } from "@/hooks/use-toast";
+import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
+import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
 const BET_PANELS = [

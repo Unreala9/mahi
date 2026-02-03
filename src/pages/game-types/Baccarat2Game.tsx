@@ -5,6 +5,8 @@ import { useCasinoWebSocket } from "@/hooks/api/useCasinoWebSocket";
 import { casinoBettingService } from "@/services/casinoBettingService";
 import { useToast } from "@/hooks/use-toast";
 import type { CasinoGame } from "@/types/casino";
+import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
+import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 
 interface Baccarat2GameProps {
   game?: CasinoGame;
@@ -19,6 +21,23 @@ export default function Baccarat2Game({ game }: Baccarat2GameProps) {
 
   const { gameData, resultData } = useCasinoWebSocket(gameId);
   const { toast } = useToast();
+
+  // ✅ LIVE API INTEGRATION
+  const {
+    markets,
+    roundId,
+    placeBet: placeBetUniversal,
+    placedBets,
+    clearBets,
+    totalStake,
+    potentialWin,
+    isSuspended,
+    isConnected,
+    result,
+  } = useUniversalCasinoGame({
+    gameType: "baccarat2",
+    gameName: "Baccarat 2",
+  });
 
   const handlePlaceBet = async (selection: string, odds: number) => {
     const newBet = { selection, odds, stake: selectedChip };

@@ -4,10 +4,12 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Clock, HelpCircle } from "lucide-react";
+import { ArrowLeft, Clock, HelpCircle, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PlayingCard } from "@/components/casino/PlayingCard";
 import { BettingChip } from "@/components/casino/BettingChip";
+import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
+import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 

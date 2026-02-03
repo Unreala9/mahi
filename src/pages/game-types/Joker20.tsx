@@ -10,6 +10,8 @@ import { PlayingCard } from "@/components/casino/PlayingCard";
 import { BettingChip } from "@/components/casino/BettingChip";
 import { toast } from "@/hooks/use-toast";
 import { bettingService } from "@/services/bettingService";
+import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
+import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
@@ -42,6 +44,24 @@ const HISTORY = Array.from({ length: 8 }, () => {
 
 export default function Joker20() {
   const navigate = useNavigate();
+  // ✅ LIVE API INTEGRATION
+  const {
+    gameData,
+    result,
+    isConnected,
+    markets,
+    roundId,
+    placeBet,
+    placedBets,
+    clearBets,
+    totalStake,
+    potentialWin,
+    isSuspended,
+  } = useUniversalCasinoGame({
+    gameType: "joker20",
+    gameName: "Joker 20",
+  });
+
   const [countdown, setCountdown] = useState(22);
   const [isPlaying, setIsPlaying] = useState(false);
   const [selectedChip, setSelectedChip] = useState(100);

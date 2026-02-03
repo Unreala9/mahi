@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils";
 import { BettingChip } from "@/components/casino/BettingChip";
 import { toast } from "@/hooks/use-toast";
 import { bettingService } from "@/services/bettingService";
+import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
+import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
@@ -34,6 +36,24 @@ const PAST_RACES = [
 
 export default function Race20() {
   const navigate = useNavigate();
+  // ✅ LIVE API INTEGRATION
+  const {
+    gameData,
+    result,
+    isConnected,
+    markets,
+    roundId,
+    placeBet,
+    placedBets,
+    clearBets,
+    totalStake,
+    potentialWin,
+    isSuspended,
+  } = useUniversalCasinoGame({
+    gameType: "race20",
+    gameName: "Race 20",
+  });
+
   const [countdown, setCountdown] = useState(45);
   const [isRacing, setIsRacing] = useState(false);
   const [selectedChip, setSelectedChip] = useState(100);

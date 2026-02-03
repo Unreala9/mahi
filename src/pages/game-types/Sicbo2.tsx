@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils";
 import { BettingChip } from "@/components/casino/BettingChip";
 import { toast } from "@/hooks/use-toast";
 import { bettingService } from "@/services/bettingService";
+import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
+import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
@@ -29,6 +31,24 @@ const HISTORY = Array.from({ length: 10 }, () => [
 
 export default function Sicbo2() {
   const navigate = useNavigate();
+  // ✅ LIVE API INTEGRATION
+  const {
+    gameData,
+    result,
+    isConnected,
+    markets,
+    roundId,
+    placeBet,
+    placedBets,
+    clearBets,
+    totalStake,
+    potentialWin,
+    isSuspended,
+  } = useUniversalCasinoGame({
+    gameType: "sicbo2",
+    gameName: "Sicbo 2",
+  });
+
   const [countdown, setCountdown] = useState(25);
   const [isRolling, setIsRolling] = useState(false);
   const [selectedChip, setSelectedChip] = useState(100);

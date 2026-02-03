@@ -7,6 +7,8 @@ import { Card } from "@/components/ui/card";
 import { ArrowLeft, Clock, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BettingChip } from "@/components/casino/BettingChip";
+import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
+import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
@@ -34,6 +36,24 @@ const BALL_HISTORY = [
 
 export default function BallByBall() {
   const navigate = useNavigate();
+  // ✅ LIVE API INTEGRATION
+  const {
+    gameData,
+    result,
+    isConnected,
+    markets,
+    roundId,
+    placeBet,
+    placedBets,
+    clearBets,
+    totalStake,
+    potentialWin,
+    isSuspended,
+  } = useUniversalCasinoGame({
+    gameType: "ballbyball",
+    gameName: "Ball By Ball",
+  });
+
   const [countdown, setCountdown] = useState(12);
   const [selectedChip, setSelectedChip] = useState(100);
   const [bets, setBets] = useState<Record<string, number>>({});

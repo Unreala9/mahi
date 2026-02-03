@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils";
 import { BettingChip } from "@/components/casino/BettingChip";
 import { toast } from "@/hooks/use-toast";
 import { bettingService } from "@/services/bettingService";
+import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
+import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
@@ -26,6 +28,24 @@ const HISTORY = Array.from({ length: 8 }, () => ({
 
 export default function KBC() {
   const navigate = useNavigate();
+  // ✅ LIVE API INTEGRATION
+  const {
+    gameData,
+    result,
+    isConnected,
+    markets,
+    roundId,
+    placeBet,
+    placedBets,
+    clearBets,
+    totalStake,
+    potentialWin,
+    isSuspended,
+  } = useUniversalCasinoGame({
+    gameType: "kbc",
+    gameName: "KBC",
+  });
+
   const [countdown, setCountdown] = useState(30);
   const [isRevealing, setIsRevealing] = useState(false);
   const [selectedChip, setSelectedChip] = useState(100);

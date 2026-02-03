@@ -20,17 +20,35 @@ interface Bet {
   odds: number;
 }
 
-// Player seat positions (9 seats around oval table)
+interface MarketType {
+  sid: number;
+  nat: string;
+  b: number;
+  bs: number;
+  sr: number;
+  gstatus: "ACTIVE" | "SUSPENDED" | string;
+  min: number;
+  max: number;
+  subtype: string;
+  etype: string;
+}
+
+interface ResultType {
+  mid: string;
+  win: string;
+}
+
+// Player seat positions (9 seats around oval table) as Tailwind utility strings
 const seatPositions = [
-  { top: "50%", left: "50%", transform: "translate(-50%, -150%)" }, // Bottom center (Player)
-  { top: "75%", left: "20%", transform: "translate(-50%, -50%)" },
-  { top: "50%", left: "5%", transform: "translate(0, -50%)" },
-  { top: "25%", left: "15%", transform: "translate(-50%, -50%)" },
-  { top: "10%", left: "35%", transform: "translate(-50%, 0)" },
-  { top: "5%", left: "50%", transform: "translate(-50%, 0)" },
-  { top: "10%", left: "65%", transform: "translate(-50%, 0)" },
-  { top: "25%", left: "85%", transform: "translate(-50%, -50%)" },
-  { top: "50%", left: "95%", transform: "translate(-100%, -50%)" },
+  "top-[50%] left-[50%] -translate-x-1/2 -translate-y-[150%]", // Bottom center (Player)
+  "top-[75%] left-[20%] -translate-x-1/2 -translate-y-1/2",
+  "top-[50%] left-[5%] translate-x-0 -translate-y-1/2",
+  "top-[25%] left-[15%] -translate-x-1/2 -translate-y-1/2",
+  "top-[10%] left-[35%] -translate-x-1/2 translate-y-0",
+  "top-[5%] left-[50%] -translate-x-1/2 translate-y-0",
+  "top-[10%] left-[65%] -translate-x-1/2 translate-y-0",
+  "top-[25%] left-[85%] -translate-x-1/2 -translate-y-1/2",
+  "top-[50%] left-[95%] -translate-x-[100%] -translate-y-1/2",
 ];
 
 export default function PokerGame({ game }: PokerGameProps) {
@@ -44,8 +62,8 @@ export default function PokerGame({ game }: PokerGameProps) {
 
   const chips = [100, 500, 1000, 5000, 10000];
 
-  const handleMarketClick = (market: any) => {
-    if (isMarketSuspended(market)) {
+  const handleMarketClick = (market: MarketType) => {
+    if (isMarketSuspended(market.gstatus)) {
       toast({ title: "⚠️ Market Suspended", variant: "destructive" });
       return;
     }
@@ -97,6 +115,19 @@ export default function PokerGame({ game }: PokerGameProps) {
 
   const cards = gameData?.card?.split(",") || [];
   const communityCards = cards.slice(0, 5);
+
+  if (!gameData) {
+    return (
+      <MainLayout>
+        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-gray-900 to-slate-950 flex items-center justify-center">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-purple-500 border-t-transparent mb-4"></div>
+            <p className="text-white text-xl">Loading {gameName}...</p>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
@@ -169,49 +200,43 @@ export default function PokerGame({ game }: PokerGameProps) {
                 </div>
 
                 {/* Player Seats */}
-                {gameData?.sub?.slice(0, 9).map((market: any, idx: number) => {
-                  const betOnThis = bets.find((b) => b.sid === market.sid);
-                  const position = seatPositions[idx] || seatPositions[0];
+                {gameData?.sub
+                  ?.slice(0, 9)
+                  .map((market: MarketType, idx: number) => {
+                    const betOnThis = bets.find((b) => b.sid === market.sid);
+                    const position = seatPositions[idx] || seatPositions[0];
 
-                  return (
-                    <div
-                      key={market.sid}
-                      className="absolute"
-                      style={{
-                        top: position.top,
-                        left: position.left,
-                        transform: position.transform,
-                      }}
-                    >
-                      <button
-                        onClick={() => handleMarketClick(market)}
-                        disabled={isMarketSuspended(market)}
-                        className={`w-28 h-32 rounded-xl border-3 transition-all ${
-                          betOnThis
-                            ? "bg-gradient-to-br from-yellow-600 to-amber-700 border-yellow-400 shadow-lg shadow-yellow-500/50 scale-105"
-                            : "bg-gradient-to-br from-slate-800 to-slate-900 border-slate-600 hover:border-purple-500"
-                        } ${isMarketSuspended(market) ? "opacity-40 cursor-not-allowed" : "hover:scale-105"}`}
-                      >
-                        <div className="p-2">
-                          <div className="w-8 h-8 rounded-full bg-purple-600 mx-auto mb-1 flex items-center justify-center text-xs font-bold text-white">
-                            P{idx + 1}
-                          </div>
-                          <div className="text-white text-xs font-bold mb-1 truncate">
-                            {market.nat}
-                          </div>
-                          <div className="text-yellow-400 text-sm font-bold">
-                            {market.b || market.bs}
-                          </div>
-                          {betOnThis && (
-                            <div className="text-white text-xs mt-1 bg-black/40 rounded px-1">
-                              ₹{betOnThis.stake}
+                    return (
+                      <div key={market.sid} className={`absolute ${position}`}>
+                        <button
+                          onClick={() => handleMarketClick(market)}
+                          disabled={isMarketSuspended(market?.gstatus)}
+                          className={`w-28 h-32 rounded-xl border-3 transition-all ${
+                            betOnThis
+                              ? "bg-gradient-to-br from-yellow-600 to-amber-700 border-yellow-400 shadow-lg shadow-yellow-500/50 scale-105"
+                              : "bg-gradient-to-br from-slate-800 to-slate-900 border-slate-600 hover:border-purple-500"
+                          } ${isMarketSuspended(market?.gstatus) ? "opacity-40 cursor-not-allowed" : "hover:scale-105"}`}
+                        >
+                          <div className="p-2">
+                            <div className="w-8 h-8 rounded-full bg-purple-600 mx-auto mb-1 flex items-center justify-center text-xs font-bold text-white">
+                              P{idx + 1}
                             </div>
-                          )}
-                        </div>
-                      </button>
-                    </div>
-                  );
-                })}
+                            <div className="text-white text-xs font-bold mb-1 truncate">
+                              {market.nat}
+                            </div>
+                            <div className="text-yellow-400 text-sm font-bold">
+                              {market.b || market.bs}
+                            </div>
+                            {betOnThis && (
+                              <div className="text-white text-xs mt-1 bg-black/40 rounded px-1">
+                                ₹{betOnThis.stake}
+                              </div>
+                            )}
+                          </div>
+                        </button>
+                      </div>
+                    );
+                  })}
               </div>
             </div>
 
@@ -223,14 +248,16 @@ export default function PokerGame({ game }: PokerGameProps) {
                   <h4 className="text-purple-300 font-bold">Hand History</h4>
                 </div>
                 <div className="flex gap-2 overflow-x-auto pb-2">
-                  {resultData?.res?.slice(0, 15).map((r: any, i: number) => (
-                    <div
-                      key={i}
-                      className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-700 flex items-center justify-center font-bold text-xs text-white shadow-lg"
-                    >
-                      {r.win}
-                    </div>
-                  ))}
+                  {resultData?.res
+                    ?.slice(0, 15)
+                    .map((r: ResultType, i: number) => (
+                      <div
+                        key={i}
+                        className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-700 flex items-center justify-center font-bold text-xs text-white shadow-lg"
+                      >
+                        {r.win}
+                      </div>
+                    ))}
                 </div>
               </div>
             </Card>
@@ -241,18 +268,18 @@ export default function PokerGame({ game }: PokerGameProps) {
                 All Markets
               </h3>
               <div className="grid grid-cols-4 gap-3">
-                {gameData?.sub?.slice(9).map((market: any) => {
+                {gameData?.sub?.slice(9).map((market: MarketType) => {
                   const betOnThis = bets.find((b) => b.sid === market.sid);
                   return (
                     <button
                       key={market.sid}
                       onClick={() => handleMarketClick(market)}
-                      disabled={isMarketSuspended(market)}
+                      disabled={isMarketSuspended(market?.gstatus)}
                       className={`h-20 rounded-lg border-2 transition-all ${
                         betOnThis
                           ? "bg-gradient-to-br from-yellow-600 to-amber-700 border-yellow-400"
                           : "bg-slate-800 border-slate-600 hover:border-purple-500"
-                      } ${isMarketSuspended(market) ? "opacity-40" : "hover:scale-105"}`}
+                      } ${isMarketSuspended(market?.gstatus) ? "opacity-40" : "hover:scale-105"}`}
                     >
                       <div className="text-white text-xs font-semibold px-2">
                         {market.nat}

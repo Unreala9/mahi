@@ -7,6 +7,8 @@ import { Card } from "@/components/ui/card";
 import { ArrowLeft, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
+import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 const PANELS = [
   {
     id: "A",
@@ -55,6 +57,24 @@ const HISTORY = [
 
 export default function Card32EU() {
   const navigate = useNavigate();
+  // ✅ LIVE API INTEGRATION
+  const {
+    gameData,
+    result,
+    isConnected,
+    markets,
+    roundId,
+    placeBet,
+    placedBets,
+    clearBets,
+    totalStake,
+    potentialWin,
+    isSuspended,
+  } = useUniversalCasinoGame({
+    gameType: "card32eu",
+    gameName: "Card 32 EU",
+  });
+
   const [countdown, setCountdown] = useState(15);
   const [isRevealing, setIsRevealing] = useState(false);
   const [revealedCards, setRevealedCards] = useState({

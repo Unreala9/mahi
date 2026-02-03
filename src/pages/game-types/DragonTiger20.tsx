@@ -4,9 +4,10 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Clock } from "lucide-react";
+import { ArrowLeft, Clock, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { toast } from "@/hooks/use-toast";
+import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
+import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
 const HISTORY = [
@@ -24,18 +25,29 @@ const HISTORY = [
 
 export default function DragonTiger20() {
   const navigate = useNavigate();
+
+  // Use universal casino game hook with live API data
+  const {
+    gameData,
+    result,
+    isConnected,
+    markets,
+    roundId,
+    placeBet,
+    placedBets,
+    clearBets,
+    totalStake,
+    potentialWin,
+    isSuspended,
+  } = useUniversalCasinoGame({
+    gameType: "dt20",
+    gameName: "Dragon Tiger 20",
+  });
+
   const [countdown, setCountdown] = useState(20);
   const [isRevealing, setIsRevealing] = useState(false);
   const [dragonCard, setDragonCard] = useState("🂠");
   const [tigerCard, setTigerCard] = useState("🂠");
-  const [selectedChip, setSelectedChip] = useState(100);
-  const [bets, setBets] = useState({
-    dragon: 0,
-    tiger: 0,
-    tie: 0,
-    dragonSuited: 0,
-    tigerSuited: 0,
-  });
 
   useEffect(() => {
     const timer = setInterval(() => {

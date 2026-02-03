@@ -6,19 +6,19 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Clock, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { PlayingCard } from "@/components/casino/PlayingCard";
-import { BettingChip } from "@/components/casino/BettingChip";
 import { toast } from "@/hooks/use-toast";
-import { bettingService } from "@/services/bettingService";
+import { casinoBettingService } from "@/services/casinoBettingService";
+import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
+import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
 const CARD_SEQUENCE = [
-  { side: "A", card: { suit: "hearts" as const, value: "3" } },
-  { side: "B", card: { suit: "diamonds" as const, value: "7" } },
-  { side: "A", card: { suit: "clubs" as const, value: "9" } },
-  { side: "B", card: { suit: "spades" as const, value: "2" } },
-  { side: "A", card: { suit: "hearts" as const, value: "J" } },
+  { side: "A", card: "🂳" },
+  { side: "B", card: "🃇" },
+  { side: "A", card: "🃙" },
+  { side: "B", card: "🂢" },
+  { side: "A", card: "🂻" },
 ];
 
 const HISTORY = [
@@ -31,9 +31,27 @@ const HISTORY = [
 
 export default function AndarBaharJ() {
   const navigate = useNavigate();
+  // ✅ LIVE API INTEGRATION
+  const {
+    gameData,
+    result,
+    isConnected,
+    markets,
+    roundId,
+    placeBet,
+    placedBets,
+    clearBets,
+    totalStake,
+    potentialWin,
+    isSuspended,
+  } = useUniversalCasinoGame({
+    gameType: "abj",
+    gameName: "Andar Bahar J",
+  });
+
   const [countdown, setCountdown] = useState(20);
   const [isDealing, setIsDealing] = useState(false);
-  const [jokerCard] = useState({ suit: "diamonds" as const, value: "K" });
+  const [jokerCard] = useState("🃎");
   const [selectedChip, setSelectedChip] = useState(100);
   const [selectedSide, setSelectedSide] = useState<"andar" | "bahar" | null>(
     null,
@@ -65,6 +83,7 @@ export default function AndarBaharJ() {
   };
 
   const handlePlaceBets = async () => {
+    const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
     if (totalStake === 0) {
       toast({ title: "Please place a bet first", variant: "destructive" });
       return;
@@ -74,10 +93,10 @@ export default function AndarBaharJ() {
       const betPromises = [];
       if (bets.andar > 0) {
         betPromises.push(
-          bettingService.placeBet({
-            gameType: "CASINO",
+          casinoBettingService.placeCasinoBet({
             gameId: "abj",
             gameName: "Andar Bahar Joker",
+            roundId: "1",
             marketId: "andar",
             marketName: "Andar",
             selection: "Andar",
@@ -89,10 +108,10 @@ export default function AndarBaharJ() {
       }
       if (bets.bahar > 0) {
         betPromises.push(
-          bettingService.placeBet({
-            gameType: "CASINO",
+          casinoBettingService.placeCasinoBet({
             gameId: "abj",
             gameName: "Andar Bahar Joker",
+            roundId: "1",
             marketId: "bahar",
             marketName: "Bahar",
             selection: "Bahar",
@@ -104,10 +123,12 @@ export default function AndarBaharJ() {
       }
 
       await Promise.all(betPromises);
+      toast({ title: "Bets placed successfully!" });
       setBets({ andar: 0, bahar: 0 });
       setSelectedSide(null);
     } catch (error) {
       console.error("Failed to place bets:", error);
+      toast({ title: "Failed to place bets", variant: "destructive" });
     }
   };
 
@@ -176,12 +197,8 @@ export default function AndarBaharJ() {
                     <div className="absolute -inset-4 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 rounded-xl blur-lg opacity-75 animate-pulse"></div>
 
                     {/* Card */}
-                    <div className="relative">
-                      <PlayingCard
-                        suit={jokerCard.suit}
-                        value={jokerCard.value}
-                        size="xl"
-                      />
+                    <div className="relative w-40 h-56 bg-white rounded-2xl flex items-center justify-center text-8xl shadow-2xl border-4 border-purple-500">
+                      {jokerCard}
                     </div>
                   </div>
 
@@ -231,9 +248,9 @@ export default function AndarBaharJ() {
                         (card, idx) => (
                           <div
                             key={idx}
-                            className="w-10 h-14 bg-white rounded flex items-center justify-center text-xl border-2 border-blue-400"
+                            className="w-10 h-14 bg-white rounded flex items-center justify-center text-2xl border-2 border-blue-400"
                           >
-                            {card.card.value}
+                            {card.card}
                           </div>
                         ),
                       )}
@@ -279,9 +296,9 @@ export default function AndarBaharJ() {
                         (card, idx) => (
                           <div
                             key={idx}
-                            className="w-10 h-14 bg-white rounded flex items-center justify-center text-xl border-2 border-green-400"
+                            className="w-10 h-14 bg-white rounded flex items-center justify-center text-2xl border-2 border-green-400"
                           >
-                            {card.card.value}
+                            {card.card}
                           </div>
                         ),
                       )}
@@ -298,11 +315,9 @@ export default function AndarBaharJ() {
                 <div className="flex gap-2 overflow-x-auto pb-2">
                   {CARD_SEQUENCE.map((card, idx) => (
                     <div key={idx} className="flex-shrink-0">
-                      <PlayingCard
-                        suit={card.card.suit}
-                        value={card.card.value}
-                        size="md"
-                      />
+                      <div className="w-16 h-24 bg-white rounded flex items-center justify-center text-4xl border-4 border-purple-500">
+                        {card.card}
+                      </div>
                       <p
                         className={cn(
                           "text-center text-xs font-bold mt-1",
@@ -325,12 +340,18 @@ export default function AndarBaharJ() {
                     Chips:
                   </span>
                   {CHIP_VALUES.map((value) => (
-                    <BettingChip
+                    <button
                       key={value}
-                      value={value}
-                      selected={selectedChip === value}
                       onClick={() => setSelectedChip(value)}
-                    />
+                      className={cn(
+                        "w-14 h-14 rounded-full font-bold text-sm border-4 transition-all hover:scale-110",
+                        selectedChip === value
+                          ? "bg-yellow-600 border-yellow-400 text-white ring-2 ring-yellow-300"
+                          : "bg-gray-700 border-gray-600 text-gray-300",
+                      )}
+                    >
+                      ₹{value}
+                    </button>
                   ))}
                 </div>
 

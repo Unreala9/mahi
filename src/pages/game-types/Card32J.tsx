@@ -10,6 +10,8 @@ import { PlayingCard } from "@/components/casino/PlayingCard";
 import { BettingChip } from "@/components/casino/BettingChip";
 import { toast } from "@/hooks/use-toast";
 import { bettingService } from "@/services/bettingService";
+import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
+import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
@@ -59,6 +61,24 @@ const HISTORY = Array.from({ length: 12 }, () => {
 
 export default function Card32J() {
   const navigate = useNavigate();
+  // ✅ LIVE API INTEGRATION
+  const {
+    gameData,
+    result,
+    isConnected,
+    markets,
+    roundId,
+    placeBet,
+    placedBets,
+    clearBets,
+    totalStake,
+    potentialWin,
+    isSuspended,
+  } = useUniversalCasinoGame({
+    gameType: "card32j",
+    gameName: "Card 32 J",
+  });
+
   const [countdown, setCountdown] = useState(15);
   const [isRevealing, setIsRevealing] = useState(false);
   const [revealedCard] = useState({ suit: "hearts" as const, value: "7" });

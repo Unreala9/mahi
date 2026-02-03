@@ -11,6 +11,8 @@ import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { bettingService } from "@/services/bettingService";
 import { fetchCasinoResult } from "@/services/casino";
+import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
+import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 
 const HAND_RANKINGS = [
   { name: "Trail", desc: "Three of a kind", icon: "🔥" },
@@ -55,6 +57,24 @@ const HISTORY_HANDS = [
 
 export default function TeenPatti20() {
   const navigate = useNavigate();
+  // ✅ LIVE API INTEGRATION
+  const {
+    gameData,
+    result,
+    isConnected,
+    markets,
+    roundId,
+    placeBet,
+    placedBets,
+    clearBets,
+    totalStake,
+    potentialWin,
+    isSuspended,
+  } = useUniversalCasinoGame({
+    gameType: "teen20",
+    gameName: "Teen Patti 20",
+  });
+
   const [countdown, setCountdown] = useState(15);
   const [potAmount, setPotAmount] = useState(2400);
   const [bootAmount] = useState(100);

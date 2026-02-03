@@ -11,7 +11,7 @@ interface Game {
 }
 
 interface Lucky7EU2GameProps {
-  game: Game;
+  game?: Game;
 }
 
 interface Bet {
@@ -123,7 +123,8 @@ export default function Lucky7EU2Game({ game }: Lucky7EU2GameProps) {
   const [isFlipping, setIsFlipping] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
 
-  const { gameData, resultData } = useCasinoWebSocket(game.gmid);
+  const gmid = game?.gmid || "lucky7eu2";
+  const { gameData, resultData } = useCasinoWebSocket(gmid);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -150,17 +151,17 @@ export default function Lucky7EU2Game({ game }: Lucky7EU2GameProps) {
     };
     setBets([...bets, newBet]);
 
-    casinoBettingService.placeCasinoBet(
-      game.gmid,
-      gameData?.mid || "",
-      "",
-      zone,
-      selectedChip.toString(),
-      selectedChip,
-      "0",
-      "0",
-      "0",
-    );
+    void casinoBettingService.placeCasinoBet({
+      gameId: gmid,
+      gameName: gameData?.gtype || "Lucky 7",
+      roundId: gameData?.mid || "",
+      marketId: zone,
+      marketName: zone,
+      selection: zone,
+      odds: parseFloat(odds.split(":")[0]) || 1,
+      stake: selectedChip,
+      betType: "BACK",
+    });
 
     toast({
       title: "Bet Placed!",

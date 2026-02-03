@@ -11,7 +11,7 @@ interface Game {
 }
 
 interface DT202GameProps {
-  game: Game;
+  game?: Game;
 }
 
 interface Bet {
@@ -152,7 +152,8 @@ export default function DT202Game({ game }: DT202GameProps) {
     "D",
   ]);
 
-  const { gameData, resultData } = useCasinoWebSocket(game.gmid);
+  const gmid = game?.gmid || "dt202";
+  const { gameData, resultData } = useCasinoWebSocket(gmid);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -175,17 +176,17 @@ export default function DT202Game({ game }: DT202GameProps) {
     const newBet: Bet = { level, zone: zoneId, amount: selectedChip, odds };
     setBets([...bets, newBet]);
 
-    casinoBettingService.placeCasinoBet(
-      game.gmid,
-      gameData?.mid || "",
-      "",
-      zoneId,
-      selectedChip.toString(),
-      selectedChip,
-      "0",
-      "0",
-      "0",
-    );
+    void casinoBettingService.placeCasinoBet({
+      gameId: gmid,
+      gameName: gameData?.gtype || "Dragon Tiger",
+      roundId: gameData?.mid || "",
+      marketId: zoneId,
+      marketName: zoneId,
+      selection: zoneId,
+      odds: parseFloat(odds.split(":")[0]) || 1,
+      stake: selectedChip,
+      betType: "BACK",
+    });
 
     toast({
       title: "Premium Bet Placed!",
