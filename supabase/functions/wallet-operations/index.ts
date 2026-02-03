@@ -74,7 +74,7 @@ serve(async (req) => {
 
       // Get all completed transactions
       const { data: transactions, error: txError } = await serviceClient
-        .from("wallet_transactions")
+        .from("transactions")
         .select("amount, type")
         .eq("user_id", user.id)
         .eq("status", "completed");
@@ -125,7 +125,7 @@ serve(async (req) => {
       let balance = wallet?.balance ? Number(wallet.balance) : 0;
 
       const { data: transactions } = await serviceClient
-        .from("wallet_transactions")
+        .from("transactions")
         .select("amount, type")
         .eq("user_id", user.id)
         .eq("status", "completed");
@@ -158,13 +158,14 @@ serve(async (req) => {
 
       // Create deduction transaction
       const { data: transaction, error: txError } = await serviceClient
-        .from("wallet_transactions")
+        .from("transactions")
         .insert({
           user_id: user.id,
           type: "bet",
           amount: amount,
           status: "completed",
-          reference: reference || `bet_${Date.now()}`,
+          provider: "internal",
+          provider_ref_id: reference || `bet_${Date.now()}`,
           description: description || "Bet placed",
         })
         .select()
@@ -213,13 +214,14 @@ serve(async (req) => {
 
       // Create addition transaction
       const { data: transaction, error: txError } = await serviceClient
-        .from("wallet_transactions")
+        .from("transactions")
         .insert({
           user_id: user.id,
           type: type,
           amount: amount,
           status: "completed",
-          reference: reference || `${type}_${Date.now()}`,
+          provider: "internal",
+          provider_ref_id: reference || `${type}_${Date.now()}`,
           description: description || `${type} transaction`,
         })
         .select()
@@ -239,7 +241,7 @@ serve(async (req) => {
       let balance = wallet?.balance ? Number(wallet.balance) : 0;
 
       const { data: transactions } = await serviceClient
-        .from("wallet_transactions")
+        .from("transactions")
         .select("amount, type")
         .eq("user_id", user.id)
         .eq("status", "completed");
@@ -274,7 +276,7 @@ serve(async (req) => {
       const offset = parseInt(searchParams.get("offset") || "0");
 
       const { data: transactions, error: txError } = await serviceClient
-        .from("wallet_transactions")
+        .from("transactions")
         .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })

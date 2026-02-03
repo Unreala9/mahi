@@ -30,9 +30,7 @@ class BettingEngine {
   /**
    * Place a bet and deduct from wallet
    */
-  async placeBet(
-    bet: BetPlacement,
-  ): Promise<{
+  async placeBet(bet: BetPlacement): Promise<{
     success: boolean;
     betId?: string;
     balance?: number;
@@ -116,12 +114,13 @@ class BettingEngine {
       }
 
       // 6. Create transaction record
-      await supabase.from("wallet_transactions").insert({
+      await supabase.from("transactions").insert({
         user_id: bet.userId,
         type: "bet",
         amount: bet.stake,
         status: "completed",
-        reference: betRecord.provider_bet_id,
+        provider: "internal",
+        provider_ref_id: betRecord.provider_bet_id,
         description: `Bet on ${bet.selection} @ ${bet.odds}`,
       });
 
@@ -191,12 +190,13 @@ class BettingEngine {
           .eq("user_id", bet.user_id);
 
         // Create transaction record
-        await supabase.from("wallet_transactions").insert({
+        await supabase.from("transactions").insert({
           user_id: bet.user_id,
           type: "win",
           amount: result.payout,
           status: "completed",
-          reference: `win_${bet.provider_bet_id}`,
+          provider: "internal",
+          provider_ref_id: `win_${bet.provider_bet_id}`,
           description: `Won bet on ${bet.selection_name}`,
         });
 

@@ -2,9 +2,15 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
 
-export const SUPABASE_URL = "https://puqfxuisuqtnpgxfsyhe.supabase.co";
+// Read from environment variables (from .env file)
+export const SUPABASE_URL =
+  import.meta.env.VITE_SUPABASE_URL ||
+  "https://rgrmozpakutydlvxxngt.supabase.co";
 export const SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1cWZ4dWlzdXF0bnBneGZzeWhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxNjEwMzcsImV4cCI6MjA4MjczNzAzN30.eIakI_8NLPJoqVTueT-8pwYziIUdc3Vvury1pDeJguA";
+  import.meta.env.VITE_SUPABASE_ANON_KEY ||
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJncm1venBha3V0eWRsdnh4bmd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAwNjEzNTUsImV4cCI6MjA4NTYzNzM1NX0.-ZojFwp1lf2BhmfelGhfTc0-EDquUOSHUvrA5WiMqKI";
+
+console.log("[Supabase] Connecting to:", SUPABASE_URL);
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +22,7 @@ const createSupabaseClient = () =>
       storage: localStorage,
       persistSession: true,
       autoRefreshToken: true,
+      detectSessionInUrl: true,
     },
   });
 

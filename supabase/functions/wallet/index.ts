@@ -53,7 +53,7 @@ serve(async (req) => {
 
       // Then add/subtract from transactions
       const { data: transactions } = await serviceClient
-        .from("wallet_transactions")
+        .from("transactions")
         .select("amount, type")
         .eq("user_id", user.id)
         .eq("status", "completed");
@@ -73,13 +73,15 @@ serve(async (req) => {
     } else if (action === "deposit" && req.method === "POST") {
       const { amount } = await req.json();
       const { data, error } = await serviceClient
-        .from("wallet_transactions")
+        .from("transactions")
         .insert({
           user_id: user.id,
           type: "deposit",
           amount: amount,
-          status: "completed", // Auto-complete for test
-          reference: `dep_${Date.now()}`,
+          status: "completed",
+          provider: "internal",
+          provider_ref_id: `dep_${Date.now()}`,
+          description: "Deposit (test)",
         })
         .select()
         .single();
@@ -93,13 +95,15 @@ serve(async (req) => {
     } else if (action === "withdraw" && req.method === "POST") {
       const { amount } = await req.json();
       const { data, error } = await serviceClient
-        .from("wallet_transactions")
+        .from("transactions")
         .insert({
           user_id: user.id,
           type: "withdraw",
           amount: amount,
           status: "pending",
-          reference: `wd_${Date.now()}`,
+          provider: "upi",
+          provider_ref_id: `wd_${Date.now()}`,
+          description: "Withdrawal requested",
         })
         .select()
         .single();
@@ -112,7 +116,7 @@ serve(async (req) => {
       });
     } else if (action === "transactions") {
       const { data, error } = await supabaseClient
-        .from("wallet_transactions")
+        .from("transactions")
         .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
@@ -128,7 +132,7 @@ serve(async (req) => {
 
       // Check balance first
       const { data: transactions } = await serviceClient
-        .from("wallet_transactions")
+        .from("transactions")
         .select("amount, type")
         .eq("user_id", user.id)
         .eq("status", "completed");
@@ -153,13 +157,14 @@ serve(async (req) => {
       }
 
       const { data, error } = await serviceClient
-        .from("wallet_transactions")
+        .from("transactions")
         .insert({
           user_id: user.id,
           type: "bet",
           amount: amount,
           status: "completed",
-          reference: reference || `bet_${Date.now()}`,
+          provider: "internal",
+          provider_ref_id: reference || `bet_${Date.now()}`,
           description: description || "Bet placed",
         })
         .select()
@@ -183,13 +188,14 @@ serve(async (req) => {
       const { amount, reference, description } = await req.json();
 
       const { data, error } = await serviceClient
-        .from("wallet_transactions")
+        .from("transactions")
         .insert({
           user_id: user.id,
           type: "win",
           amount: amount,
           status: "completed",
-          reference: reference || `win_${Date.now()}`,
+          provider: "internal",
+          provider_ref_id: reference || `win_${Date.now()}`,
           description: description || "Bet won",
         })
         .select()

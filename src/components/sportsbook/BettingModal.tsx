@@ -24,7 +24,9 @@ export function BettingModal({
   initialSelection,
 }: BettingModalProps) {
   const [user, setUser] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<"cashout" | "placebet">("placebet");
+  const [activeTab, setActiveTab] = useState<"cashout" | "placebet">(
+    "placebet",
+  );
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -33,19 +35,19 @@ export function BettingModal({
   }, []);
 
   const {
-      betSlip,
-      placedBets,
-      // balance,
-      // exposure,
-      isPlacingBet,
-      // totalStake,
-      // totalPotentialProfit,
-      addToBetSlip,
-      // removeFromBetSlip,
-      updateStake,
-      clearBetSlip,
-      placeBets,
-      fetchMyBets,
+    betSlip,
+    placedBets,
+    // balance,
+    // exposure,
+    isPlacingBet,
+    // totalStake,
+    // totalPotentialProfit,
+    addToBetSlip,
+    // removeFromBetSlip,
+    updateStake,
+    clearBetSlip,
+    placeBets,
+    fetchMyBets,
   } = useBettingLogic(user?.id || "");
 
   // Current bet is the first item in the slip (Modal mode = single bet)
@@ -54,11 +56,11 @@ export function BettingModal({
   const handleOddsClick = (
     selection: string,
     betType: "back" | "lay",
-    odds: number
+    odds: number,
   ) => {
     // In modal mode, we only allow one bet at a time
     clearBetSlip();
-    
+
     // Add new bet
     // We don't have all IDs here, but we map what we have
     addToBetSlip(
@@ -70,7 +72,7 @@ export function BettingModal({
       selection,
       odds,
       betType.toUpperCase() as any,
-      undefined
+      undefined,
     );
   };
 
@@ -81,18 +83,17 @@ export function BettingModal({
       handleOddsClick(
         initialSelection.selection,
         initialSelection.betType,
-        initialSelection.odds
+        initialSelection.odds,
       );
     }
   }, [isOpen, initialSelection, match.gmid, match.name]);
 
   // Refresh bets when user is set
   useEffect(() => {
-      if(user?.id) {
-          fetchMyBets();
-      }
+    if (user?.id) {
+      fetchMyBets();
+    }
   }, [user?.id, fetchMyBets]);
-
 
   if (!isOpen) return null;
 
@@ -108,28 +109,29 @@ export function BettingModal({
   };
 
   const handleUpdateStake = (stake: number) => {
-      if (betSlip.length > 0) {
-          updateStake(0, stake);
-      }
+    if (betSlip.length > 0) {
+      updateStake(0, stake);
+    }
   };
 
   const handleIncrementStake = (amount: number) => {
-      if (betSlip.length > 0) {
-          updateStake(0, betSlip[0].stake + amount);
-      }
+    if (betSlip.length > 0) {
+      updateStake(0, betSlip[0].stake + amount);
+    }
   };
-  
+
   const handleUpdateOdds = (newOdds: number) => {
-     // NOTE: useBettingLogic currently doesn't support updating odds after addition in the public interface easily
-     // without re-adding. For now, we'll assume odds are fixed from the selection or minimal update.
-     // But wait, bettingLogicService.ts doesn't have updateOdds exposed!
-     // We can just ignore this for now or implement it if critical.
-     // User usually takes the market odds.
-     console.warn("Manual odds update not fully supported in this version");
+    // NOTE: useBettingLogic currently doesn't support updating odds after addition in the public interface easily
+    // without re-adding. For now, we'll assume odds are fixed from the selection or minimal update.
+    // But wait, bettingLogicService.ts doesn't have updateOdds exposed!
+    // We can just ignore this for now or implement it if critical.
+    // User usually takes the market odds.
+    console.warn("Manual odds update not fully supported in this version");
   };
 
-
-  const quickStakeAmounts = [1000, 2000, 5000, 10000, 20000, 25000, 50000, 75000, 90000, 95000];
+  const quickStakeAmounts = [
+    1000, 2000, 5000, 10000, 20000, 25000, 50000, 75000, 90000, 95000,
+  ];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -194,35 +196,46 @@ export function BettingModal({
                     <h3 className="text-xs font-bold text-foreground uppercase">
                       Match Odds
                     </h3>
-                    <span className="text-xs text-muted-foreground">Max: 1.00</span>
+                    <span className="text-xs text-muted-foreground">
+                      Max: 1.00
+                    </span>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs">
                       <thead>
                         <tr className="bg-muted/50 text-muted-foreground">
                           <th className="px-4 py-2 text-left font-semibold"></th>
-                          <th className="px-2 py-2 text-center font-semibold" colSpan={2}>
+                          <th
+                            className="px-2 py-2 text-center font-semibold"
+                            colSpan={2}
+                          >
                             Back
                           </th>
-                          <th className="px-2 py-2 text-center font-semibold" colSpan={2}>
+                          <th
+                            className="px-2 py-2 text-center font-semibold"
+                            colSpan={2}
+                          >
                             Lay
                           </th>
                         </tr>
                       </thead>
                       <tbody>
                         {matchOdds.map((runner: any, idx: number) => {
-                            const backOdds = runner?.odds?.find(
-                                (o: any) =>
-                                  o.otype === "back" ||
-                                  o.oname?.toLowerCase().includes("back")
-                              );
-                              const layOdds = runner?.odds?.find(
-                                (o: any) =>
-                                  o.otype === "lay" ||
-                                  o.oname?.toLowerCase().includes("lay")
-                              );
-    
-                              const runnerName = runner.nat || runner.runner_name || `Runner ${idx + 1}`;
+                          const backOdds = runner?.odds?.find(
+                            (o: any) =>
+                              o.otype === "back" ||
+                              o.oname?.toLowerCase().includes("back"),
+                          );
+                          const layOdds = runner?.odds?.find(
+                            (o: any) =>
+                              o.otype === "lay" ||
+                              o.oname?.toLowerCase().includes("lay"),
+                          );
+
+                          const runnerName =
+                            runner.nat ||
+                            runner.runner_name ||
+                            `Runner ${idx + 1}`;
 
                           return (
                             <tr
@@ -236,9 +249,15 @@ export function BettingModal({
                                 <button
                                   onClick={() =>
                                     backOdds?.odds &&
-                                    handleOddsClick(runnerName, "back", backOdds.odds)
+                                    handleOddsClick(
+                                      runnerName,
+                                      "back",
+                                      backOdds.odds,
+                                    )
                                   }
-                                  disabled={!backOdds?.odds || backOdds.odds <= 0}
+                                  disabled={
+                                    !backOdds?.odds || backOdds.odds <= 0
+                                  }
                                   className={`w-full px-3 py-2 rounded text-center font-bold transition-all ${
                                     backOdds?.odds && backOdds.odds > 0
                                       ? "bg-sky-300 hover:bg-sky-400 text-black cursor-pointer"
@@ -252,7 +271,9 @@ export function BettingModal({
                                   </div>
                                   {backOdds?.size && (
                                     <div className="text-[10px] opacity-80">
-                                      {backOdds.size}
+                                      {typeof backOdds.size === "object"
+                                        ? backOdds.size.size
+                                        : backOdds.size}
                                     </div>
                                   )}
                                 </button>
@@ -266,7 +287,11 @@ export function BettingModal({
                                 <button
                                   onClick={() =>
                                     layOdds?.odds &&
-                                    handleOddsClick(runnerName, "lay", layOdds.odds)
+                                    handleOddsClick(
+                                      runnerName,
+                                      "lay",
+                                      layOdds.odds,
+                                    )
                                   }
                                   disabled={!layOdds?.odds || layOdds.odds <= 0}
                                   className={`w-full px-3 py-2 rounded text-center font-bold transition-all ${
@@ -282,7 +307,9 @@ export function BettingModal({
                                   </div>
                                   {layOdds?.size && (
                                     <div className="text-[10px] opacity-80">
-                                      {layOdds.size}
+                                      {typeof layOdds.size === "object"
+                                        ? layOdds.size.size
+                                        : layOdds.size}
                                     </div>
                                   )}
                                 </button>
@@ -315,28 +342,37 @@ export function BettingModal({
                       <thead>
                         <tr className="bg-[#1a1a1a] text-gray-400">
                           <th className="px-4 py-2 text-left font-semibold"></th>
-                          <th className="px-2 py-2 text-center font-semibold" colSpan={2}>
+                          <th
+                            className="px-2 py-2 text-center font-semibold"
+                            colSpan={2}
+                          >
                             Back
                           </th>
-                          <th className="px-2 py-2 text-center font-semibold" colSpan={2}>
+                          <th
+                            className="px-2 py-2 text-center font-semibold"
+                            colSpan={2}
+                          >
                             Lay
                           </th>
                         </tr>
                       </thead>
                       <tbody>
                         {tiedMatchOdds.map((runner: any, idx: number) => {
-                           const backOdds = runner?.odds?.find(
+                          const backOdds = runner?.odds?.find(
                             (o: any) =>
                               o.otype === "back" ||
-                              o.oname?.toLowerCase().includes("back")
+                              o.oname?.toLowerCase().includes("back"),
                           );
                           const layOdds = runner?.odds?.find(
                             (o: any) =>
                               o.otype === "lay" ||
-                              o.oname?.toLowerCase().includes("lay")
+                              o.oname?.toLowerCase().includes("lay"),
                           );
 
-                          const runnerName = runner.nat || runner.runner_name || (idx === 0 ? "Yes" : "No");
+                          const runnerName =
+                            runner.nat ||
+                            runner.runner_name ||
+                            (idx === 0 ? "Yes" : "No");
 
                           return (
                             <tr
@@ -350,9 +386,15 @@ export function BettingModal({
                                 <button
                                   onClick={() =>
                                     backOdds?.odds &&
-                                    handleOddsClick(runnerName, "back", backOdds.odds)
+                                    handleOddsClick(
+                                      runnerName,
+                                      "back",
+                                      backOdds.odds,
+                                    )
                                   }
-                                  disabled={!backOdds?.odds || backOdds.odds <= 0}
+                                  disabled={
+                                    !backOdds?.odds || backOdds.odds <= 0
+                                  }
                                   className={`w-full px-3 py-2 rounded text-center font-bold transition-all ${
                                     backOdds?.odds && backOdds.odds > 0
                                       ? "bg-[#72bbef] hover:bg-[#5aa7dc] text-black cursor-pointer"
@@ -375,7 +417,11 @@ export function BettingModal({
                                 <button
                                   onClick={() =>
                                     layOdds?.odds &&
-                                    handleOddsClick(runnerName, "lay", layOdds.odds)
+                                    handleOddsClick(
+                                      runnerName,
+                                      "lay",
+                                      layOdds.odds,
+                                    )
                                   }
                                   disabled={!layOdds?.odds || layOdds.odds <= 0}
                                   className={`w-full px-3 py-2 rounded text-center font-bold transition-all ${
@@ -483,14 +529,10 @@ export function BettingModal({
                       />
                       {/* Note: Odds updates are disabled for now as useBettingLogic controls them */}
                       <div className="flex flex-col">
-                        <button
-                          className="text-gray-400 hover:text-white opacity-50 cursor-not-allowed"
-                        >
+                        <button className="text-gray-400 hover:text-white opacity-50 cursor-not-allowed">
                           <ChevronUp className="h-3 w-3" />
                         </button>
-                        <button
-                          className="text-gray-400 hover:text-white opacity-50 cursor-not-allowed"
-                        >
+                        <button className="text-gray-400 hover:text-white opacity-50 cursor-not-allowed">
                           <ChevronDown className="h-3 w-3" />
                         </button>
                       </div>
@@ -513,17 +555,13 @@ export function BettingModal({
                       />
                       <div className="flex flex-col">
                         <button
-                          onClick={() =>
-                            handleIncrementStake(100)
-                          }
+                          onClick={() => handleIncrementStake(100)}
                           className="text-gray-400 hover:text-white"
                         >
                           <ChevronUp className="h-3 w-3" />
                         </button>
                         <button
-                           onClick={() =>
-                             handleIncrementStake(-100)
-                           }
+                          onClick={() => handleIncrementStake(-100)}
                           className="text-gray-400 hover:text-white"
                         >
                           <ChevronDown className="h-3 w-3" />
@@ -553,9 +591,7 @@ export function BettingModal({
                     >
                       clear
                     </button>
-                    <button
-                      className="bg-[#38b2ac] hover:bg-[#319795] text-white px-4 py-2 rounded text-xs font-bold transition-colors"
-                    >
+                    <button className="bg-[#38b2ac] hover:bg-[#319795] text-white px-4 py-2 rounded text-xs font-bold transition-colors">
                       Edit
                     </button>
                     <button
@@ -577,7 +613,9 @@ export function BettingModal({
 
                   {/* My Bet */}
                   <div>
-                    <h4 className="text-xs font-bold text-white mb-2">My Bet</h4>
+                    <h4 className="text-xs font-bold text-white mb-2">
+                      My Bet
+                    </h4>
                     <div className="bg-[#2a2a2a] rounded overflow-hidden">
                       <table className="w-full text-xs">
                         <thead>

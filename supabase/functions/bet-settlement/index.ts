@@ -78,8 +78,10 @@ serve(async (req) => {
       if (bet.bet_on === "fancy" && settlementData.score !== undefined) {
         const targetScore = Number(bet.odds);
         const actualScore = Number(settlementData.score);
-        const isYes = bet.selection.toLowerCase() === "yes" || bet.bet_type === "BACK";
-        const isNo = bet.selection.toLowerCase() === "no" || bet.bet_type === "LAY";
+        const isYes =
+          bet.selection.toLowerCase() === "yes" || bet.bet_type === "BACK";
+        const isNo =
+          bet.selection.toLowerCase() === "no" || bet.bet_type === "LAY";
 
         let won = false;
         if (isYes) {
@@ -104,7 +106,8 @@ serve(async (req) => {
         } else {
           if (bet.bet_type === "BACK") {
             payout = Number(bet.stake) * Number(bet.odds);
-          } else { // LAY Win (Backer lost)
+          } else {
+            // LAY Win (Backer lost)
             // Lay bet winner gets their stake back + profit (Stake of backer)
             // Wait, for Lay:
             // Liability was (Odds-1)*Stake.
@@ -119,7 +122,7 @@ serve(async (req) => {
             // No.
             // Example: Lay $100 @ 1.5. Liability $50.
             // Win: Keep $50 (Liability release) + Win $100 (Stake). Total Wallet Credit logic needs to match what was deducted.
-            // If we deducted Exposure ($50), and we CREDIT Profit ($100), the net is +$50. 
+            // If we deducted Exposure ($50), and we CREDIT Profit ($100), the net is +$50.
             // But usually we credit (Exposure + Profit).
             // Let's assume Payout = Profit + Exposure.
             // Profit = Stake. Exposure = (Odds-1)*Stake.
@@ -162,13 +165,14 @@ serve(async (req) => {
         // Lay Win: Profit = Stake.
 
         const { data: newTransaction, error: txError } = await supabaseClient
-          .from("wallet_transactions")
+          .from("transactions")
           .insert({
             user_id: bet.user_id,
             type: finalStatus === "void" ? "bonus" : "win",
             amount: payout,
             status: "completed",
-            reference: bet.provider_bet_id,
+            provider: "internal",
+            provider_ref_id: bet.provider_bet_id,
             description:
               finalStatus === "void"
                 ? `Refund for voided bet ${bet.provider_bet_id}`
@@ -177,13 +181,14 @@ serve(async (req) => {
           .select()
           .single();
 
-        if (txError) throw new Error(`Failed to credit wallet: ${txError.message}`);
+        if (txError)
+          throw new Error(`Failed to credit wallet: ${txError.message}`);
         transaction = newTransaction;
 
         // RPC to add balance atomically
         await supabaseClient.rpc("increment_balance", {
           user_id: bet.user_id,
-          amount: payout
+          amount: payout,
         });
       }
 
@@ -191,7 +196,9 @@ serve(async (req) => {
       if (bet.users?.parentid) {
         // In a real implementation, we would toggle this recursively.
         // For now, we acknowledge the Blueprint requirement.
-        console.log(`[Partnership] User ${bet.user_id} has parent ${bet.users.parentid}. Share: ${bet.users.partnership_share}%`);
+        console.log(
+          `[Partnership] User ${bet.user_id} has parent ${bet.users.parentid}. Share: ${bet.users.partnership_share}%`,
+        );
         // Future: Calculate share and credit/debit parent wallet
       }
 

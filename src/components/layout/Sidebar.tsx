@@ -83,23 +83,29 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         console.error("Error fetching profile:", profileError);
       }
 
-      // Fetch user role
-      const { data: roleData, error: roleError } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId)
-        .maybeSingle();
+      // Try to fetch user role (table may not exist in all databases)
+      let userRole = "player"; // Default role
+      try {
+        const { data: roleData, error: roleError } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId)
+          .maybeSingle();
 
-      if (roleError) {
-        console.error("Error fetching role:", roleError);
+        if (!roleError && roleData) {
+          userRole = roleData.role;
+        }
+      } catch (roleErr) {
+        // Silently handle if user_roles table doesn't exist
+        console.log("user_roles table not found, using default role");
       }
 
       if (profileData) {
         setProfile({
           ...profileData,
-          role: roleData?.role || "player",
+          role: userRole,
         });
-        setIsAdmin(roleData?.role === "admin");
+        setIsAdmin(userRole === "admin");
       }
     } catch (error) {
       console.error("Error fetching profile/role:", error);

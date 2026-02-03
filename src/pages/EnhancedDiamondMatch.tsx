@@ -28,10 +28,19 @@ import type {
   BetType,
 } from "@/types/sports-betting";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function EnhancedDiamondMatch() {
   const { gmid, sid } = useParams();
   const gmidNum = useMemo(() => (gmid ? parseInt(gmid, 10) : null), [gmid]);
+  const [user, setUser] = useState<any>(null);
+
+  // Get authenticated user
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+  }, []);
 
   // Resolve sid from all matches if not provided in URL
   const { data: allMatches } = useAllMatches();
@@ -94,7 +103,7 @@ export default function EnhancedDiamondMatch() {
     updateStake,
     clearBetSlip,
     placeBets,
-  } = useBettingLogic("user123"); // TODO: Get real user ID
+  } = useBettingLogic(user?.id || undefined, gmidNum || undefined);
 
   // Subscribe to real-time updates
   useEffect(() => {
@@ -360,7 +369,6 @@ export default function EnhancedDiamondMatch() {
                 onUpdateStake={updateStake}
                 onPlaceBets={placeBets}
                 onClear={clearBetSlip}
-                placedBets={placedBets}
               />
             </div>
           </div>
