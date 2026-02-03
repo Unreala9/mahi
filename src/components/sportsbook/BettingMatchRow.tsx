@@ -25,11 +25,14 @@ export function BettingMatchRow({
 }: BettingMatchRowProps) {
   const [expanded, setExpanded] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalInitialSelection, setModalInitialSelection] = useState<{
-    selection: string;
-    betType: "back" | "lay";
-    odds: number;
-  } | undefined>(undefined);
+  const [modalInitialSelection, setModalInitialSelection] = useState<
+    | {
+        selection: string;
+        betType: "back" | "lay";
+        odds: number;
+      }
+    | undefined
+  >(undefined);
 
   // Always fetch odds for all matches to display them in the table
   const {
@@ -69,12 +72,11 @@ export function BettingMatchRow({
     ];
   }
 
-
   const handleOddsClick = (
     e: React.MouseEvent,
     selection: string,
     betType: "back" | "lay",
-    odds: number
+    odds: number,
   ) => {
     e.stopPropagation(); // Prevent row expansion
     setModalInitialSelection({ selection, betType, odds });
@@ -167,7 +169,12 @@ export function BettingMatchRow({
               const hasLayOdds =
                 layOdds && layOdds.odds !== undefined && layOdds.odds !== null;
 
-              const runnerName = runner?.nat || runner?.runner_name || matchOdds[0]?.nat || matchOdds[0]?.runner_name || "Team 1";
+              const runnerName =
+                runner?.nat ||
+                runner?.runner_name ||
+                matchOdds[0]?.nat ||
+                matchOdds[0]?.runner_name ||
+                "Team 1";
 
               return (
                 <div key={0} className={columnClass}>
@@ -194,7 +201,9 @@ export function BettingMatchRow({
                       </div>
                       {hasBackOdds && backOdds.odds > 0 && backOdds?.size && (
                         <div className="text-[9px] leading-tight mt-0.5">
-                          {backOdds.size}
+                          {typeof backOdds.size === "object"
+                            ? backOdds.size.size
+                            : backOdds.size}
                         </div>
                       )}
                     </div>
@@ -220,7 +229,9 @@ export function BettingMatchRow({
                       </div>
                       {hasLayOdds && layOdds.odds > 0 && layOdds?.size && (
                         <div className="text-[9px] leading-tight mt-0.5">
-                          {layOdds.size}
+                          {typeof layOdds.size === "object"
+                            ? layOdds.size.size
+                            : layOdds.size}
                         </div>
                       )}
                     </div>
@@ -266,7 +277,12 @@ export function BettingMatchRow({
               const hasLayOdds =
                 layOdds && layOdds.odds !== undefined && layOdds.odds !== null;
 
-              const runnerName = runner?.nat || runner?.runner_name || matchOdds[1]?.nat || matchOdds[1]?.runner_name || "Draw";
+              const runnerName =
+                runner?.nat ||
+                runner?.runner_name ||
+                matchOdds[1]?.nat ||
+                matchOdds[1]?.runner_name ||
+                "Draw";
 
               return (
                 <div key={1} className={columnClass}>
@@ -293,7 +309,9 @@ export function BettingMatchRow({
                       </div>
                       {hasBackOdds && backOdds.odds > 0 && backOdds?.size && (
                         <div className="text-[9px] leading-tight mt-0.5">
-                          {backOdds.size}
+                          {typeof backOdds.size === "object"
+                            ? backOdds.size.size
+                            : backOdds.size}
                         </div>
                       )}
                     </div>
@@ -319,7 +337,9 @@ export function BettingMatchRow({
                       </div>
                       {hasLayOdds && layOdds.odds > 0 && layOdds?.size && (
                         <div className="text-[9px] leading-tight mt-0.5">
-                          {layOdds.size}
+                          {typeof layOdds.size === "object"
+                            ? layOdds.size.size
+                            : layOdds.size}
                         </div>
                       )}
                     </div>
@@ -364,7 +384,12 @@ export function BettingMatchRow({
               const hasLayOdds =
                 layOdds && layOdds.odds !== undefined && layOdds.odds !== null;
 
-              const runnerName = runner?.nat || runner?.runner_name || matchOdds[2]?.nat || matchOdds[2]?.runner_name || "Team 2";
+              const runnerName =
+                runner?.nat ||
+                runner?.runner_name ||
+                matchOdds[2]?.nat ||
+                matchOdds[2]?.runner_name ||
+                "Team 2";
 
               return (
                 <div key={2} className={columnClass}>
@@ -391,7 +416,9 @@ export function BettingMatchRow({
                       </div>
                       {hasBackOdds && backOdds.odds > 0 && backOdds?.size && (
                         <div className="text-[9px] leading-tight mt-0.5">
-                          {backOdds.size}
+                          {typeof backOdds.size === "object"
+                            ? backOdds.size.size
+                            : backOdds.size}
                         </div>
                       )}
                     </div>
@@ -417,7 +444,9 @@ export function BettingMatchRow({
                       </div>
                       {hasLayOdds && layOdds.odds > 0 && layOdds?.size && (
                         <div className="text-[9px] leading-tight mt-0.5">
-                          {layOdds.size}
+                          {typeof layOdds.size === "object"
+                            ? layOdds.size.size
+                            : layOdds.size}
                         </div>
                       )}
                     </div>

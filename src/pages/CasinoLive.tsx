@@ -94,6 +94,8 @@ export default function CasinoLive() {
 
   const filteredGames = gamesByCategory[activeCategory] || [];
 
+  const [visibleCount, setVisibleCount] = useState(24);
+
   const scrollTabs = (direction: "left" | "right") => {
     if (scrollContainerRef.current) {
       const scrollAmount = 300;
@@ -151,7 +153,10 @@ export default function CasinoLive() {
               {CASINO_CATEGORIES.map((category) => (
                 <button
                   key={category.id}
-                  onClick={() => setActiveCategory(category.id)}
+                  onClick={() => {
+                    setActiveCategory(category.id);
+                    setVisibleCount(24);
+                  }}
                   className={`px-6 py-2.5 rounded-md font-semibold text-sm whitespace-nowrap transition-all ${
                     activeCategory === category.id
                       ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30"
@@ -187,7 +192,22 @@ export default function CasinoLive() {
           </p>
         </div>
       ) : (
-        <LiveCasinoGrid games={filteredGames} maxDisplay={24} />
+        <>
+          <LiveCasinoGrid games={filteredGames} maxDisplay={visibleCount} />
+
+          {filteredGames.length > visibleCount && (
+            <div className="flex justify-center mt-12 pb-12">
+              <Button
+                variant="outline"
+                onClick={() => setVisibleCount((prev) => prev + 24)}
+                className="min-w-[220px] bg-slate-800/50 border-white/10 hover:bg-blue-600 hover:text-white transition-all uppercase font-bold tracking-wider"
+              >
+                Show More Games ({filteredGames.length - visibleCount}{" "}
+                remaining)
+              </Button>
+            </div>
+          )}
+        </>
       )}
     </MainLayout>
   );
