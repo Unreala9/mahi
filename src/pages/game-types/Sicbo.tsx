@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils";
 import { BettingChip } from "@/components/casino/BettingChip";
 import { toast } from "@/hooks/use-toast";
 import { bettingService } from "@/services/bettingService";
+import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
+import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
@@ -35,6 +37,24 @@ const HISTORY = Array.from({ length: 10 }, () => [
 
 export default function Sicbo() {
   const navigate = useNavigate();
+  // ✅ LIVE API INTEGRATION
+  const {
+    gameData,
+    result,
+    isConnected,
+    markets,
+    roundId,
+    placeBet,
+    placedBets,
+    clearBets,
+    totalStake,
+    potentialWin,
+    isSuspended,
+  } = useUniversalCasinoGame({
+    gameType: "sicbo",
+    gameName: "Sicbo",
+  });
+
   const [countdown, setCountdown] = useState(30);
   const [isRolling, setIsRolling] = useState(false);
   const [selectedChip, setSelectedChip] = useState(100);
@@ -62,15 +82,6 @@ export default function Sicbo() {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
-
-  const placeBet = (zoneId: string) => {
-    setBets((prev) => ({
-      ...prev,
-      [zoneId]: (prev[zoneId] || 0) + selectedChip,
-    }));
-  };
-
-  const clearBets = () => setBets({});
 
   const handlePlaceBets = async () => {
     const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
@@ -108,12 +119,6 @@ export default function Sicbo() {
       console.error("Failed to place bets:", error);
     }
   };
-
-  const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
-  const potentialWin = Object.entries(bets).reduce((sum, [zoneId, stake]) => {
-    const zone = BETTING_ZONES.find((z) => z.id === zoneId);
-    return sum + (zone ? stake * zone.odds : 0);
-  }, 0);
 
   return (
     <MainLayout>

@@ -4,10 +4,12 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Clock, HelpCircle } from "lucide-react";
+import { ArrowLeft, Clock, HelpCircle, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PlayingCard } from "@/components/casino/PlayingCard";
 import { BettingChip } from "@/components/casino/BettingChip";
+import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
+import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
@@ -53,22 +55,6 @@ export default function Baccarat() {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
-
-  const placeBet = (betType: keyof typeof bets) => {
-    setBets((prev) => ({ ...prev, [betType]: prev[betType] + selectedChip }));
-  };
-
-  const clearBets = () => {
-    setBets({ player: 0, banker: 0, tie: 0, playerPair: 0, bankerPair: 0 });
-  };
-
-  const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
-  const potentialWin =
-    bets.player * 2 +
-    bets.banker * 1.95 +
-    bets.tie * 9 +
-    bets.playerPair * 12 +
-    bets.bankerPair * 12;
 
   return (
     <MainLayout>

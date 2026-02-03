@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils";
 import { BettingChip } from "@/components/casino/BettingChip";
 import { toast } from "@/hooks/use-toast";
 import { bettingService } from "@/services/bettingService";
+import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
+import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
@@ -107,6 +109,24 @@ const SPECIAL_COMBOS = [
 
 export default function Worli3() {
   const navigate = useNavigate();
+  // ✅ LIVE API INTEGRATION
+  const {
+    gameData,
+    result,
+    isConnected,
+    markets,
+    roundId,
+    placeBet,
+    placedBets,
+    clearBets,
+    totalStake,
+    potentialWin,
+    isSuspended,
+  } = useUniversalCasinoGame({
+    gameType: "worli3",
+    gameName: "Worli 3",
+  });
+
   const [countdown, setCountdown] = useState(20);
   const [isDrawing, setIsDrawing] = useState(false);
   const [drawnNumber, setDrawnNumber] = useState<string | null>(null);
@@ -131,15 +151,6 @@ export default function Worli3() {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
-
-  const placeBet = (panelId: string) => {
-    setBets((prev) => ({
-      ...prev,
-      [panelId]: (prev[panelId] || 0) + selectedChip,
-    }));
-  };
-
-  const clearBets = () => setBets({});
 
   const quickSelect = (type: string) => {
     const newBets: Record<string, number> = {};
@@ -197,14 +208,6 @@ export default function Worli3() {
       console.error("Failed to place bets:", error);
     }
   };
-
-  const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
-  const potentialWin = Object.entries(bets).reduce((sum, [panelId, stake]) => {
-    const panel = [...NUMBER_PANELS, ...COMBO_PANELS, ...SPECIAL_COMBOS].find(
-      (p) => p.id === panelId,
-    );
-    return sum + (panel ? stake * panel.odds : 0);
-  }, 0);
 
   return (
     <MainLayout>

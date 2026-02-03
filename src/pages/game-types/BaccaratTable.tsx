@@ -10,6 +10,8 @@ import { PlayingCard } from "@/components/casino/PlayingCard";
 import { BettingChip } from "@/components/casino/BettingChip";
 import { toast } from "@/hooks/use-toast";
 import { bettingService } from "@/services/bettingService";
+import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
+import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
@@ -20,6 +22,24 @@ const BEAD_ROAD = Array.from({ length: 30 }, () => {
 
 export default function BaccaratTable() {
   const navigate = useNavigate();
+  // ✅ LIVE API INTEGRATION
+  const {
+    gameData,
+    result,
+    isConnected,
+    markets,
+    roundId,
+    placeBet,
+    placedBets,
+    clearBets,
+    totalStake,
+    potentialWin,
+    isSuspended,
+  } = useUniversalCasinoGame({
+    gameType: "baccarat",
+    gameName: "Baccarat Table",
+  });
+
   const [countdown, setCountdown] = useState(25);
   const [isDealing, setIsDealing] = useState(false);
   const [selectedChip, setSelectedChip] = useState(100);
@@ -46,16 +66,9 @@ export default function BaccaratTable() {
     return () => clearInterval(timer);
   }, []);
 
-  const placeBet = (betType: keyof typeof bets) => {
-    setBets((prev) => ({ ...prev, [betType]: prev[betType] + selectedChip }));
-  };
-
-  const clearBets = () =>
-    setBets({ player: 0, banker: 0, tie: 0, playerPair: 0, bankerPair: 0 });
-
   const handlePlaceBets = async () => {
-    const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
-    if (totalStake === 0) {
+    const totalStakeAmount = Object.values(bets).reduce((a, b) => a + b, 0);
+    if (totalStakeAmount === 0) {
       toast({ title: "Please place a bet first", variant: "destructive" });
       return;
     }
@@ -95,14 +108,6 @@ export default function BaccaratTable() {
       console.error("Failed to place bets:", error);
     }
   };
-
-  const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
-  const potentialWin =
-    bets.player * 2 +
-    bets.banker * 1.95 +
-    bets.tie * 9 +
-    bets.playerPair * 12 +
-    bets.bankerPair * 12;
 
   return (
     <MainLayout>

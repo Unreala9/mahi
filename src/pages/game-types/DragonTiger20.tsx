@@ -4,9 +4,12 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Clock } from "lucide-react";
+import { ArrowLeft, Clock, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import { bettingService } from "@/services/bettingService";
+import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
+import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
 const HISTORY = [
@@ -24,6 +27,25 @@ const HISTORY = [
 
 export default function DragonTiger20() {
   const navigate = useNavigate();
+
+  // Use universal casino game hook with live API data
+  const {
+    gameData,
+    result,
+    isConnected,
+    markets,
+    roundId,
+    placeBet,
+    placedBets,
+    clearBets,
+    totalStake,
+    potentialWin,
+    isSuspended,
+  } = useUniversalCasinoGame({
+    gameType: "dt20",
+    gameName: "Dragon Tiger 20",
+  });
+
   const [countdown, setCountdown] = useState(20);
   const [isRevealing, setIsRevealing] = useState(false);
   const [dragonCard, setDragonCard] = useState("🂠");
@@ -57,16 +79,11 @@ export default function DragonTiger20() {
     return () => clearInterval(timer);
   }, []);
 
-  const placeBet = (betType: keyof typeof bets) => {
+  const placeBetLocal = (betType: keyof typeof bets) => {
     setBets((prev) => ({ ...prev, [betType]: prev[betType] + selectedChip }));
   };
 
-  const clearBets = () => {
-    setBets({ dragon: 0, tiger: 0, tie: 0, dragonSuited: 0, tigerSuited: 0 });
-  };
-
   const handlePlaceBets = async () => {
-    const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
     if (totalStake === 0) {
       toast({ title: "Please place a bet first", variant: "destructive" });
       return;
@@ -156,8 +173,6 @@ export default function DragonTiger20() {
       console.error("Failed to place bets:", error);
     }
   };
-
-  const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
 
   return (
     <MainLayout>
@@ -263,7 +278,7 @@ export default function DragonTiger20() {
 
                   {/* Bet Button */}
                   <button
-                    onClick={() => placeBet("dragon")}
+                    onClick={() => placeBetLocal("dragon")}
                     disabled={countdown <= 0}
                     className="w-full mt-6 bg-red-600 hover:bg-red-700 text-white font-bold text-xl py-6 rounded-lg transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed border-2 border-red-400"
                   >
@@ -275,7 +290,7 @@ export default function DragonTiger20() {
 
                   {/* Suited Bet */}
                   <button
-                    onClick={() => placeBet("dragonSuited")}
+                    onClick={() => placeBetLocal("dragonSuited")}
                     disabled={countdown <= 0}
                     className="w-full mt-3 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -309,7 +324,7 @@ export default function DragonTiger20() {
 
                   {/* Bet Button */}
                   <button
-                    onClick={() => placeBet("tiger")}
+                    onClick={() => placeBetLocal("tiger")}
                     disabled={countdown <= 0}
                     className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xl py-6 rounded-lg transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed border-2 border-blue-400"
                   >
@@ -321,7 +336,7 @@ export default function DragonTiger20() {
 
                   {/* Suited Bet */}
                   <button
-                    onClick={() => placeBet("tigerSuited")}
+                    onClick={() => placeBetLocal("tigerSuited")}
                     disabled={countdown <= 0}
                     className="w-full mt-3 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -338,7 +353,7 @@ export default function DragonTiger20() {
               {/* Tie Bet (Center) */}
               <Card className="bg-gradient-to-r from-yellow-900/30 via-yellow-800/30 to-yellow-900/30 border-yellow-600/50 p-4 mb-4">
                 <button
-                  onClick={() => placeBet("tie")}
+                  onClick={() => placeBetLocal("tie")}
                   disabled={countdown <= 0}
                   className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold text-xl py-4 rounded-lg transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed border-2 border-yellow-400"
                 >

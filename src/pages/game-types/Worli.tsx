@@ -7,6 +7,8 @@ import { Card } from "@/components/ui/card";
 import { ArrowLeft, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BettingChip } from "@/components/casino/BettingChip";
+import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
+import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
@@ -63,6 +65,24 @@ const HISTORY = [
 
 export default function Worli() {
   const navigate = useNavigate();
+  // ✅ LIVE API INTEGRATION
+  const {
+    gameData,
+    result,
+    isConnected,
+    markets,
+    roundId,
+    placeBet,
+    placedBets,
+    clearBets,
+    totalStake,
+    potentialWin,
+    isSuspended,
+  } = useUniversalCasinoGame({
+    gameType: "worli",
+    gameName: "Worli",
+  });
+
   const [countdown, setCountdown] = useState(20);
   const [currentRound, setCurrentRound] = useState("#4583");
   const [isDrawing, setIsDrawing] = useState(false);
@@ -88,19 +108,6 @@ export default function Worli() {
     }, 1000);
     return () => clearInterval(timer);
   }, [currentRound]);
-
-  const placeBet = (panelId: string) => {
-    setBets((prev) => ({
-      ...prev,
-      [panelId]: (prev[panelId] || 0) + selectedChip,
-    }));
-  };
-
-  const clearBets = () => {
-    setBets({});
-  };
-
-  const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
 
   return (
     <MainLayout>

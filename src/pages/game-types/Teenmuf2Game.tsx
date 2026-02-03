@@ -7,13 +7,14 @@ import { useToast } from "@/hooks/use-toast";
 import type { CasinoGame } from "@/types/casino";
 
 interface Teenmuf2GameProps {
-  game: CasinoGame;
+  game?: CasinoGame;
 }
 
 export default function Teenmuf2Game({ game }: Teenmuf2GameProps) {
+  const gmid = game?.gmid || "teenmuf2";
   const [bets, setBets] = useState<any[]>([]);
   const [selectedChip, setSelectedChip] = useState<number>(100);
-  const { gameData, resultData } = useCasinoWebSocket(game.gmid);
+  const { gameData, resultData } = useCasinoWebSocket(gmid);
   const { toast } = useToast();
 
   const handlePlaceBet = async (selection: string, odds: number) => {
@@ -35,8 +36,8 @@ export default function Teenmuf2Game({ game }: Teenmuf2GameProps) {
     try {
       for (const bet of bets) {
         await casinoBettingService.placeCasinoBet({
-          gameId: game.gmid,
-          gameName: game.gname || "Teen Muflis 2",
+          gameId: gmid,
+          gameName: game?.gname || "Teen Muflis 2",
           roundId: gameData?.mid?.toString() || "",
           marketId: bet.selection,
           marketName: bet.selection,

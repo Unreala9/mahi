@@ -39,47 +39,25 @@ import Worli3 from "./pages/game-types/Worli3";
 
 // Additional Game Imports
 import Aaa2Game from "./pages/game-types/Aaa2Game";
-import AbjGame from "./pages/game-types/AbjGame";
-import AndarBaharGame from "./pages/game-types/AndarBaharGame";
-import AndarBaharVariantGame from "./pages/game-types/AndarBaharVariantGame";
+import AndarBahar3Game from "./pages/game-types/AndarBahar3Game";
+import AndarBahar4Game from "./pages/game-types/AndarBahar4Game";
 import Baccarat2Game from "./pages/game-types/Baccarat2Game";
-import BaccaratGame from "./pages/game-types/BaccaratGame";
-import BaccaratVariantGame from "./pages/game-types/BaccaratVariantGame";
-import BallByBallGame from "./pages/game-types/BallByBallGame";
+import CricketMatch20Game from "./pages/game-types/CricketMatch20Game";
 import BeachRouletteGame from "./pages/game-types/BeachRouletteGame";
-import BollywoodGameSuite from "./pages/game-types/BollywoodGameSuite";
 import Btable2Game from "./pages/game-types/Btable2Game";
-import Card32VariantGame from "./pages/game-types/Card32VariantGame";
-import CasinoWarGame from "./pages/game-types/CasinoWarGame";
-import CricketLine2Game from "./pages/game-types/CricketLine2Game";
-import CricketLineGame from "./pages/game-types/CricketLineGame";
-import CricketMatchMeterGame from "./pages/game-types/CricketMatchMeterGame";
 import CricketMeter1Game from "./pages/game-types/CricketMeter1Game";
 import CricketMeterGame from "./pages/game-types/CricketMeterGame";
 import CricketV3Game from "./pages/game-types/CricketV3Game";
-import Dolidana2Game from "./pages/game-types/Dolidana2Game";
 import DolidanaGame from "./pages/game-types/DolidanaGame";
-import DragonTigerGame from "./pages/game-types/DragonTigerGame";
-import DragonTigerVariantGame from "./pages/game-types/DragonTigerVariantGame";
 import DT202Game from "./pages/game-types/DT202Game";
 import DTL20Game from "./pages/game-types/DTL20Game";
-import DTL20ProGame from "./pages/game-types/DTL20ProGame";
 import Dum10Game from "./pages/game-types/Dum10Game";
-import FantasyCricketGame from "./pages/game-types/FantasyCricketGame";
-import FootballLiveGame from "./pages/game-types/FootballLiveGame";
 import GoalGame from "./pages/game-types/GoalGame";
 import GoldenRouletteGame from "./pages/game-types/GoldenRouletteGame";
 import Joker120Game from "./pages/game-types/Joker120Game";
-import JokerGame from "./pages/game-types/JokerGame";
-import KbcGame from "./pages/game-types/KbcGame";
-import LottCard2Game from "./pages/game-types/LottCard2Game";
 import LottCardGame from "./pages/game-types/LottCardGame";
 import Lucky7EU2Game from "./pages/game-types/Lucky7EU2Game";
-import Lucky7EuropeanGame from "./pages/game-types/Lucky7EuropeanGame";
-import Lucky7Game from "./pages/game-types/Lucky7Game";
-import Lucky7GGame from "./pages/game-types/Lucky7GGame";
-import MatkaGame from "./pages/game-types/MatkaGame";
-import MatkaMarketGame from "./pages/game-types/MatkaMarketGame";
+import Lucky15Game from "./pages/game-types/Lucky15Game";
 import MogamboGame from "./pages/game-types/MogamboGame";
 import NotenumGame from "./pages/game-types/NotenumGame";
 import Patti2Game from "./pages/game-types/Patti2Game";
@@ -90,13 +68,9 @@ import PokerGame from "./pages/game-types/PokerGame";
 import QueenTeenPattiGame from "./pages/game-types/QueenTeenPattiGame";
 import Race17Game from "./pages/game-types/Race17Game";
 import Race2Game from "./pages/game-types/Race2Game";
-import RaceAdvancedGame from "./pages/game-types/RaceAdvancedGame";
-import RaceGame from "./pages/game-types/RaceGame";
 import RouletteGame from "./pages/game-types/RouletteGame";
-import SicBoGame from "./pages/game-types/SicBoGame";
-import SicBoVariantGame from "./pages/game-types/SicBoVariantGame";
 import Superover2Game from "./pages/game-types/Superover2Game";
-import SuperOver3Game from "./pages/game-types/SuperOver3Game";
+import SuperOverGame from "./pages/game-types/SuperOverGame";
 import Teen120Game from "./pages/game-types/Teen120Game";
 import Teen1Game from "./pages/game-types/Teen1Game";
 import Teen20BGame from "./pages/game-types/Teen20BGame";
@@ -111,14 +85,8 @@ import Teen8Game from "./pages/game-types/Teen8Game";
 import Teen9Game from "./pages/game-types/Teen9Game";
 import Teenmuf2Game from "./pages/game-types/Teenmuf2Game";
 import TeenPatti1DayGame from "./pages/game-types/TeenPatti1DayGame";
-import TeenpattiGame from "./pages/game-types/TeenpattiGame";
-import TheTrapGame from "./pages/game-types/TheTrapGame";
-import ThreeCardJudgementGame from "./pages/game-types/ThreeCardJudgementGame";
-import Trap20Game from "./pages/game-types/Trap20Game";
-import TrapRacingGame from "./pages/game-types/TrapRacingGame";
-import UniqueRouletteGame from "./pages/game-types/UniqueRouletteGame";
+import { IndividualCasinoGame } from "./pages/game-types/IndividualCasinoGame";
 import WorliVariant2Game from "./pages/game-types/WorliVariant2Game";
-import WorliVariant3Game from "./pages/game-types/WorliVariant3Game";
 
 import Wallet from "./pages/Wallet";
 import Bets from "./pages/Bets";
@@ -340,6 +308,14 @@ const App = () => {
               }
             />
             <Route
+              path="/casino/cmatch20"
+              element={
+                <ProtectedRoute>
+                  <CricketMatch20Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/casino/3cardj"
               element={
                 <ProtectedRoute>
@@ -550,6 +526,14 @@ const App = () => {
               }
             />
             <Route
+              path="/casino/teen"
+              element={
+                <ProtectedRoute>
+                  <TeenPatti1DayGame />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/casino/teen20v1"
               element={
                 <ProtectedRoute>
@@ -558,15 +542,7 @@ const App = () => {
               }
             />
             <Route
-              path="/casino/teenpatti"
-              element={
-                <ProtectedRoute>
-                  <TeenpattiGame />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino/teenmuf2"
+              path="/casino/teenmuf"
               element={
                 <ProtectedRoute>
                   <Teenmuf2Game />
@@ -583,6 +559,14 @@ const App = () => {
             />
             <Route
               path="/casino/patti2"
+              element={
+                <ProtectedRoute>
+                  <Patti2Game />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/casino/trio"
               element={
                 <ProtectedRoute>
                   <Patti2Game />
@@ -643,22 +627,6 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/casino/baccaratgame"
-              element={
-                <ProtectedRoute>
-                  <BaccaratGame />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino/baccaratvariant"
-              element={
-                <ProtectedRoute>
-                  <BaccaratVariantGame />
-                </ProtectedRoute>
-              }
-            />
 
             {/* Additional Dragon Tiger Routes */}
             <Route
@@ -677,79 +645,21 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/casino/dtl20pro"
-              element={
-                <ProtectedRoute>
-                  <DTL20ProGame />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino/dragontiger"
-              element={
-                <ProtectedRoute>
-                  <DragonTigerGame />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino/dragontigervariant"
-              element={
-                <ProtectedRoute>
-                  <DragonTigerVariantGame />
-                </ProtectedRoute>
-              }
-            />
 
             {/* Additional Andar Bahar Routes */}
             <Route
-              path="/casino/andarbahar"
+              path="/casino/ab4"
               element={
                 <ProtectedRoute>
-                  <AndarBaharGame />
+                  <AndarBahar4Game />
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/casino/andarbaharvariant"
+              path="/casino/ab3"
               element={
                 <ProtectedRoute>
-                  <AndarBaharVariantGame />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino/abjgame"
-              element={
-                <ProtectedRoute>
-                  <AbjGame />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Additional 32 Cards Routes */}
-            <Route
-              path="/casino/card32b"
-              element={
-                <ProtectedRoute>
-                  <Card32VariantGame />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino/card32c"
-              element={
-                <ProtectedRoute>
-                  <Card32VariantGame />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino/card32variant"
-              element={
-                <ProtectedRoute>
-                  <Card32VariantGame />
+                  <AndarBahar3Game />
                 </ProtectedRoute>
               }
             />
@@ -764,70 +674,20 @@ const App = () => {
               }
             />
             <Route
-              path="/casino/lucky7european"
+              path="/casino/lucky15"
               element={
                 <ProtectedRoute>
-                  <Lucky7EuropeanGame />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino/lucky7g"
-              element={
-                <ProtectedRoute>
-                  <Lucky7GGame />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino/lucky5"
-              element={
-                <ProtectedRoute>
-                  <Lucky7Game />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino/lucky7b"
-              element={
-                <ProtectedRoute>
-                  <Lucky7Game />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino/lucky7game"
-              element={
-                <ProtectedRoute>
-                  <Lucky7Game />
+                  <Lucky15Game />
                 </ProtectedRoute>
               }
             />
 
             {/* Additional 3 Card Routes */}
             <Route
-              path="/casino/3cardb"
-              element={
-                <ProtectedRoute>
-                  <ThreeCardJudgementGame />
-                </ProtectedRoute>
-              }
-            />
-            <Route
               path="/casino/aaa2"
               element={
                 <ProtectedRoute>
                   <Aaa2Game />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Additional Casino War Routes */}
-            <Route
-              path="/casino/casinowar"
-              element={
-                <ProtectedRoute>
-                  <CasinoWarGame />
                 </ProtectedRoute>
               }
             />
@@ -838,30 +698,6 @@ const App = () => {
               element={
                 <ProtectedRoute>
                   <WorliVariant2Game />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino/worlivariant3"
-              element={
-                <ProtectedRoute>
-                  <WorliVariant3Game />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino/instantworli"
-              element={
-                <ProtectedRoute>
-                  <MatkaGame />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino/matka"
-              element={
-                <ProtectedRoute>
-                  <MatkaMarketGame />
                 </ProtectedRoute>
               }
             />
@@ -891,30 +727,6 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/casino/rouletteu"
-              element={
-                <ProtectedRoute>
-                  <UniqueRouletteGame />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino/miniroulette"
-              element={
-                <ProtectedRoute>
-                  <RouletteGame />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino/roulette"
-              element={
-                <ProtectedRoute>
-                  <RouletteGame />
-                </ProtectedRoute>
-              }
-            />
 
             {/* Additional Joker Routes */}
             <Route
@@ -926,18 +738,10 @@ const App = () => {
               }
             />
             <Route
-              path="/casino/joker"
+              path="/casino/joker120"
               element={
                 <ProtectedRoute>
-                  <JokerGame />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino/jokeroneday"
-              element={
-                <ProtectedRoute>
-                  <JokerGame />
+                  <Joker120Game />
                 </ProtectedRoute>
               }
             />
@@ -959,68 +763,13 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/casino/raceadvanced"
-              element={
-                <ProtectedRoute>
-                  <RaceAdvancedGame />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino/race"
-              element={
-                <ProtectedRoute>
-                  <RaceGame />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Additional Sicbo Routes */}
-            <Route
-              path="/casino/sicbovariant"
-              element={
-                <ProtectedRoute>
-                  <SicBoVariantGame />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino/sicbogame"
-              element={
-                <ProtectedRoute>
-                  <SicBoGame />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Ball By Ball Routes */}
-            <Route
-              path="/casino/ballbyballgame"
-              element={
-                <ProtectedRoute>
-                  <BallByBallGame />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* KBC Routes */}
-            <Route
-              path="/casino/kbcgame"
-              element={
-                <ProtectedRoute>
-                  <KbcGame />
-                </ProtectedRoute>
-              }
-            />
 
             {/* Special Game Routes */}
-            <Route path="/casino/dolidana" element={<DolidanaGame />} />
             <Route
-              path="/casino/dolidana2"
+              path="/casino/dolidana"
               element={
                 <ProtectedRoute>
-                  <Dolidana2Game />
+                  <DolidanaGame />
                 </ProtectedRoute>
               }
             />
@@ -1032,32 +781,8 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/casino/bollywood"
-              element={
-                <ProtectedRoute>
-                  <BollywoodGameSuite />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino/bollywood2"
-              element={
-                <ProtectedRoute>
-                  <BollywoodGameSuite />
-                </ProtectedRoute>
-              }
-            />
 
             {/* Cricket Game Routes */}
-            <Route
-              path="/casino/goalsuperover"
-              element={
-                <ProtectedRoute>
-                  <GoalGame />
-                </ProtectedRoute>
-              }
-            />
             <Route
               path="/casino/goal"
               element={
@@ -1075,26 +800,10 @@ const App = () => {
               }
             />
             <Route
-              path="/casino/superover3"
+              path="/casino/superover"
               element={
                 <ProtectedRoute>
-                  <SuperOver3Game />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino/cricketline"
-              element={
-                <ProtectedRoute>
-                  <CricketLineGame />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino/cricketline2"
-              element={
-                <ProtectedRoute>
-                  <CricketLine2Game />
+                  <SuperOverGame />
                 </ProtectedRoute>
               }
             />
@@ -1102,7 +811,7 @@ const App = () => {
               path="/casino/cricketmeter"
               element={
                 <ProtectedRoute>
-                  <CricketMeterGame />
+                  <CricketMeterGame game={{} as any} />
                 </ProtectedRoute>
               }
             />
@@ -1110,15 +819,7 @@ const App = () => {
               path="/casino/cricketmeter1"
               element={
                 <ProtectedRoute>
-                  <CricketMeter1Game />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino/cricketmatchmeter"
-              element={
-                <ProtectedRoute>
-                  <CricketMatchMeterGame />
+                  <CricketMeter1Game game={{} as any} />
                 </ProtectedRoute>
               }
             />
@@ -1127,24 +828,6 @@ const App = () => {
               element={
                 <ProtectedRoute>
                   <CricketV3Game />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino/fantasycricket"
-              element={
-                <ProtectedRoute>
-                  <FantasyCricketGame />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Football Routes */}
-            <Route
-              path="/casino/footballlive"
-              element={
-                <ProtectedRoute>
-                  <FootballLiveGame />
                 </ProtectedRoute>
               }
             />
@@ -1167,42 +850,10 @@ const App = () => {
               }
             />
             <Route
-              path="/casino/trap20"
-              element={
-                <ProtectedRoute>
-                  <Trap20Game />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino/trapracing"
-              element={
-                <ProtectedRoute>
-                  <TrapRacingGame />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino/thetrap"
-              element={
-                <ProtectedRoute>
-                  <TheTrapGame />
-                </ProtectedRoute>
-              }
-            />
-            <Route
               path="/casino/lottcard"
               element={
                 <ProtectedRoute>
                   <LottCardGame />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino/lottcard2"
-              element={
-                <ProtectedRoute>
-                  <LottCard2Game />
                 </ProtectedRoute>
               }
             />
@@ -1212,6 +863,16 @@ const App = () => {
               element={
                 <ProtectedRoute>
                   <CasinoGame />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Generic casino route: catch any /casino/:gmid not explicitly listed above */}
+            <Route
+              path="/casino/:gmid"
+              element={
+                <ProtectedRoute>
+                  <IndividualCasinoGame />
                 </ProtectedRoute>
               }
             />

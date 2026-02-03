@@ -335,8 +335,9 @@ export default function DolidanaGame({ game }: DolidanaGameProps) {
                 </div>
                 <div className="grid grid-cols-6 gap-3">
                   {resultData?.res?.slice(0, 6).map((r: any, i: number) => {
-                    const colorId = (r.val % 6) + 1;
-                    const festColor = FESTIVAL_COLORS[colorId - 1];
+                    const colorId = ((r.val ?? i) % 6) + 1;
+                    const festColor =
+                      FESTIVAL_COLORS[colorId - 1] || FESTIVAL_COLORS[0];
                     return (
                       <div
                         key={i}

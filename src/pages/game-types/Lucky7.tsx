@@ -4,11 +4,14 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Clock } from "lucide-react";
+import { ArrowLeft, Clock, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PlayingCard } from "@/components/casino/PlayingCard";
 import { BettingChip } from "@/components/casino/BettingChip";
 import { toast } from "@/hooks/use-toast";
+import { bettingService } from "@/services/bettingService";
+import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
+import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
 const BET_PANELS = [
@@ -121,13 +124,9 @@ export default function Lucky7() {
     return () => clearInterval(timer);
   }, []);
 
-  const placeBet = (betType: keyof typeof bets) => {
-    setBets((prev) => ({ ...prev, [betType]: prev[betType] + selectedChip }));
-  };
-
   const handlePlaceBets = async () => {
-    const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
-    if (totalStake === 0) {
+    const totalStakeAmount = Object.values(bets).reduce((a, b) => a + b, 0);
+    if (totalStakeAmount === 0) {
       toast({ title: "Please place a bet first", variant: "destructive" });
       return;
     }
@@ -187,14 +186,6 @@ export default function Lucky7() {
     }
   };
 
-  const clearBets = () => {
-    setBets({ below7: 0, exactly7: 0, above7: 0 });
-  };
-
-  const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
-  const potentialWin =
-    bets.below7 * 1.95 + bets.exactly7 * 11 + bets.above7 * 1.95;
-
   return (
     <MainLayout>
       <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900/20 to-black">
@@ -221,6 +212,10 @@ export default function Lucky7() {
                     <div
                       className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 h-full transition-all duration-1000"
                       style={{ width: `${(countdown / 15) * 100}%` }}
+                      role="progressbar"
+                      aria-valuenow={countdown}
+                      aria-valuemin={0}
+                      aria-valuemax={15}
                     />
                   </div>
                   <p className="text-center text-sm text-gray-400 mt-1">

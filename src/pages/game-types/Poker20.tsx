@@ -4,10 +4,12 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Clock } from "lucide-react";
+import { ArrowLeft, Clock, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PlayingCard } from "@/components/casino/PlayingCard";
 import { BettingChip } from "@/components/casino/BettingChip";
+import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
+import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
@@ -128,6 +130,8 @@ export default function Poker20() {
                           top: `${pos.y}%`,
                           transform: "translate(-50%, -50%)",
                         }}
+                        role="img"
+                        aria-label={`Player ${player.seat}`}
                       >
                         <Card
                           className={cn(
@@ -314,6 +318,7 @@ export default function Poker20() {
                       value={betAmount}
                       onChange={(e) => setBetAmount(Number(e.target.value))}
                       className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                      title="Bet Amount Slider"
                     />
                     <div className="flex justify-between gap-2 mt-2">
                       <Button

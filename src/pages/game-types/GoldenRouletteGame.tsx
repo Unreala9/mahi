@@ -133,18 +133,23 @@ const GoldenRouletteGame = ({ game }: GoldenRouletteGameProps) => {
 
     try {
       for (const bet of bets) {
-        await casinoBettingService.placeCasinoBet(
-          game.gid,
+        const result = await casinoBettingService.placeCasinoBet({
+          gameId: game?.gid || gameId,
           gameName,
-          gameData?.mid || "round-1",
-          bet.position,
-          bet.type,
-          bet.position,
-          bet.odds,
-          bet.stake,
-          "back",
-        );
+          roundId: gameData?.mid || "round-1",
+          marketId: bet.position,
+          marketName: bet.type,
+          selection: bet.position,
+          odds: bet.odds,
+          stake: bet.stake,
+          betType: "BACK",
+        });
+
+        if (!result.success) {
+          throw new Error(result.error || "Bet placement failed");
+        }
       }
+
       toast({ title: "Bets placed successfully! Spinning..." });
 
       setTimeout(() => {
@@ -155,7 +160,7 @@ const GoldenRouletteGame = ({ game }: GoldenRouletteGameProps) => {
       setSpinning(false);
       toast({
         title: "Bet placement failed",
-        description: error.message,
+        description: error?.message || String(error),
         variant: "destructive",
       });
     }

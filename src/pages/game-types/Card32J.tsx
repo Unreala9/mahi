@@ -10,6 +10,8 @@ import { PlayingCard } from "@/components/casino/PlayingCard";
 import { BettingChip } from "@/components/casino/BettingChip";
 import { toast } from "@/hooks/use-toast";
 import { bettingService } from "@/services/bettingService";
+import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
+import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
@@ -59,6 +61,24 @@ const HISTORY = Array.from({ length: 12 }, () => {
 
 export default function Card32J() {
   const navigate = useNavigate();
+  // ✅ LIVE API INTEGRATION
+  const {
+    gameData,
+    result,
+    isConnected,
+    markets,
+    roundId,
+    placeBet,
+    placedBets,
+    clearBets,
+    totalStake,
+    potentialWin,
+    isSuspended,
+  } = useUniversalCasinoGame({
+    gameType: "card32j",
+    gameName: "Card 32 J",
+  });
+
   const [countdown, setCountdown] = useState(15);
   const [isRevealing, setIsRevealing] = useState(false);
   const [revealedCard] = useState({ suit: "hearts" as const, value: "7" });
@@ -84,12 +104,6 @@ export default function Card32J() {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
-
-  const placeBet = (groupId: string) => {
-    setBets((prev) => ({ ...prev, [groupId]: prev[groupId] + selectedChip }));
-  };
-
-  const clearBets = () => setBets({ "8": 0, "9": 0, "10": 0, "11": 0 });
 
   const handlePlaceBets = async () => {
     if (totalStake === 0) {
@@ -131,15 +145,6 @@ export default function Card32J() {
       console.error("Failed to place bets:", error);
     }
   };
-
-  const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
-  const potentialWin = Object.entries(bets).reduce(
-    (total, [groupId, amount]) => {
-      const group = GROUPS.find((g) => g.id === groupId);
-      return total + amount * parseFloat(group?.odds || "0");
-    },
-    0,
-  );
 
   return (
     <MainLayout>

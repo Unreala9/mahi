@@ -97,7 +97,7 @@ export default function QueenTeenPattiGame({ game }: QueenTeenPattiGameProps) {
               <Crown className="w-8 h-8 text-yellow-400" />
               <div>
                 <h1 className="text-yellow-400 font-black text-xl uppercase">
-                  {game.gname}
+                  {gameName}
                 </h1>
                 <p className="text-purple-300 text-sm">
                   High Stakes Royal Table • Premium Edition

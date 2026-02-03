@@ -10,6 +10,8 @@ import { PlayingCard } from "@/components/casino/PlayingCard";
 import { BettingChip } from "@/components/casino/BettingChip";
 import { toast } from "@/hooks/use-toast";
 import { bettingService } from "@/services/bettingService";
+import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
+import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
@@ -33,6 +35,24 @@ const HISTORY = [
 
 export default function ThreeCardJ() {
   const navigate = useNavigate();
+  // ✅ LIVE API INTEGRATION
+  const {
+    gameData,
+    result,
+    isConnected,
+    markets,
+    roundId,
+    placeBet,
+    placedBets,
+    clearBets,
+    totalStake,
+    potentialWin,
+    isSuspended,
+  } = useUniversalCasinoGame({
+    gameType: "3cardj",
+    gameName: "Three Card J",
+  });
+
   const [countdown, setCountdown] = useState(20);
   const [isRevealing, setIsRevealing] = useState(false);
   const [selectedChip, setSelectedChip] = useState(100);
@@ -55,17 +75,6 @@ export default function ThreeCardJ() {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
-
-  const placeBet = (betType: keyof typeof bets) => {
-    setBets((prev) => ({ ...prev, [betType]: prev[betType] + selectedChip }));
-  };
-
-  const clearBets = () => {
-    setBets({ handA: 0, handB: 0, tie: 0 });
-  };
-
-  const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
-  const potentialWin = bets.handA * 1.98 + bets.handB * 1.98 + bets.tie * 11;
 
   return (
     <MainLayout>

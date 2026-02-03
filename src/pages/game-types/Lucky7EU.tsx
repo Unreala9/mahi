@@ -10,6 +10,8 @@ import { PlayingCard } from "@/components/casino/PlayingCard";
 import { BettingChip } from "@/components/casino/BettingChip";
 import { toast } from "@/hooks/use-toast";
 import { bettingService } from "@/services/bettingService";
+import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
+import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
@@ -63,6 +65,24 @@ const HISTORY = Array.from({ length: 10 }, () => {
 
 export default function Lucky7EU() {
   const navigate = useNavigate();
+  // ✅ LIVE API INTEGRATION
+  const {
+    gameData,
+    result,
+    isConnected,
+    markets,
+    roundId,
+    placeBet,
+    placedBets,
+    clearBets,
+    totalStake,
+    potentialWin,
+    isSuspended,
+  } = useUniversalCasinoGame({
+    gameType: "lucky7eu",
+    gameName: "Lucky 7 EU",
+  });
+
   const [countdown, setCountdown] = useState(20);
   const [isRevealing, setIsRevealing] = useState(false);
   const [selectedChip, setSelectedChip] = useState(100);
@@ -87,16 +107,9 @@ export default function Lucky7EU() {
     return () => clearInterval(timer);
   }, []);
 
-  const placeBet = (betType: keyof typeof bets) => {
-    setBets((prev) => ({ ...prev, [betType]: prev[betType] + selectedChip }));
-  };
-
-  const clearBets = () =>
-    setBets({ below7: 0, exactly7: 0, above7: 0, even: 0 });
-
   const handlePlaceBets = async () => {
-    const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
-    if (totalStake === 0) {
+    const totalStakeAmount = Object.values(bets).reduce((a, b) => a + b, 0);
+    if (totalStakeAmount === 0) {
       toast({ title: "Please place a bet first", variant: "destructive" });
       return;
     }
@@ -128,13 +141,6 @@ export default function Lucky7EU() {
       console.error("Failed to place bets:", error);
     }
   };
-
-  const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
-  const potentialWin =
-    bets.below7 * 1.95 +
-    bets.exactly7 * 11 +
-    bets.above7 * 1.95 +
-    bets.even * 2;
 
   return (
     <MainLayout>

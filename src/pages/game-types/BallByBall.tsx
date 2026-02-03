@@ -7,6 +7,8 @@ import { Card } from "@/components/ui/card";
 import { ArrowLeft, Clock, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BettingChip } from "@/components/casino/BettingChip";
+import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
+import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
@@ -34,6 +36,24 @@ const BALL_HISTORY = [
 
 export default function BallByBall() {
   const navigate = useNavigate();
+  // ✅ LIVE API INTEGRATION
+  const {
+    gameData,
+    result,
+    isConnected,
+    markets,
+    roundId,
+    placeBet,
+    placedBets,
+    clearBets,
+    totalStake,
+    potentialWin,
+    isSuspended,
+  } = useUniversalCasinoGame({
+    gameType: "ballbyball",
+    gameName: "Ball By Ball",
+  });
+
   const [countdown, setCountdown] = useState(12);
   const [selectedChip, setSelectedChip] = useState(100);
   const [bets, setBets] = useState<Record<string, number>>({});
@@ -50,13 +70,6 @@ export default function BallByBall() {
     return () => clearInterval(timer);
   }, []);
 
-  const placeBet = (marketId: string) => {
-    setBets((prev) => ({
-      ...prev,
-      [marketId]: (prev[marketId] || 0) + selectedChip,
-    }));
-  };
-
   const removeBet = (marketId: string) => {
     setBets((prev) => {
       const newBets = { ...prev };
@@ -64,12 +77,6 @@ export default function BallByBall() {
       return newBets;
     });
   };
-
-  const clearBets = () => {
-    setBets({});
-  };
-
-  const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
 
   return (
     <MainLayout>
@@ -183,7 +190,7 @@ export default function BallByBall() {
                       bets[market.id] > 0 &&
                         "ring-2 ring-green-500 bg-green-900/30",
                     )}
-                    onClick={() => placeBet(market.id)}
+                    onClick={() => placeBetLocal(market.id)}
                   >
                     <div className="text-center">
                       <p className="text-white font-bold text-sm mb-1">
@@ -224,7 +231,7 @@ export default function BallByBall() {
                 <div className="grid grid-cols-2 gap-2">
                   <Button
                     variant="outline"
-                    onClick={clearBets}
+                    onClick={clearBetsLocal}
                     className="border-red-600 text-red-500 hover:bg-red-600/20 font-bold"
                   >
                     Clear All
@@ -297,7 +304,7 @@ export default function BallByBall() {
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-gray-400 text-sm">Total Stake:</span>
                     <span className="text-white font-bold text-lg">
-                      ₹{totalStake}
+                      ₹{totalStakeLocal}
                     </span>
                   </div>
                 </div>

@@ -11,7 +11,7 @@ interface Game {
 }
 
 interface DTL20GameProps {
-  game: Game;
+  game?: Game;
 }
 
 interface Bet {
@@ -73,6 +73,7 @@ const CHIP_VALUES = [100, 500, 1000, 5000, 10000];
 const CARD_SUITS = ["♥", "♦", "♠", "♣"];
 
 export default function DTL20Game({ game }: DTL20GameProps) {
+  const gmid = game?.gmid || "dtl20";
   const [bets, setBets] = useState<Bet[]>([]);
   const [selectedChip, setSelectedChip] = useState<number>(1000);
   const [timeRemaining, setTimeRemaining] = useState(18);
@@ -148,7 +149,7 @@ export default function DTL20Game({ game }: DTL20GameProps) {
     },
   ]);
 
-  const { gameData, resultData } = useCasinoWebSocket(game.gmid);
+  const { gameData, resultData } = useCasinoWebSocket(gmid);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -175,7 +176,7 @@ export default function DTL20Game({ game }: DTL20GameProps) {
     setBets([...bets, newBet]);
 
     casinoBettingService.placeCasinoBet(
-      game.gmid,
+      gmid,
       gameData?.mid || "",
       "",
       zoneId,

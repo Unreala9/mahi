@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Clock, TrendingUp, TrendingDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
+import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 
 const BETTING_GRID = {
   inside: [
@@ -59,12 +61,27 @@ const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
 export default function OurRoulette() {
   const navigate = useNavigate();
+  // ✅ LIVE API INTEGRATION
+  const {
+    gameData,
+    result,
+    isConnected,
+    markets,
+    roundId,
+    placeBet,
+    placedBets,
+    clearBets,
+    totalStake,
+    potentialWin,
+    isSuspended,
+  } = useUniversalCasinoGame({
+    gameType: "ourRoulette",
+    gameName: "Our Roulette",
+  });
+
   const [countdown, setCountdown] = useState(30);
   const [isSpinning, setIsSpinning] = useState(false);
   const [selectedChip, setSelectedChip] = useState(100);
-  const [totalStake, setTotalStake] = useState(0);
-  const [potentialWin, setPotentialWin] = useState(0);
-  const [placedBets, setPlacedBets] = useState<any[]>([]);
 
   const redCount = WINNING_HISTORY.filter((h) => h.color === "red").length;
   const blackCount = WINNING_HISTORY.filter((h) => h.color === "black").length;

@@ -4,9 +4,10 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Clock } from "lucide-react";
+import { ArrowLeft, Clock, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { toast } from "@/hooks/use-toast";
+import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
+import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
 const CARD_TIMELINE = [
@@ -32,14 +33,41 @@ const HISTORY = [
 
 export default function AndarBahar20() {
   const navigate = useNavigate();
+
+  // Use the universal casino game hook with live API data
+  const {
+    gameData,
+    result,
+    isConnected,
+    markets,
+    roundId,
+    cards,
+    placeBet,
+    placedBets,
+    clearBets,
+    totalStake,
+    potentialWin,
+    isSuspended,
+  } = useUniversalCasinoGame({
+    gameType: "ab20",
+    gameName: "Andar Bahar 20",
+  });
+
   const [countdown, setCountdown] = useState(20);
   const [isDealing, setIsDealing] = useState(false);
   const [jokerCard, setJokerCard] = useState("🂮");
-  const [selectedChip, setSelectedChip] = useState(100);
-  const [bets, setBets] = useState({
-    andar: 0,
-    bahar: 0,
-  });
+
+  // Parse API card data
+  useEffect(() => {
+    if (cards) {
+      // Format: "2CC,1" or similar
+      // Extract joker card if available
+      const cardData = cards.split(",");
+      if (cardData[0]) {
+        setJokerCard(`🂮`); // Can map card codes to emoji
+      }
+    }
+  }, [cards]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -55,63 +83,34 @@ export default function AndarBahar20() {
     return () => clearInterval(timer);
   }, []);
 
-  const placeBet = (betType: "andar" | "bahar") => {
-    setBets((prev) => ({ ...prev, [betType]: prev[betType] + selectedChip }));
-  };
+  // Get Andar and Bahar markets
+  const andarMarket = markets.find((m) =>
+    m.nat.toLowerCase().includes("andar"),
+  );
+  const baharMarket = markets.find((m) =>
+    m.nat.toLowerCase().includes("bahar"),
+  );
 
-  const handlePlaceBets = async () => {
-    const totalStake = bets.andar + bets.bahar;
-    if (totalStake === 0) {
-      toast({ title: "Please place a bet first", variant: "destructive" });
-      return;
-    }
+  // Extract card timeline from result history
+  const CARD_TIMELINE = result?.cards || [
+    { side: "A", card: "🂡" },
+    { side: "B", card: "🂮" },
+    { side: "A", card: "🃋" },
+    { side: "B", card: "🂫" },
+  ];
 
-    try {
-      const betPromises = [];
-      if (bets.andar > 0) {
-        betPromises.push(
-          bettingService.placeBet({
-            gameType: "CASINO",
-            gameId: "ab20",
-            gameName: "Andar Bahar 20",
-            marketId: "andar",
-            marketName: "Andar",
-            selection: "Andar",
-            odds: 1.9,
-            stake: bets.andar,
-            betType: "BACK",
-          }),
-        );
-      }
-      if (bets.bahar > 0) {
-        betPromises.push(
-          bettingService.placeBet({
-            gameType: "CASINO",
-            gameId: "ab20",
-            gameName: "Andar Bahar 20",
-            marketId: "bahar",
-            marketName: "Bahar",
-            selection: "Bahar",
-            odds: 1.9,
-            stake: bets.bahar,
-            betType: "BACK",
-          }),
-        );
-      }
-
-      await Promise.all(betPromises);
-      setBets({ andar: 0, bahar: 0 });
-    } catch (error) {
-      console.error("Failed to place bets:", error);
-    }
-  };
-
-  const clearBets = () => {
-    setBets({ andar: 0, bahar: 0 });
-  };
-
-  const totalStake = bets.andar + bets.bahar;
-  const potentialWin = bets.andar * 1.9 + bets.bahar * 1.9;
+  // Build history from last results
+  const HISTORY = result
+    ? [
+        { winner: result.win === "1" ? "A" : "B", cards: 8 },
+        { winner: "B", cards: 12 },
+        { winner: "A", cards: 5 },
+      ]
+    : [
+        { winner: "A", cards: 8 },
+        { winner: "B", cards: 12 },
+        { winner: "A", cards: 5 },
+      ];
 
   return (
     <MainLayout>
@@ -139,12 +138,23 @@ export default function AndarBahar20() {
                   <span className="text-yellow-500 font-bold text-lg">
                     {countdown}s
                   </span>
+                  {roundId && (
+                    <Badge variant="outline" className="ml-2">
+                      Round: {roundId}
+                    </Badge>
+                  )}
                 </div>
               </div>
-              <Badge className="bg-green-600 animate-pulse">
-                <Clock className="w-3 h-3 mr-1" />
-                Live
-              </Badge>
+              <div className="flex gap-2">
+                {isConnected ? (
+                  <Badge className="bg-green-600 animate-pulse">
+                    <Clock className="w-3 h-3 mr-1" />
+                    Live
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary">Connecting...</Badge>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -152,19 +162,20 @@ export default function AndarBahar20() {
         {/* Main Game Area */}
         <div className="container mx-auto px-4 py-6">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* History Panel (Left) */}
-            <div className="lg:col-span-1 order-last lg:order-first">
+            {/* History & Betting Panel (Left) */}
+            <div className="lg:col-span-1 order-last lg:order-first space-y-4">
+              {/* History Panel */}
               <Card className="bg-gray-800/50 border-purple-600/20 p-4">
                 <h3 className="text-purple-400 font-bold mb-4 text-center">
                   History
                 </h3>
                 <div className="space-y-2">
-                  {HISTORY.map((result, idx) => (
+                  {HISTORY.map((historyItem, idx) => (
                     <div
                       key={idx}
                       className={cn(
                         "p-3 rounded-lg border-2",
-                        result.winner === "A"
+                        historyItem.winner === "A"
                           ? "bg-blue-900/30 border-blue-600"
                           : "bg-green-900/30 border-green-600",
                       )}
@@ -173,27 +184,63 @@ export default function AndarBahar20() {
                         <span
                           className={cn(
                             "font-bold text-xl",
-                            result.winner === "A"
+                            historyItem.winner === "A"
                               ? "text-blue-500"
                               : "text-green-500",
                           )}
                         >
-                          {result.winner === "A" ? "Andar" : "Bahar"}
+                          {historyItem.winner === "A" ? "Andar" : "Bahar"}
                         </span>
                         <Badge
                           className={cn(
-                            result.winner === "A"
+                            historyItem.winner === "A"
                               ? "bg-blue-600"
                               : "bg-green-600",
                           )}
                         >
-                          {result.cards} cards
+                          {historyItem.cards} cards
                         </Badge>
                       </div>
                     </div>
                   ))}
                 </div>
               </Card>
+
+              {/* Live Betting Panel */}
+              {markets.length > 0 && (
+                <CasinoBettingPanel
+                  markets={markets}
+                  onPlaceBet={placeBet}
+                  placedBets={placedBets}
+                  totalStake={totalStake}
+                  potentialWin={potentialWin}
+                  onClearBets={clearBets}
+                  isSuspended={isSuspended}
+                  roundId={roundId}
+                />
+              )}
+
+              {/* Last Result */}
+              {result && (
+                <Card className="bg-gray-800/50 border-yellow-600/20 p-4">
+                  <h3 className="text-yellow-400 font-bold mb-3">
+                    <TrendingUp className="w-4 h-4 inline mr-2" />
+                    Last Result
+                  </h3>
+                  <div className="space-y-2">
+                    <div>
+                      <p className="text-xs text-gray-400">Round</p>
+                      <p className="text-sm font-mono text-white">
+                        {result.mid}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-400">Winner</p>
+                      <Badge className="bg-green-600 mt-1">{result.win}</Badge>
+                    </div>
+                  </div>
+                </Card>
+              )}
             </div>
 
             {/* Game Board (Center) */}
@@ -226,19 +273,28 @@ export default function AndarBahar20() {
                     <h2 className="text-3xl font-bold text-blue-500 mb-2">
                       ANDAR
                     </h2>
-                    <Badge className="bg-blue-600 text-white">1.90x</Badge>
+                    <Badge className="bg-blue-600 text-white">
+                      {andarMarket ? (andarMarket.b / 100).toFixed(2) : "1.90"}x
+                    </Badge>
+                    {andarMarket?.gstatus === "SUSPENDED" && (
+                      <Badge variant="destructive" className="ml-2 text-xs">
+                        Suspended
+                      </Badge>
+                    )}
                   </div>
 
-                  <button
-                    onClick={() => placeBet("andar")}
-                    disabled={countdown <= 0}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-2xl py-8 rounded-lg transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed border-4 border-blue-400 shadow-lg shadow-blue-600/50"
-                  >
-                    TAP TO BET
-                    {bets.andar > 0 && (
-                      <span className="block text-lg mt-2">₹{bets.andar}</span>
-                    )}
-                  </button>
+                  <div className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xl py-8 rounded-lg transition-all border-4 border-blue-400 shadow-lg shadow-blue-600/50 flex items-center justify-center">
+                    <div className="text-center">
+                      <div>BET ON ANDAR</div>
+                      {placedBets.has(andarMarket?.sid.toString() || "") && (
+                        <div className="text-sm mt-2">
+                          ₹
+                          {placedBets.get(andarMarket?.sid.toString() || "")
+                            ?.stake || 0}
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
                   {/* Card Timeline - Andar Side */}
                   <div className="mt-6 space-y-2">
@@ -266,19 +322,28 @@ export default function AndarBahar20() {
                     <h2 className="text-3xl font-bold text-green-500 mb-2">
                       BAHAR
                     </h2>
-                    <Badge className="bg-green-600 text-white">1.90x</Badge>
+                    <Badge className="bg-green-600 text-white">
+                      {baharMarket ? (baharMarket.b / 100).toFixed(2) : "1.90"}x
+                    </Badge>
+                    {baharMarket?.gstatus === "SUSPENDED" && (
+                      <Badge variant="destructive" className="ml-2 text-xs">
+                        Suspended
+                      </Badge>
+                    )}
                   </div>
 
-                  <button
-                    onClick={() => placeBet("bahar")}
-                    disabled={countdown <= 0}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white font-bold text-2xl py-8 rounded-lg transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed border-4 border-green-400 shadow-lg shadow-green-600/50"
-                  >
-                    TAP TO BET
-                    {bets.bahar > 0 && (
-                      <span className="block text-lg mt-2">₹{bets.bahar}</span>
-                    )}
-                  </button>
+                  <div className="w-full bg-green-600 hover:bg-green-700 text-white font-bold text-xl py-8 rounded-lg transition-all border-4 border-green-400 shadow-lg shadow-green-600/50 flex items-center justify-center">
+                    <div className="text-center">
+                      <div>BET ON BAHAR</div>
+                      {placedBets.has(baharMarket?.sid.toString() || "") && (
+                        <div className="text-sm mt-2">
+                          ₹
+                          {placedBets.get(baharMarket?.sid.toString() || "")
+                            ?.stake || 0}
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
                   {/* Card Timeline - Bahar Side */}
                   <div className="mt-6 space-y-2">
@@ -302,100 +367,70 @@ export default function AndarBahar20() {
               </div>
 
               {/* Vertical Card Timeline (Full) */}
-              <Card className="bg-gray-800/50 border-purple-600/20 p-4 mb-4">
-                <h3 className="text-purple-400 font-bold mb-3">
-                  Card Timeline
-                </h3>
-                <div className="flex gap-1 overflow-x-auto pb-2">
-                  {CARD_TIMELINE.map((card, idx) => (
-                    <div key={idx} className="flex-shrink-0">
-                      <div
-                        className={cn(
-                          "w-16 h-24 bg-white rounded flex items-center justify-center text-4xl border-4 transition-all hover:scale-105",
-                          card.side === "A"
-                            ? "border-blue-500"
-                            : "border-green-500",
-                        )}
-                      >
-                        {card.card}
+              {Array.isArray(CARD_TIMELINE) && CARD_TIMELINE.length > 0 && (
+                <Card className="bg-gray-800/50 border-purple-600/20 p-4 mb-4">
+                  <h3 className="text-purple-400 font-bold mb-3">
+                    Card Timeline
+                  </h3>
+                  <div className="flex gap-1 overflow-x-auto pb-2">
+                    {CARD_TIMELINE.map((cardItem: any, idx: number) => (
+                      <div key={idx} className="flex-shrink-0">
+                        <div
+                          className={cn(
+                            "w-16 h-24 bg-white rounded flex items-center justify-center text-4xl border-4 transition-all hover:scale-105",
+                            cardItem.side === "A"
+                              ? "border-blue-500"
+                              : "border-green-500",
+                          )}
+                        >
+                          {cardItem.card}
+                        </div>
+                        <p
+                          className={cn(
+                            "text-center text-xs font-bold mt-1",
+                            cardItem.side === "A"
+                              ? "text-blue-500"
+                              : "text-green-500",
+                          )}
+                        >
+                          {cardItem.side === "A" ? "Andar" : "Bahar"}
+                        </p>
                       </div>
-                      <p
-                        className={cn(
-                          "text-center text-xs font-bold mt-1",
-                          card.side === "A"
-                            ? "text-blue-500"
-                            : "text-green-500",
-                        )}
-                      >
-                        {card.side === "A" ? "Andar" : "Bahar"}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </Card>
+                    ))}
+                  </div>
+                </Card>
+              )}
 
-              {/* Controls */}
+              {/* Game Info */}
               <Card className="bg-gray-800/50 border-purple-600/20 p-4">
-                <div className="flex items-center gap-3 mb-4 flex-wrap">
-                  <span className="text-gray-400 text-sm">Chips:</span>
-                  {CHIP_VALUES.map((value) => (
-                    <button
-                      key={value}
-                      onClick={() => setSelectedChip(value)}
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Game Status:</span>
+                    <span
                       className={cn(
-                        "w-14 h-14 rounded-full font-bold text-sm border-4 transition-all hover:scale-110",
-                        selectedChip === value
-                          ? "bg-yellow-600 border-yellow-400 text-white ring-2 ring-yellow-300"
-                          : "bg-gray-700 border-gray-600 text-gray-300",
+                        "font-bold",
+                        isSuspended ? "text-red-500" : "text-green-500",
                       )}
                     >
-                      ₹{value}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="grid grid-cols-4 gap-2 mb-4">
-                  <Button
-                    variant="outline"
-                    onClick={clearBets}
-                    className="border-red-600 text-red-500 hover:bg-red-600/20"
-                  >
-                    Clear
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="border-blue-600 text-blue-500 hover:bg-blue-600/20"
-                  >
-                    Repeat
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="border-green-600 text-green-500 hover:bg-green-600/20"
-                  >
-                    2x
-                  </Button>
-                  <Button
-                    onClick={handlePlaceBets}
-                    className="bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900"
-                  >
-                    Place Bet
-                  </Button>
-                </div>
-
-                <div className="bg-gray-900/50 rounded-lg p-4 border border-purple-600/30">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-gray-400 text-xs">Total Stake</p>
-                      <p className="text-white font-bold text-2xl">
-                        ₹{totalStake}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-gray-400 text-xs">Potential Win</p>
-                      <p className="text-green-500 font-bold text-2xl">
-                        ₹{potentialWin.toFixed(0)}
-                      </p>
-                    </div>
+                      {isSuspended ? "Suspended" : "Active"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Connection:</span>
+                    <span
+                      className={cn(
+                        "font-bold",
+                        isConnected ? "text-green-500" : "text-red-500",
+                      )}
+                    >
+                      {isConnected ? "Live" : "Offline"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Markets:</span>
+                    <span className="text-white font-bold">
+                      {markets.length}
+                    </span>
                   </div>
                 </div>
               </Card>

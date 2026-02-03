@@ -9,7 +9,7 @@ import { toast } from "@/hooks/use-toast";
 import { Clock, Zap, Users, Trophy, TrendingUp, Eye } from "lucide-react";
 
 interface Patti2GameProps {
-  game: CasinoGame;
+  game?: CasinoGame;
 }
 
 interface Bet {
@@ -71,10 +71,11 @@ const PLAYERS = [
 ];
 
 export default function Patti2Game({ game }: Patti2GameProps) {
+  const gmid = game?.gmid || "patti2";
   const [bets, setBets] = useState<Bet[]>([]);
   const [selectedChip, setSelectedChip] = useState(100);
   const [action, setAction] = useState<string | null>(null);
-  const { gameData, resultData } = useCasinoWebSocket(game.gmid);
+  const { gameData, resultData } = useCasinoWebSocket(gmid);
 
   const chips = [100, 500, 1000, 5000, 10000];
 
@@ -109,8 +110,8 @@ export default function Patti2Game({ game }: Patti2GameProps) {
     try {
       for (const bet of bets) {
         await casinoBettingService.placeCasinoBet({
-          gameId: game.gmid,
-          gameName: game.gname,
+          gameId: gmid,
+          gameName: game?.gname || "Patti 2",
           roundId: gameData?.mid?.toString() || "",
           marketId: bet.sid.toString(),
           marketName: bet.nat,
@@ -137,7 +138,7 @@ export default function Patti2Game({ game }: Patti2GameProps) {
               <div className="text-4xl">🃏</div>
               <div>
                 <h1 className="text-teal-400 font-black text-xl uppercase">
-                  {game.gname}
+                  {game?.gname || "Patti 2 Game"}
                 </h1>
                 <div className="flex items-center gap-4 text-sm">
                   <p className="text-slate-300">

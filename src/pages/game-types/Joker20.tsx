@@ -10,6 +10,8 @@ import { PlayingCard } from "@/components/casino/PlayingCard";
 import { BettingChip } from "@/components/casino/BettingChip";
 import { toast } from "@/hooks/use-toast";
 import { bettingService } from "@/services/bettingService";
+import { useUniversalCasinoGame } from "@/hooks/useUniversalCasinoGame";
+import { CasinoBettingPanel } from "@/components/casino/CasinoBettingPanel";
 
 const CHIP_VALUES = [10, 50, 100, 500, 1000, 5000];
 
@@ -42,6 +44,24 @@ const HISTORY = Array.from({ length: 8 }, () => {
 
 export default function Joker20() {
   const navigate = useNavigate();
+  // ✅ LIVE API INTEGRATION
+  const {
+    gameData,
+    result,
+    isConnected,
+    markets,
+    roundId,
+    placeBet,
+    placedBets,
+    clearBets,
+    totalStake,
+    potentialWin,
+    isSuspended,
+  } = useUniversalCasinoGame({
+    gameType: "joker20",
+    gameName: "Joker 20",
+  });
+
   const [countdown, setCountdown] = useState(22);
   const [isPlaying, setIsPlaying] = useState(false);
   const [selectedChip, setSelectedChip] = useState(100);
@@ -74,16 +94,9 @@ export default function Joker20() {
     return () => clearInterval(timer);
   }, []);
 
-  const placeBet = (betType: keyof typeof bets) => {
-    setBets((prev) => ({ ...prev, [betType]: prev[betType] + selectedChip }));
-  };
-
-  const clearBets = () =>
-    setBets({ player: 0, banker: 0, tie: 0, jokerWild: 0 });
-
   const handlePlaceBets = async () => {
-    const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
-    if (totalStake === 0) {
+    const totalStakeAmount = Object.values(bets).reduce((a, b) => a + b, 0);
+    if (totalStakeAmount === 0) {
       toast({ title: "Please place a bet first", variant: "destructive" });
       return;
     }
@@ -116,10 +129,6 @@ export default function Joker20() {
     }
   };
 
-  const totalStake = Object.values(bets).reduce((a, b) => a + b, 0);
-  const potentialWin =
-    bets.player * 2 + bets.banker * 1.95 + bets.tie * 9 + bets.jokerWild * 12;
-
   return (
     <MainLayout>
       <div className="min-h-screen bg-gradient-to-b from-purple-950 via-slate-900 to-black relative overflow-hidden">
@@ -136,6 +145,7 @@ export default function Joker20() {
                 fontSize: "120px",
                 color: i % 2 === 0 ? "#8B5CF6" : "#10B981",
               }}
+              role="presentation"
             >
               🃏
             </div>
