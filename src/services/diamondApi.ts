@@ -43,7 +43,7 @@ async function mapWithConcurrency<T, R>(
   }
 
   const workers = Array.from({ length: Math.max(1, limit) }, worker);
-  await Promise.all(workers.map((w) => w()));
+  await Promise.all(workers);
   return results;
 }
 
@@ -209,7 +209,13 @@ export const diamondApi = {
                   sid: sportId,
                   sname: sportName,
                   name: match.name || match.ename,
-                  is_live: match.iplay || false,
+                  is_live:
+                    match.is_live === 1 ||
+                    match.is_live === true ||
+                    match.inplay === 1 ||
+                    match.iplay === true ||
+                    match.iplay === 1 ||
+                    false,
                   start_date: match.stime,
                   cname: competitionName,
                   srno: match.srno || 0,
@@ -229,7 +235,13 @@ export const diamondApi = {
           sid: match.etid,
           sname: match.cname || "Virtual",
           name: match.ename,
-          is_live: match.iplay || false,
+          is_live:
+            match.is_live === 1 ||
+            match.is_live === true ||
+            match.inplay === 1 ||
+            match.iplay === true ||
+            match.iplay === 1 ||
+            false,
           start_date: match.stime,
           cname: match.cname,
           srno: 0,
@@ -264,7 +276,13 @@ export const diamondApi = {
           sid: match.etid,
           sname: match.cname,
           name: match.ename,
-          is_live: match.iplay || false,
+          is_live:
+            match.is_live === 1 ||
+            match.is_live === true ||
+            match.inplay === 1 ||
+            match.iplay === true ||
+            match.iplay === 1 ||
+            false,
           start_date: match.stime,
           cname: match.cname,
           srno: 0,
@@ -280,7 +298,13 @@ export const diamondApi = {
           sid: match.etid,
           sname: match.cname,
           name: match.ename,
-          is_live: match.iplay || false,
+          is_live:
+            match.is_live === 1 ||
+            match.is_live === true ||
+            match.inplay === 1 ||
+            match.iplay === true ||
+            match.iplay === 1 ||
+            false,
           start_date: match.stime,
           cname: match.cname,
           srno: 0,
@@ -334,7 +358,10 @@ export const diamondApi = {
       gmid: Number(raw.gmid) || gmid,
       sid: Number(raw.sid || raw.etid) || sid,
       name,
-      is_live: Boolean(raw.is_live || raw.iplay),
+      is_live:
+        Boolean(
+          raw.is_live || raw.iplay || raw.inplay || raw.is_live === 1 || false,
+        ) || raw.inplay || raw.is_live === 1 || false,
       start_date: raw.start_date || raw.stime || "",
       gtv: Number(raw.gtv) || undefined,
       teams,

@@ -403,7 +403,13 @@ class DiamondWebSocketService {
                   sid: sportId,
                   sname: sportName,
                   name: match.name || match.ename,
-                  is_live: match.iplay || false,
+                  is_live:
+                    match.is_live === 1 ||
+                    match.is_live === true ||
+                    match.inplay === 1 ||
+                    match.iplay === true ||
+                    match.iplay === 1 ||
+                    false,
                   start_date: match.stime,
                   cname: competitionName,
                   srno: match.srno || 0,
@@ -423,7 +429,13 @@ class DiamondWebSocketService {
           sid: match.etid,
           sname: match.cname || "Virtual",
           name: match.ename,
-          is_live: match.iplay || false,
+          is_live:
+            match.is_live === 1 ||
+            match.is_live === true ||
+            match.inplay === 1 ||
+            match.iplay === true ||
+            match.iplay === 1 ||
+            false,
           start_date: match.stime,
           cname: match.cname,
           srno: 0,
