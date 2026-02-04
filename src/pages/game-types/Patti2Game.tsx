@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useCasinoWebSocket } from "@/hooks/api/useCasinoWebSocket";
 import { CasinoGame } from "@/types/casino";
@@ -21,10 +22,23 @@ interface Bet {
 
 export default function Patti2Game({ game }: Patti2GameProps) {
   const gmid = game?.gmid || "patti2";
+  const gameName = game?.gname || "Patti 2";
   const [bets, setBets] = useState<Bet[]>([]);
   const [selectedChip, setSelectedChip] = useState(100);
   const [action, setAction] = useState<string | null>(null);
-  const { gameData, resultData } = useCasinoWebSocket(gmid);
+  const { gameData, resultData, error } = useCasinoWebSocket(gmid);
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!gameData) {
+        setLoadingTimeout(true);
+      }
+    }, 10000);
+
+    return () => clearTimeout(timer);
+  }, [gameData]);
 
   const chips = [100, 500, 1000, 5000, 10000];
 
@@ -76,6 +90,51 @@ export default function Patti2Game({ game }: Patti2GameProps) {
       toast({ title: "❌ Error", variant: "destructive" });
     }
   };
+
+  // Show loading state
+  if (!gameData && !loadingTimeout && !error) {
+    return (
+      <MainLayout>
+        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-teal-950/20 to-slate-950 flex items-center justify-center">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-teal-500 border-t-transparent mb-4"></div>
+            <p className="text-white text-xl">Loading {gameName}...</p>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Show error state
+  if (loadingTimeout || error) {
+    return (
+      <MainLayout>
+        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-teal-950/20 to-slate-950 flex flex-col items-center justify-center gap-4 p-8">
+          <h2 className="text-2xl font-bold text-destructive">
+            Game Unavailable
+          </h2>
+          <p className="text-white text-center">
+            {error ||
+              "Unable to load game data. The game might be temporarily offline."}
+          </p>
+          <div className="flex gap-4 mt-4">
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700"
+            >
+              Retry
+            </button>
+            <button
+              onClick={() => navigate("/casino")}
+              className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600"
+            >
+              Back to Casino
+            </button>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>

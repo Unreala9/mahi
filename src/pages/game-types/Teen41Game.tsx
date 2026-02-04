@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { useCasinoWebSocket } from "@/hooks/api/useCasinoWebSocket";
@@ -177,8 +178,20 @@ export default function Teen41Game({ game }: Teen41GameProps) {
   const gameId = game?.gmid || "teen41";
   const gameName = game?.gname || "Teen 41";
 
-  const { gameData, resultData } = useCasinoWebSocket(gameId);
+  const { gameData, resultData, error } = useCasinoWebSocket(gameId);
   const { toast } = useToast();
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!gameData) {
+        setLoadingTimeout(true);
+      }
+    }, 10000);
+
+    return () => clearTimeout(timer);
+  }, [gameData]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -200,17 +213,17 @@ export default function Teen41Game({ game }: Teen41GameProps) {
     const newBet: Bet = { type, amount: selectedChip, isSideBet: false };
     setBets([...bets, newBet]);
 
-    casinoBettingService.placeCasinoBet(
-      gameId,
-      gameData?.mid || "",
-      "",
-      type,
-      selectedChip.toString(),
-      selectedChip,
-      "0",
-      "0",
-      "0",
-    );
+    casinoBettingService.placeCasinoBet({
+      gameId: gameId,
+      gameName: gameName,
+      roundId: gameData?.mid || "",
+      marketId: type,
+      marketName: type,
+      selection: type,
+      odds: 2.0,
+      stake: selectedChip,
+      betType: "BACK",
+    });
 
     toast({
       title: "Main Bet Placed",

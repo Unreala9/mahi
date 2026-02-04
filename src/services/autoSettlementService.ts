@@ -24,7 +24,9 @@ async function settleBet(
   payout?: number,
 ): Promise<boolean> {
   try {
-    console.log(`[AutoSettle] Settling bet ${betId} as ${status}`);
+    console.log(
+      `[AutoSettle] Settling bet ${betId} as ${status} with payout: ${payout || 0}`,
+    );
 
     const result = await callEdgeFunction(
       "bet-settlement?action=settle",
@@ -41,7 +43,7 @@ async function settleBet(
     }
 
     console.log(
-      `[AutoSettle] Bet ${betId} settled successfully. New balance: ${result.balance}`,
+      `[AutoSettle] ✅ Bet ${betId} settled successfully. Status: ${status}, Payout: ${payout || 0}, New balance: ${result.balance}`,
     );
     return true;
   } catch (error) {
@@ -71,7 +73,7 @@ export async function settleCasinoBets(
       .select("*")
       .eq("user_id", user.id)
       .eq("status", "pending")
-      .or(`game_id.eq.${gameId},game.eq.${gameId}`);
+      .eq("sport", gameId);
 
     if (error) {
       console.error("[AutoSettle] Error querying bets:", error);
@@ -130,13 +132,40 @@ export async function settleCasinoBets(
     );
 
     for (const bet of bets) {
+      // Check if bet is for this round (match roundId with bet.event)
+      const betRoundId = bet.event;
+      if (betRoundId && betRoundId !== resultRoundId.toString()) {
+        console.log(
+          `[AutoSettle] Skipping bet ${bet.id}: different round (bet=${betRoundId}, result=${resultRoundId})`,
+        );
+        continue;
+      }
+
+      const betSelection =
+        bet.selection_name || bet.selection || bet.selectionId;
+
+      // Normalize both bet selection and winner for comparison
+      // Handle formats like: "Player A", "PLAYER A", "player_a", "A", "a"
+      const normalizedBetSelection = betSelection
+        .toString()
+        .toUpperCase()
+        .replace(/[\s_-]/g, "");
+      const normalizedWinner = winner
+        .toString()
+        .toUpperCase()
+        .replace(/[\s_-]/g, "");
+
+      // Check exact match or contains match
       const isWin =
-        betSelection === winner || betSelection === winner.toString();
+        normalizedBetSelection === normalizedWinner ||
+        normalizedBetSelection.includes(normalizedWinner) ||
+        normalizedWinner.includes(normalizedBetSelection);
+
       const status = isWin ? "won" : "lost";
       const payout = isWin ? bet.stake * bet.odds : 0;
 
       console.log(
-        `[AutoSettle] Settling bet ${bet.id}: selection=${betSelection}, winner=${winner}, status=${status}`,
+        `[AutoSettle] Settling bet ${bet.id}: selection="${betSelection}" (normalized: ${normalizedBetSelection}), winner="${winner}" (normalized: ${normalizedWinner}), match=${isWin}, status=${status}`,
       );
       const success = await settleBet(bet.id, status, payout);
 

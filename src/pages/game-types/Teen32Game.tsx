@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { useCasinoWebSocket } from "@/hooks/api/useCasinoWebSocket";
@@ -159,8 +160,20 @@ export default function Teen32Game({ game }: Teen32GameProps) {
   const gameId = game?.gmid || "teen32";
   const gameName = game?.gname || "Teen 32";
 
-  const { gameData, resultData } = useCasinoWebSocket(gameId);
+  const { gameData, resultData, error } = useCasinoWebSocket(gameId);
   const { toast } = useToast();
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!gameData) {
+        setLoadingTimeout(true);
+      }
+    }, 10000);
+
+    return () => clearTimeout(timer);
+  }, [gameData]);
 
   useEffect(() => {
     const timer = setInterval(() => {

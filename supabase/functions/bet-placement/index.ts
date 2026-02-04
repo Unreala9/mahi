@@ -124,6 +124,15 @@ serve(async (req) => {
       betData.stake = stake;
       betData.odds = odds;
 
+      // Calculate Exposure (Liability)
+      // BACK: Risk = Stake
+      // LAY: Risk = (Odds - 1) * Stake
+      let exposure = betData.stake;
+      if (betData.betType === "LAY") {
+        exposure = betData.stake * (betData.odds - 1);
+      }
+
+      // Fetch wallet balance once
       const walletRes = await admin
         .from("wallets")
         .select("balance")
@@ -145,15 +154,16 @@ serve(async (req) => {
         : 0;
 
       console.log(
-        `[BetPlacement] User: ${user.id}, Wallet Balance: ${balance}, Stake: ${betData.stake}`,
+        `[BetPlacement] User: ${user.id}, Wallet Balance: ${balance}, Stake: ${betData.stake}, Exposure: ${exposure}`,
       );
 
-      if (balance < betData.stake) {
+      // Check if balance covers the exposure (not just stake)
+      if (balance < exposure) {
         return json(400, {
           success: false,
-          error: "Insufficient balance",
+          error: "Insufficient balance to cover exposure",
           balance,
-          required: betData.stake,
+          required: exposure,
           userId: user.id,
         });
       }
@@ -162,42 +172,6 @@ serve(async (req) => {
         betData.betType === "BACK"
           ? betData.stake * betData.odds
           : betData.stake * (betData.odds - 1);
-
-      // Calculate Exposure (Liability)
-      // BACK: Risk = Stake
-      // LAY: Risk = (Odds - 1) * Stake
-      let exposure = betData.stake;
-      if (betData.betType === "LAY") {
-        exposure = betData.stake * (betData.odds - 1);
-      }
-
-      const walletRes = await admin
-        .from("wallets")
-        .select("balance")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (walletRes.error) {
-        return json(500, {
-          success: false,
-          error: "Wallet fetch failed",
-          details: walletRes.error.message,
-        });
-      }
-
-      let balance = walletRes.data?.balance
-        ? Number(walletRes.data.balance)
-        : 0;
-
-      console.log(
-        `[BetPlacement] User: ${user.id}, Wallet Balance: ${balance}, Stake: ${betData.stake}, Exposure: ${exposure}`,
-      );
-
-      // Check if balance covers the EXCEPTED EXPOSURE, not just stake
-      if (balance < exposure) {
-        return json(400, {
-          success: false,
-          error: "Insufficient balance to cover exposure",
           balance,
           required: exposure,
           userId: user.id,
@@ -230,6 +204,10 @@ serve(async (req) => {
           bet_on: betData.marketName.toLowerCase().includes("fancy") ? "fancy" :
             betData.marketName.toLowerCase().includes("bookmaker") ? "bookmaker" : "odds",
           rate: 100, // Default to 100 for now, can be passed from frontend later
+          // API Event Tracking for Auto-Settlement
+          api_event_id: betData.eventId || betData.gameId,
+          api_market_type: betData.marketName.toLowerCase().includes("fancy") ? "fancy" :
+            betData.marketName.toLowerCase().includes("bookmaker") ? "bookmaker" : "match_odds",
         })
         .select()
         .single();
@@ -278,16 +256,18 @@ serve(async (req) => {
           p_amount: exposure, // Use calculated exposure (Liability for LAY, Stake for BACK)
         });
 
-      if (updateError) {
-        console.error("Failed to update wallet balance (RPC):", updateError);
+      if (updateError || !walletData?.success) {
+        console.error("Failed to update wallet balance (RPC):", updateError || walletData);
         // Rollback bet if money couldn't be deducted
         await admin.from("bets").delete().eq("id", bet.id);
         await admin.from("transactions").delete().eq("id", txInsert.data.id);
 
         return json(400, {
           success: false,
-          error: "Deduction failed",
-          details: updateError.message,
+          error: walletData?.message || "Deduction failed",
+          details: updateError?.message || walletData?.message || "Insufficient balance or wallet not found",
+          balance: walletData?.old_balance ?? balance,
+          required: exposure,
         });
       }
 

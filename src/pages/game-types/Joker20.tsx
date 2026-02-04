@@ -61,12 +61,23 @@ export default function Joker20() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [selectedChip, setSelectedChip] = useState(100);
   const [showJoker, setShowJoker] = useState(false);
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
   const [bets, setBets] = useState({
     player: 0,
     banker: 0,
     tie: 0,
     jokerWild: 0,
   });
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!gameData) {
+        setLoadingTimeout(true);
+      }
+    }, 10000);
+
+    return () => clearTimeout(timer);
+  }, [gameData]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -123,6 +134,50 @@ export default function Joker20() {
       console.error("Failed to place bets:", error);
     }
   };
+
+  // Show loading state
+  if (!gameData && !loadingTimeout) {
+    return (
+      <MainLayout>
+        <div className="min-h-screen bg-gradient-to-b from-purple-950 via-slate-900 to-black flex items-center justify-center">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-purple-500 border-t-transparent mb-4"></div>
+            <p className="text-white text-xl">Loading Joker 20...</p>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Show error state
+  if (loadingTimeout) {
+    return (
+      <MainLayout>
+        <div className="min-h-screen bg-gradient-to-b from-purple-950 via-slate-900 to-black flex flex-col items-center justify-center gap-4 p-8">
+          <h2 className="text-2xl font-bold text-destructive">
+            Game Unavailable
+          </h2>
+          <p className="text-white text-center">
+            Unable to load game data. The game might be temporarily offline.
+          </p>
+          <div className="flex gap-4 mt-4">
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+            >
+              Retry
+            </button>
+            <button
+              onClick={() => navigate("/casino")}
+              className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600"
+            >
+              Back to Casino
+            </button>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>

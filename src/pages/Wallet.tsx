@@ -317,7 +317,7 @@ const Wallet = () => {
     }
 
     // Validate UPI ID
-    if (!upiId || upiId.trim() === '') {
+    if (!upiId || upiId.trim() === "") {
       toast({
         title: "⚠️ UPI ID Required",
         description: "Please enter your UPI ID",

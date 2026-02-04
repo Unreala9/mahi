@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { MatchEvent } from "@/services/diamondApi";
 import { useLiveSportsData } from "@/hooks/api/useLiveSportsData";
+import { SportsIcon } from "@/components/ui/SportsIcon";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -19,8 +20,6 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const [expandedCompetitions, setExpandedCompetitions] = useState<string[]>(
     [],
   );
-  const [isRacingOpen, setIsRacingOpen] = useState(true);
-  const [isOthersOpen, setIsOthersOpen] = useState(true);
   const [isAllSportsOpen, setIsAllSportsOpen] = useState(true);
 
   // Use live sports data hook - only call once
@@ -72,10 +71,10 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
   const fetchProfile = async (userId: string) => {
     try {
-      // Fetch profile details
+      // Fetch profile details including role
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
-        .select("id, full_name, avatar_url, email")
+        .select("id, full_name, email, role")
         .eq("id", userId)
         .maybeSingle();
 
@@ -83,22 +82,8 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         console.error("Error fetching profile:", profileError);
       }
 
-      // Try to fetch user role (table may not exist in all databases)
-      let userRole = "player"; // Default role
-      try {
-        const { data: roleData, error: roleError } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", userId)
-          .maybeSingle();
-
-        if (!roleError && roleData) {
-          userRole = roleData.role;
-        }
-      } catch (roleErr) {
-        // Silently handle if user_roles table doesn't exist
-        console.log("user_roles table not found, using default role");
-      }
+      // Use role from profiles table (defaults to 'user' in schema)
+      const userRole = profileData?.role || "user";
 
       if (profileData) {
         setProfile({
@@ -162,52 +147,53 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     }));
   };
 
-  // Sports list (no emojis/icons) - prefer live data
+  // Get icon for sport
+  const getSportIcon = (sportName: string, sid: number) => {
+    return <SportsIcon sportName={sportName} sportId={sid} size={18} />;
+  };
+
+  // Static sports list to ensure all basic sports are always visible
+  // IDs based on LeftSidebar.tsx and SportsCategoryBar.tsx
+  const STATIC_SPORTS = [
+    { sid: 4, name: "Cricket" },
+    { sid: 1, name: "Football" },
+    { sid: 2, name: "Tennis" },
+    { sid: 3, name: "Kabaddi" },
+    { sid: 8, name: "Basketball" },
+    { sid: 11, name: "Baseball" },
+    { sid: 12, name: "GreyHound" },
+    { sid: 7, name: "Horse Race" },
+    { sid: 10, name: "Volleyball" },
+    { sid: 13, name: "Darts" },
+    { sid: 5, name: "Futsal" },
+    { sid: 6, name: "Table Tennis" },
+    { sid: 9, name: "Binary" },
+    { sid: 14, name: "Politics" },
+  ];
+
+  // Sports list with icons - merge static list with live data
   const displaySports = useMemo(() => {
+    // Start with static list
+    const combined = [...STATIC_SPORTS];
+
+    // Create a set of existing IDs
+    const existingIds = new Set(combined.map(s => s.sid));
+
+    // Add any live sports that aren't in the static list
     if (sports && sports.length > 0) {
-      const mappedSports = [...sports]
-        .map((s) => ({
-          sid: Number((s as any).sid),
-          name: String((s as any).name),
-        }))
-        .filter((s) => Number.isFinite(s.sid) && Boolean(s.name));
-
-      // Sort with Cricket and Football at the top
-      return mappedSports.sort((a, b) => {
-        const aIsCricket = a.name.toLowerCase().includes("cricket");
-        const bIsCricket = b.name.toLowerCase().includes("cricket");
-        const aIsFootball = a.name.toLowerCase() === "football";
-        const bIsFootball = b.name.toLowerCase() === "football";
-
-        if (aIsCricket && !bIsCricket) return -1;
-        if (!aIsCricket && bIsCricket) return 1;
-        if (aIsFootball && !bIsFootball && !bIsCricket) return -1;
-        if (!aIsFootball && bIsFootball && !aIsCricket) return 1;
-
-        return a.name.localeCompare(b.name);
+      sports.forEach(s => {
+        const sid = Number((s as any).sid);
+        if (Number.isFinite(sid) && !existingIds.has(sid)) {
+          combined.push({
+             sid,
+             name: String((s as any).name)
+          });
+        }
       });
     }
 
-    // Fallback
-    return [
-      { sid: 4, name: "Cricket" },
-      { sid: 1, name: "Football" },
-      { sid: 2, name: "Tennis" },
-      { sid: 3, name: "Table Tennis" },
-      { sid: 10, name: "Badminton" },
-      { sid: 5, name: "Esoccer" },
-      { sid: 6, name: "Basketball" },
-      { sid: 9, name: "Volleyball" },
-      { sid: 11, name: "Snooker" },
-      { sid: 7, name: "Horse Racing" },
-      { sid: 4339, name: "Greyhound Racing" },
-    ];
+    return combined;
   }, [sports]);
-
-  const racingLinks: Array<{ label: string; sid: number }> = [
-    { label: "Horse Racing", sid: 7 },
-    { label: "Greyhound Racing", sid: 4339 },
-  ];
 
   const SectionHeader = ({
     title,
@@ -221,10 +207,10 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     <button
       type="button"
       onClick={onToggle}
-      className="w-full flex items-center justify-between px-3 py-2 bg-primary text-primary-foreground font-semibold text-sm border-b border-border"
+      className="w-full flex items-center justify-between px-3 py-2.5 bg-primary text-primary-foreground font-semibold text-base border-b border-border"
     >
       <span className="truncate min-w-0 text-left">{title}</span>
-      <span className="text-xs flex-shrink-0">{open ? "▴" : "▾"}</span>
+      <span className="text-sm flex-shrink-0">{open ? "▴" : "▾"}</span>
     </button>
   );
 
@@ -243,7 +229,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       type="button"
       onClick={onClick}
       className={
-        "w-full flex items-center gap-2 px-3 py-2 text-sm border-b border-border text-foreground min-w-0 overflow-hidden " +
+        "w-full flex items-center gap-2.5 px-3 py-2.5 text-base border-b border-border text-foreground min-w-0 overflow-hidden " +
         (active ? "bg-muted" : "bg-muted/60 hover:bg-muted")
       }
     >
@@ -253,7 +239,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   );
 
   const ExpandBox = ({ expanded }: { expanded: boolean }) => (
-    <span className="w-4 h-4 border border-border bg-background text-[12px] leading-none flex items-center justify-center flex-shrink-0">
+    <span className="w-5 h-5 border border-border bg-background text-sm leading-none flex items-center justify-center flex-shrink-0">
       {expanded ? "-" : "+"}
     </span>
   );
@@ -270,60 +256,6 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         {/* Navigation */}
         <div className="flex-1 min-h-0">
           <nav>
-            {/* Racing */}
-            <SectionHeader
-              title="Racing Sports"
-              open={isRacingOpen}
-              onToggle={() => setIsRacingOpen((v) => !v)}
-            />
-            {isRacingOpen && (
-              <div>
-                {racingLinks.map((r) => (
-                  <RowButton
-                    key={r.sid}
-                    label={r.label}
-                    onClick={() => handleNavigate(`/sports?sport=${r.sid}`)}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Others */}
-            <SectionHeader
-              title="Others"
-              open={isOthersOpen}
-              onToggle={() => setIsOthersOpen((v) => !v)}
-            />
-            {isOthersOpen && (
-              <div>
-                {othersLinks.map((item) => (
-                  <RowButton
-                    key={item.label}
-                    label={item.label}
-                    onClick={() => handleNavigate(item.path)}
-                    active={location.pathname === item.path}
-                  />
-                ))}
-                <RowButton
-                  label="My Bets"
-                  onClick={() => handleNavigate("/bets")}
-                  active={location.pathname === "/bets"}
-                />
-                <RowButton
-                  label="Wallet"
-                  onClick={() => handleNavigate("/wallet")}
-                  active={location.pathname === "/wallet"}
-                />
-                {isAdmin && (
-                  <RowButton
-                    label="Admin"
-                    onClick={() => handleNavigate("/admin")}
-                    active={location.pathname.startsWith("/admin")}
-                  />
-                )}
-              </div>
-            )}
-
             {/* All sports */}
             <SectionHeader
               title="All Sports"
@@ -340,14 +272,19 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                     <div key={sport.sid}>
                       <RowButton
                         label={sport.name}
-                        left={<ExpandBox expanded={isSportExpanded} />}
+                        left={
+                          <div className="flex items-center gap-2">
+                            <ExpandBox expanded={isSportExpanded} />
+                            {getSportIcon(sport.name, sport.sid)}
+                          </div>
+                        }
                         onClick={() => toggleSport(sport.sid)}
                       />
 
                       {isSportExpanded && (
                         <div className="bg-background">
                           {competitions.length === 0 ? (
-                            <div className="px-3 py-2 text-xs text-muted-foreground border-b border-border">
+                            <div className="px-3 py-2 text-sm text-muted-foreground border-b border-border">
                               {loading ? "Loading…" : "No matches"}
                             </div>
                           ) : (
@@ -359,12 +296,12 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                                   <button
                                     type="button"
                                     onClick={() => toggleCompetition(comp.name)}
-                                    className="w-full flex items-center justify-between gap-2 px-7 py-2 text-xs bg-muted/40 hover:bg-muted border-b border-border"
+                                    className="w-full flex items-center justify-between gap-2 px-7 py-2 text-sm bg-muted/40 hover:bg-muted border-b border-border"
                                   >
                                     <span className="truncate">
                                       {isCompExpanded ? "-" : "+"} {comp.name}
                                     </span>
-                                    <span className="text-[11px] text-muted-foreground">
+                                    <span className="text-xs text-muted-foreground">
                                       {comp.matches.length}
                                     </span>
                                   </button>
@@ -380,7 +317,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                                               `/match/${match.gmid}/${sport.sid}`,
                                             )
                                           }
-                                          className="w-full px-10 py-2 text-xs text-left bg-background hover:bg-muted border-b border-border"
+                                          className="w-full px-10 py-2 text-sm text-left bg-background hover:bg-muted border-b border-border"
                                         >
                                           <span className="truncate">
                                             {match.name}
@@ -435,60 +372,6 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             {/* Navigation */}
             <div className="flex-1 min-h-0">
               <nav>
-                {/* Racing */}
-                <SectionHeader
-                  title="Racing Sports"
-                  open={isRacingOpen}
-                  onToggle={() => setIsRacingOpen((v) => !v)}
-                />
-                {isRacingOpen && (
-                  <div>
-                    {racingLinks.map((r) => (
-                      <RowButton
-                        key={r.sid}
-                        label={r.label}
-                        onClick={() => handleNavigate(`/sports?sport=${r.sid}`)}
-                      />
-                    ))}
-                  </div>
-                )}
-
-                {/* Others */}
-                <SectionHeader
-                  title="Others"
-                  open={isOthersOpen}
-                  onToggle={() => setIsOthersOpen((v) => !v)}
-                />
-                {isOthersOpen && (
-                  <div>
-                    {othersLinks.map((item) => (
-                      <RowButton
-                        key={item.label}
-                        label={item.label}
-                        onClick={() => handleNavigate(item.path)}
-                        active={location.pathname === item.path}
-                      />
-                    ))}
-                    <RowButton
-                      label="My Bets"
-                      onClick={() => handleNavigate("/bets")}
-                      active={location.pathname === "/bets"}
-                    />
-                    <RowButton
-                      label="Wallet"
-                      onClick={() => handleNavigate("/wallet")}
-                      active={location.pathname === "/wallet"}
-                    />
-                    {isAdmin && (
-                      <RowButton
-                        label="Admin"
-                        onClick={() => handleNavigate("/admin")}
-                        active={location.pathname.startsWith("/admin")}
-                      />
-                    )}
-                  </div>
-                )}
-
                 {/* All sports */}
                 <SectionHeader
                   title="All Sports"
@@ -507,14 +390,19 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                         <div key={sport.sid}>
                           <RowButton
                             label={sport.name}
-                            left={<ExpandBox expanded={isSportExpanded} />}
+                            left={
+                              <div className="flex items-center gap-2">
+                                <ExpandBox expanded={isSportExpanded} />
+                                {getSportIcon(sport.name, sport.sid)}
+                              </div>
+                            }
                             onClick={() => toggleSport(sport.sid)}
                           />
 
                           {isSportExpanded && (
                             <div className="bg-background">
                               {competitions.length === 0 ? (
-                                <div className="px-3 py-2 text-xs text-muted-foreground border-b border-border">
+                                <div className="px-3 py-2 text-sm text-muted-foreground border-b border-border">
                                   {loading ? "Loading…" : "No matches"}
                                 </div>
                               ) : (
@@ -528,13 +416,14 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                                         onClick={() =>
                                           toggleCompetition(comp.name)
                                         }
-                                        className="w-full flex items-center justify-between gap-2 px-7 py-2 text-xs bg-muted/40 hover:bg-muted border-b border-border min-w-0 overflow-hidden"
+                                        className="w-full flex items-center justify-between gap-2 px-7 py-2 text-sm bg-muted/40 hover:bg-muted border-b border-border min-w-0 overflow-hidden"
                                       >
                                         <span className="truncate min-w-0 flex-1 text-left">
                                           {isCompExpanded ? "-" : "+"}{" "}
                                           {comp.name}
+                                          <s-icon name="icon-sport-alpine"></s-icon>
                                         </span>
-                                        <span className="text-[11px] text-muted-foreground flex-shrink-0">
+                                        <span className="text-xs text-muted-foreground flex-shrink-0">
                                           {comp.matches.length}
                                         </span>
                                       </button>
@@ -550,7 +439,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                                                   `/match/${match.gmid}/${sport.sid}`,
                                                 )
                                               }
-                                              className="w-full px-10 py-2 text-xs text-left bg-background hover:bg-muted border-b border-border min-w-0 overflow-hidden"
+                                              className="w-full px-10 py-2 text-sm text-left bg-background hover:bg-muted border-b border-border min-w-0 overflow-hidden"
                                             >
                                               <span className="truncate min-w-0 block">
                                                 {match.name}

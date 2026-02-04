@@ -117,6 +117,9 @@ class ResultWebSocketService {
     const casinoGameTypes = [
       // Teen Patti Variants
       "teen20",
+      "teen20v1",
+      "teen20b",
+      "teen20c",
       "teen1",
       "teen3",
       "teen6",

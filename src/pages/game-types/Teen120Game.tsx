@@ -144,17 +144,17 @@ export default function Teen120Game({ game }: Teen120GameProps) {
     const newBet: Bet = { type, amount: selectedChip };
     setBets([...bets, newBet]);
 
-    casinoBettingService.placeCasinoBet(
-      gameId,
-      gameData?.mid || "",
-      "",
-      type,
-      selectedChip.toString(),
-      selectedChip,
-      "0",
-      "0",
-      "0",
-    );
+    casinoBettingService.placeCasinoBet({
+      gameId: gameId,
+      gameName: gameName,
+      roundId: gameData?.mid || "",
+      marketId: type,
+      marketName: type,
+      selection: type,
+      odds: 2.0,
+      stake: selectedChip,
+      betType: "BACK",
+    });
 
     toast({
       title: "⚡ Quick Bet",
