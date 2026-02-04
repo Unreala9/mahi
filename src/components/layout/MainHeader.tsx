@@ -90,19 +90,35 @@ export const MainHeader = ({
     : session?.user?.email?.split("@")[0] || "Account";
 
   const isAuthed = isDemo || Boolean(session?.user);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Check if user is admin
+  useEffect(() => {
+    if (!session?.user || isDemo) {
+      setIsAdmin(false);
+      return;
+    }
+
+    const checkAdmin = async () => {
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", session.user.id)
+        .maybeSingle();
+
+      setIsAdmin(profileData?.role === "admin");
+    };
+
+    checkAdmin();
+  }, [session?.user, isDemo]);
 
   const navItems = [
     { label: "HOME", to: "/" },
-    { label: "CRICKET", to: "/sports?sport=4" },
-    { label: "TENNIS", to: "/sports?sport=2" },
-    { label: "FOOTBALL", to: "/sports?sport=1" },
-    { label: "TABLE TENNIS", to: "/sports?sport=3" },
-    { label: "BACCARAT", to: "/casino?cat=baccarat" },
-    { label: "32 CARDS", to: "/casino?cat=32-cards" },
-    { label: "TEENPATTI", to: "/casino?cat=teenpatti" },
-    { label: "POKER", to: "/casino?cat=poker" },
-    { label: "LUCKY 7", to: "/casino?cat=lucky-7" },
-    { label: "CRASH", to: "/casino?cat=others" },
+    { label: "IN-PLAY", to: "/in-play" },
+    { label: "SPORTSBOOK", to: "/sports" },
+    { label: "OUR CASINO", to: "/casino" },
+    { label: "LIVE CASINO", to: "/casino-live" },
+    { label: "SLOT GAME", to: "/casino" },
   ];
 
   const marqueeText =
@@ -190,6 +206,11 @@ export const MainHeader = ({
                   <DropdownMenuItem onClick={() => navigate("/profile")}>
                     Set Button Values
                   </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem onClick={() => navigate("/admin")}>
+                      Admin Panel
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={async () => {

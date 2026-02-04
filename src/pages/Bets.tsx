@@ -14,7 +14,11 @@ import {
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { settlementMonitor, settleSportsBets, settleCasinoBets } from "@/services/autoSettlementService";
+import {
+  settlementMonitor,
+  settleSportsBets,
+  settleCasinoBets,
+} from "@/services/autoSettlementService";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 
@@ -32,33 +36,56 @@ const Bets = () => {
 
     try {
       // Get all unique event/game IDs from pending bets
-      const pendingBets = bets.filter((b: any) => b.status === 'pending');
-      const eventIds = new Set(pendingBets.filter((b: any) => b.event_id).map((b: any) => b.event_id));
-      const gameIds = new Set(pendingBets.filter((b: any) => b.game_id).map((b: any) => b.game_id));
+      const pendingBets = bets.filter((b: any) => b.status === "pending");
+      const eventIds = new Set(
+        pendingBets.filter((b: any) => b.event_id).map((b: any) => b.event_id),
+      );
+      // Use 'sport' column for casino games (not game_id)
+      const gameIds = new Set(
+        pendingBets.filter((b: any) => b.sport).map((b: any) => b.sport),
+      );
 
       let settledCount = 0;
+      let wonCount = 0;
+      let totalWinnings = 0;
 
       // Settle sports bets
       for (const eventId of eventIds) {
-        await settleSportsBets(Number(eventId));
-        settledCount++;
+        const results = await settleSportsBets(Number(eventId));
+        settledCount += results.length;
+        wonCount += results.filter((r) => r.status === "won").length;
+        totalWinnings += results
+          .filter((r) => r.status === "won")
+          .reduce((sum, r) => sum + (r.payout || 0), 0);
       }
 
       // Settle casino bets
       for (const gameId of gameIds) {
-        await settleCasinoBets(String(gameId));
-        settledCount++;
+        const results = await settleCasinoBets(String(gameId));
+        settledCount += results.length;
+        wonCount += results.filter((r) => r.status === "won").length;
+        totalWinnings += results
+          .filter((r) => r.status === "won")
+          .reduce((sum, r) => sum + (r.payout || 0), 0);
       }
 
       // Refresh the bet list
       await refetch();
 
-      toast({
-        title: "Settlement Complete",
-        description: `Processed ${settledCount} events/games. Check your bets!`,
-      });
+      if (wonCount > 0) {
+        toast({
+          title: "🎉 Congratulations!",
+          description: `You won ${wonCount} bet${wonCount > 1 ? "s" : ""}! ₹${totalWinnings.toLocaleString()} credited to your wallet.`,
+          duration: 5000,
+        });
+      } else {
+        toast({
+          title: "Settlement Complete",
+          description: `Processed ${settledCount} bet${settledCount !== 1 ? "s" : ""}. Check your results!`,
+        });
+      }
     } catch (error) {
-      console.error('[ManualSettlement] Error:', error);
+      console.error("[ManualSettlement] Error:", error);
       toast({
         title: "Settlement Failed",
         description: "Could not settle bets. Please try again.",
@@ -79,6 +106,12 @@ const Bets = () => {
       (acc: number, b: any) => acc + (Number(b.stake) || 0),
       0,
     ),
+    totalWinnings: bets
+      .filter((b: any) => b.status === "won" || b.status === "win")
+      .reduce((acc: number, b: any) => acc + (Number(b.payout) || 0), 0),
+    totalLosses: bets
+      .filter((b: any) => b.status === "lost" || b.status === "loss")
+      .reduce((acc: number, b: any) => acc + (Number(b.stake) || 0), 0),
   };
 
   return (
@@ -92,7 +125,7 @@ const Bets = () => {
             Track your betting history and performance.
           </p>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-6">
             <StatCard label="Total Bets" value={stats.total} />
             <StatCard label="Won" value={stats.won} color="text-green-500" />
             <StatCard
@@ -103,6 +136,16 @@ const Bets = () => {
             <StatCard
               label="Wagered"
               value={`₹${stats.wagered.toLocaleString()}`}
+            />
+            <StatCard
+              label="Total Winnings"
+              value={`₹${stats.totalWinnings.toLocaleString()}`}
+              color="text-green-500"
+            />
+            <StatCard
+              label="Total Losses"
+              value={`₹${stats.totalLosses.toLocaleString()}`}
+              color="text-destructive"
             />
           </div>
         </div>
@@ -218,6 +261,17 @@ const Bets = () => {
                       <p className="text-xs text-muted-foreground font-mono">
                         @{bet.odds}
                       </p>
+                      {(bet.status === "won" || bet.status === "win") &&
+                        bet.payout && (
+                          <p className="text-sm text-green-500 font-bold mt-1">
+                            Won: ₹{Number(bet.payout).toLocaleString()}
+                          </p>
+                        )}
+                      {(bet.status === "lost" || bet.status === "loss") && (
+                        <p className="text-sm text-destructive font-bold mt-1">
+                          Lost: ₹{Number(bet.stake).toLocaleString()}
+                        </p>
+                      )}
                     </div>
                     <StatusBadge status={bet.status} />
                   </div>

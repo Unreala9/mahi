@@ -100,11 +100,11 @@
   }
 
   .dark {
-    /* Dark Blue Theme - Richer Navy */
-    --background: 222 47% 11%; /* #0f172a Slate 900 (Rich Navy) */
+    /* Dark Blue Theme - Richer Navy (Lotus365 Style) */
+    --background: 222 47% 6%; /* #0a0e1a Even Darker Navy */
     --foreground: 210 40% 98%; /* Off-white #f8fafc */
 
-    --card: 220 40% 16%; /* #1e293b Slate 800 (Lighter Navy for Cards) */
+    --card: 220 40% 12%; /* #1a1f2e Darker Cards */
     --card-foreground: 210 40% 98%;
 
     --popover: 222 47% 11%;
@@ -116,7 +116,7 @@
     --secondary: 217 33% 17%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 215 25% 27%; /* Slate 700 */
+    --muted: 215 25% 20%; /* Darker Muted */
     --muted-foreground: 215 20% 65%; /* Slate 400 */
 
     --accent: 217 33% 17%;
@@ -125,16 +125,22 @@
     --destructive: 0 62% 30%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217 33% 20%;
+    --border: 217 33% 15%; /* Darker borders */
     --input: 217 33% 20%;
     --ring: 224 76% 48%;
 
+    /* Betting Odds Colors - Purple/Pink Gradients */
+    --odds-back-from: 258 90% 66%; /* Purple #a78bfa */
+    --odds-back-to: 280 90% 70%; /* Violet #c084fc */
+    --odds-lay-from: 330 81% 75%; /* Pink #f9a8d4 */
+    --odds-lay-to: 350 89% 70%; /* Rose #fb7185 */
+
     /* Body Background Override for Dark Mode */
     body {
-      background-color: #0f172a !important; /* Visible Dark Navy Blue */
+      background-color: #0a0e1a !important; /* Darker Navy Blue */
       background-image:
-        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px) !important;
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px) !important;
     }
   }
 }
@@ -223,12 +229,12 @@
 
   /* Hide Scrollbar */
   .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
 
   .scrollbar-hide::-webkit-scrollbar {
-    display: none;  /* Chrome, Safari and Opera */
+    display: none; /* Chrome, Safari and Opera */
   }
 
   /* Admin Dashboard Utilities */
@@ -254,6 +260,70 @@
 
   .stat-card-purple {
     @apply bg-purple-500/10 border-purple-500/20 text-purple-400;
+  }
+
+  /* Betting Odds Buttons - Lotus365 Style */
+  .odds-btn-back {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--odds-back-from)) 0%,
+      hsl(var(--odds-back-to)) 100%
+    );
+    @apply text-white font-bold transition-all duration-200 cursor-pointer;
+    border-radius: 6px !important;
+  }
+
+  .odds-btn-back:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(167, 139, 250, 0.4);
+  }
+
+  .odds-btn-lay {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--odds-lay-from)) 0%,
+      hsl(var(--odds-lay-to)) 100%
+    );
+    @apply text-white font-bold transition-all duration-200 cursor-pointer;
+    border-radius: 6px !important;
+  }
+
+  .odds-btn-lay:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(251, 113, 133, 0.4);
+  }
+
+  .odds-btn-disabled {
+    @apply bg-muted text-muted-foreground cursor-not-allowed;
+    border-radius: 6px !important;
+  }
+
+  .odds-btn-suspended {
+    @apply bg-muted/50 text-muted-foreground cursor-not-allowed;
+    border-radius: 6px !important;
+  }
+
+  /* Live Badge */
+  .live-badge {
+    @apply bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 uppercase tracking-wide;
+    border-radius: 4px !important;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Betting Row Hover */
+  .betting-row-hover {
+    @apply transition-all duration-200;
+  }
+
+  .betting-row-hover:hover {
+    @apply bg-muted/30;
+  }
+
+  /* Sports Icons */
+  .sports-icon {
+    @apply inline-flex items-center justify-center;
+    line-height: 1;
+    vertical-align: middle;
   }
 }
 

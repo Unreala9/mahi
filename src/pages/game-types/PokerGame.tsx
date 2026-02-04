@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useCasinoWebSocket } from "@/hooks/api/useCasinoWebSocket";
 import { CasinoGame } from "@/types/casino";
@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { Users, Clock, TrendingUp } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface PokerGameProps {
   game?: CasinoGame;
@@ -54,11 +55,24 @@ const seatPositions = [
 export default function PokerGame({ game }: PokerGameProps) {
   const [bets, setBets] = useState<Bet[]>([]);
   const [selectedChip, setSelectedChip] = useState(100);
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+  const navigate = useNavigate();
 
   const gameId = game?.gmid || "poker";
   const gameName = game?.gname || "Poker";
 
-  const { gameData, resultData } = useCasinoWebSocket(gameId);
+  const { gameData, resultData, error } = useCasinoWebSocket(gameId);
+
+  // Set timeout for loading state
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!gameData) {
+        setLoadingTimeout(true);
+      }
+    }, 10000);
+
+    return () => clearTimeout(timer);
+  }, [gameData]);
 
   const chips = [100, 500, 1000, 5000, 10000];
 
@@ -115,6 +129,37 @@ export default function PokerGame({ game }: PokerGameProps) {
 
   const cards = gameData?.card?.split(",") || [];
   const communityCards = cards.slice(0, 5);
+
+  // Show error if timeout or API error
+  if (loadingTimeout || error) {
+    return (
+      <MainLayout>
+        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-gray-900 to-slate-950 flex flex-col items-center justify-center gap-4 p-8">
+          <h2 className="text-2xl font-bold text-destructive">
+            Game Unavailable
+          </h2>
+          <p className="text-white text-center">
+            {error ||
+              "Unable to load game data. The game might be temporarily offline."}
+          </p>
+          <div className="flex gap-4 mt-4">
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+            >
+              Retry
+            </button>
+            <button
+              onClick={() => navigate("/casino")}
+              className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600"
+            >
+              Back to Casino
+            </button>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   if (!gameData) {
     return (

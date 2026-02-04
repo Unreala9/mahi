@@ -30,6 +30,8 @@ export default function TeenPatti20() {
     gameData,
     result,
     isConnected,
+    isLoading,
+    error,
     markets,
     roundId,
     placeBet,
@@ -88,6 +90,48 @@ export default function TeenPatti20() {
       console.error("Failed to place bet:", error);
     }
   };
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className="min-h-screen bg-gradient-to-b from-gray-900 via-green-900/20 to-black flex items-center justify-center">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-yellow-500 border-t-transparent mb-4"></div>
+            <p className="text-white text-xl">Loading Teen Patti 20...</p>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Show error state
+  if (error || !gameData) {
+    return (
+      <MainLayout>
+        <div className="min-h-screen bg-gradient-to-b from-gray-900 via-green-900/20 to-black flex flex-col items-center justify-center gap-4 p-8">
+          <h2 className="text-2xl font-bold text-yellow-500">
+            Game Unavailable
+          </h2>
+          <p className="text-white text-center">
+            {error ||
+              "Unable to load game data. The game might be temporarily offline."}
+          </p>
+          <div className="flex gap-4 mt-4">
+            <Button
+              onClick={() => window.location.reload()}
+              className="bg-yellow-600 hover:bg-yellow-700"
+            >
+              Retry
+            </Button>
+            <Button onClick={() => navigate("/casino")} variant="outline">
+              Back to Casino
+            </Button>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>

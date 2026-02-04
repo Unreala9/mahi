@@ -1,5 +1,6 @@
 import { useParams, Navigate } from "react-router-dom";
 import { getGameComponent } from "@/data/gameFileMapping";
+import { MainLayout } from "@/components/layout/MainLayout";
 
 export default function CasinoGame() {
   const { slug } = useParams<{ slug: string }>();
@@ -14,6 +15,6 @@ export default function CasinoGame() {
     }
   }
 
-  // Otherwise use generic template
-  return;
+  // Fallback: redirect to casino lobby
+  return <Navigate to="/casino" replace />;
 }

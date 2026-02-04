@@ -29,7 +29,7 @@ export function LiveCasinoGrid({
   };
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-4">
       {games.slice(0, maxDisplay).map((game) => {
         const liveData = getData(game.gmid);
 

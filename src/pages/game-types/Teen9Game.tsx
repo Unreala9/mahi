@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { useCasinoWebSocket } from "@/hooks/api/useCasinoWebSocket";
@@ -97,8 +98,20 @@ const Teen9Game = ({ game }: Teen9GameProps) => {
   const gameId = game?.gmid || "teen9";
   const gameName = game?.gname || "Teen 9";
 
-  const { gameData, resultData } = useCasinoWebSocket(gameId);
+  const { gameData, resultData, error } = useCasinoWebSocket(gameId);
   const { toast } = useToast();
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!gameData) {
+        setLoadingTimeout(true);
+      }
+    }, 10000);
+
+    return () => clearTimeout(timer);
+  }, [gameData]);
 
   const handlePlayerClick = (player: Player) => {
     if (player.status === "folded") return;
@@ -154,7 +167,50 @@ const Teen9Game = ({ game }: Teen9GameProps) => {
   const potentialWin = bets.reduce((sum, bet) => sum + bet.stake * bet.odds, 0);
 
   const radius = 180;
+  // Show loading state
+  if (!gameData && !loadingTimeout && !error) {
+    return (
+      <MainLayout>
+        <div className="min-h-screen bg-gradient-to-br from-blue-950 via-gray-900 to-cyan-950 flex items-center justify-center">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent mb-4"></div>
+            <p className="text-white text-xl">Loading {gameName}...</p>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
+  // Show error state
+  if (loadingTimeout || error) {
+    return (
+      <MainLayout>
+        <div className="min-h-screen bg-gradient-to-br from-blue-950 via-gray-900 to-cyan-950 flex flex-col items-center justify-center gap-4 p-8">
+          <h2 className="text-2xl font-bold text-destructive">
+            Game Unavailable
+          </h2>
+          <p className="text-white text-center">
+            {error ||
+              "Unable to load game data. The game might be temporarily offline."}
+          </p>
+          <div className="flex gap-4 mt-4">
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Retry
+            </button>
+            <button
+              onClick={() => navigate("/casino")}
+              className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600"
+            >
+              Back to Casino
+            </button>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
   return (
     <MainLayout>
       <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-green-950 text-white p-4">
