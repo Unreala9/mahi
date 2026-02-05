@@ -98,14 +98,14 @@ const CasinoGameCard = ({
       />
 
       {/* Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-100 transition-opacity" />
 
       {/* Content */}
-      <div className="absolute bottom-0 left-0 right-0 p-3 transform translate-y-2 group-hover:translate-y-0 transition-transform">
-        <h3 className="text-xs font-bold text-white line-clamp-1 mb-1">
+      <div className="absolute bottom-0 left-0 right-0 p-3">
+        <h3 className="text-sm font-bold text-white line-clamp-1 mb-1 shadow-black drop-shadow-md">
           {game.gname}
         </h3>
-        <button className="w-full py-1.5 bg-blue-600 text-white text-[10px] font-bold uppercase rounded hover:bg-blue-500 transition-colors opacity-0 group-hover:opacity-100">
+        <button className="hidden md:block w-full py-1.5 bg-blue-600 text-white text-[10px] font-bold uppercase rounded hover:bg-blue-500 transition-colors opacity-0 group-hover:opacity-100">
           Play Now
         </button>
       </div>
@@ -289,10 +289,10 @@ export default function Casino() {
         </div>
 
         {/* Micro Categories (Icon Buttons) */}
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2 mb-8">
+        <div className="flex gap-2 mb-8 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-blue-600 scrollbar-track-gray-800">
           <button
             onClick={() => setActiveMicro(null)}
-            className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border transition-all ${
+            className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border transition-all flex-shrink-0 min-w-[90px] ${
               !activeMicro
                 ? "bg-gradient-to-br from-blue-600 to-blue-800 border-blue-500 shadow-lg shadow-blue-500/20"
                 : "bg-[#121c2c] border-white/5 hover:border-blue-500/50 hover:bg-[#1a2638]"
@@ -308,7 +308,7 @@ export default function Casino() {
             <button
               key={cat.id}
               onClick={() => setActiveMicro(cat.id)}
-              className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border transition-all ${
+              className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border transition-all flex-shrink-0 min-w-[90px] ${
                 activeMicro === cat.id
                   ? "bg-gradient-to-br from-white text-black border-white shadow-lg"
                   : "bg-[#121c2c] text-gray-300 border-white/5 hover:border-blue-500/50 hover:bg-[#1a2638]" // Inverted selected style to match ref image white selection
@@ -332,7 +332,7 @@ export default function Casino() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-3 md:gap-4">
+            <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-3 md:gap-4">
               {filteredGames.slice(0, visibleCount).map((game) => (
                 <CasinoGameCard
                   key={game.gmid}

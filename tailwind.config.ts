@@ -79,10 +79,9 @@ export default {
         },
       },
       borderRadius: {
-        lg: "0rem",
-        md: "0rem",
-        sm: "0rem",
-        DEFAULT: "0rem",
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
         sans: ["Rajdhani", "sans-serif"],
