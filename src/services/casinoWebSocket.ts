@@ -1,5 +1,6 @@
 // Casino WebSocket Service for Real-time Game Data
 import { CasinoGame } from "@/types/casino";
+import { fetchCasinoGameData } from "./casino";
 
 const API_HOST = import.meta.env.VITE_DIAMOND_API_HOST || "/api/diamond";
 const API_PROTOCOL = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "";
@@ -25,6 +26,7 @@ export interface CasinoGameData {
   timer?: number;
   roundId?: string;
   timestamp: number;
+  sub?: any[]; // Raw API markets data
 }
 
 export interface CasinoOdds {
@@ -224,28 +226,19 @@ class CasinoWebSocketService {
 
     console.log(`[Casino WS] Starting HTTP polling for ${gmid}`);
 
+    console.log(`[Casino WS] Starting HTTP polling for ${gmid}`);
+
     const poll = async () => {
       try {
         // Fetch actual casino data from API
-        const response = await fetch(
-          `${BASE_URL}/casinoDetail?gmid=${gmid}&key=${API_KEY}`,
-          {
-            signal: AbortSignal.timeout(3000), // Increased to 3s
-            keepalive: true,
-            headers: {
-              Connection: "keep-alive",
-            },
-          },
-        );
+        // Use the centralized service which handles mapping and keys
+        const data = await fetchCasinoGameData(gmid);
 
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
+        if (!data || !data.data) {
+          return;
         }
 
-        const apiData = await response.json();
-
-        // Generate round ID
-        const roundId = `R${Date.now().toString().slice(-6)}`;
+        const apiData = data.data;
 
         // Send main game data
         const dataMessage: CasinoWebSocketMessage = {
@@ -253,57 +246,62 @@ class CasinoWebSocketService {
           gmid,
           data: {
             gmid,
-            gname: apiData?.data?.gname || gmid,
-            status: apiData?.data?.status || "active",
-            timer: Math.floor(Math.random() * 30) + 10,
-            roundId,
+            gname: apiData.gtype || gmid, // The API returns gtype which might be the name or ID
+            status: "active", // Default to active if data is present
+            timer:
+              apiData.lt && apiData.ft
+                ? Math.max(0, Math.floor(apiData.ft - apiData.lt))
+                : 0, // Calculate remaining time
+            roundId: apiData.mid?.toString(),
             timestamp: Date.now(),
+            // Pass through the raw sub array so the UI component (which expects 'sub') can render markets immediately
+            sub: apiData.sub,
           },
           timestamp: Date.now(),
         };
 
         this.notifySubscribers(gmid, dataMessage);
 
-        // Generate live odds with slight variations
-        const baseOdds = 1.9 + Math.random() * 0.2; // 1.90 to 2.10
-        const oddsVariation = Math.random() * 0.1 - 0.05; // -0.05 to +0.05
+        // Map API markets (sub) to internal structure
+        // API returns "sub": [{ "sid": 1, "nat": "Dragon", "b": 2, ... }]
+        if (apiData.sub && Array.isArray(apiData.sub)) {
+          const markets: CasinoMarket[] = [];
 
-        const oddsMessage: CasinoWebSocketMessage = {
-          type: "casino_odds",
-          gmid,
-          data: {
+          // Group runners into a main market since API returns flat list of runners
+          // We'll create a single "Match Odds" market for simplicity or group by subtype if needed
+          const mainRunners: CasinoRunner[] = apiData.sub.map(
+            (runner: any) => ({
+              rid: runner.sid?.toString() || runner.nat,
+              name: runner.nat,
+              odds: runner.b, // Back odds
+              status: runner.gstatus === "SUSPENDED" ? "suspended" : "active",
+            }),
+          );
+
+          markets.push({
+            mid: "main",
+            name: "Main Bets",
+            runners: mainRunners,
+          });
+
+          const oddsMessage: CasinoWebSocketMessage = {
+            type: "casino_odds",
             gmid,
-            markets: [
-              {
-                mid: "main",
-                name: "Match Winner",
-                runners: [
-                  {
-                    rid: "player_a",
-                    name: "Player A",
-                    odds: parseFloat((baseOdds + oddsVariation).toFixed(2)),
-                    status: "active",
-                  },
-                  {
-                    rid: "player_b",
-                    name: "Player B",
-                    odds: parseFloat((baseOdds - oddsVariation).toFixed(2)),
-                    status: "active",
-                  },
-                ],
-              },
-            ],
-          },
-          timestamp: Date.now(),
-        };
+            data: {
+              gmid,
+              markets,
+            },
+            timestamp: Date.now(),
+          };
 
-        this.notifySubscribers(gmid, oddsMessage);
+          this.notifySubscribers(gmid, oddsMessage);
+        }
       } catch (error) {
         console.error(`[Casino WS] Polling error for ${gmid}:`, error);
       }
     };
 
-    // Poll immediately and then every 3 seconds (reduced from 1s to improve performance)
+    // Poll immediately and then at interval
     poll();
     const timer = setInterval(poll, this.pollingInterval);
     this.pollingTimers.set(gmid, timer);

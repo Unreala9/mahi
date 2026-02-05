@@ -117,8 +117,7 @@ export const MainHeader = ({
     { label: "IN-PLAY", to: "/in-play" },
     { label: "SPORTSBOOK", to: "/sports" },
     { label: "OUR CASINO", to: "/casino" },
-    { label: "LIVE CASINO", to: "/casino-live" },
-    { label: "SLOT GAME", to: "/casino" },
+    { label: "MY BETS", to: "/bets" },
   ];
 
   const marqueeText =

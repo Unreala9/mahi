@@ -29,23 +29,19 @@ const MICRO_CATEGORIES = [
   { id: "mines", name: "Mines", icon: "💣" },
   { id: "color-game", name: "Color Game", icon: "🎨" },
   { id: "teenpatti", name: "Teenpatti", icon: "🃏" },
+  { id: "32-cards", name: "32 Cards", icon: "🂠" },
   { id: "andar-bahar", name: "Andar Bahar", icon: "🂡" },
+  { id: "lucky-7", name: "Lucky 7", icon: "7️⃣" },
   { id: "poker", name: "Live Poker", icon: "♣️" },
+  { id: "3-card", name: "3 Card Judgement", icon: "⚖️" },
   { id: "roulette", name: "Roulette", icon: "🎡" },
+  { id: "casino-war", name: "Casino War", icon: "⚔️" },
   { id: "baccarat", name: "Baccarat", icon: "🏦" },
   { id: "matka", name: "Matka", icon: "🎲" },
+  { id: "cricket", name: "Cricket", icon: "🏏" },
   { id: "slots", name: "Slots", icon: "🎰" },
   { id: "virtual", name: "Virtual", icon: "🎮" },
   { id: "others", name: "Others", icon: "📦" },
-];
-
-const MACRO_CATEGORIES = [
-  "ALL",
-  "RECENT",
-  "MAC88 LIVE",
-  "MAC88 VIRTUALS",
-  "POPULAR",
-  "SLOTS",
 ];
 
 // Helper component for robust image loading
@@ -102,14 +98,14 @@ const CasinoGameCard = ({
       />
 
       {/* Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-100 transition-opacity" />
 
       {/* Content */}
-      <div className="absolute bottom-0 left-0 right-0 p-3 transform translate-y-2 group-hover:translate-y-0 transition-transform">
-        <h3 className="text-xs font-bold text-white line-clamp-1 mb-1">
+      <div className="absolute bottom-0 left-0 right-0 p-3">
+        <h3 className="text-sm font-bold text-white line-clamp-1 mb-1 shadow-black drop-shadow-md">
           {game.gname}
         </h3>
-        <button className="w-full py-1.5 bg-blue-600 text-white text-[10px] font-bold uppercase rounded hover:bg-blue-500 transition-colors opacity-0 group-hover:opacity-100">
+        <button className="hidden md:block w-full py-1.5 bg-blue-600 text-white text-[10px] font-bold uppercase rounded hover:bg-blue-500 transition-colors opacity-0 group-hover:opacity-100">
           Play Now
         </button>
       </div>
@@ -125,7 +121,7 @@ const CasinoGameCard = ({
 export default function Casino() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [activeMacro, setActiveMacro] = useState("ALL");
+
   const [activeMicro, setActiveMicro] = useState<string | null>(null); // null means 'all' in context of micro
   const [searchQuery, setSearchQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(30);
@@ -186,17 +182,25 @@ export default function Casino() {
         (name.includes("patti") || name.includes("pati"))
       )
         categorized["teenpatti"].push(game);
+      else if (name.includes("32 cards") || name.includes("32cards"))
+        categorized["32-cards"].push(game);
       else if (
         name.includes("andar") ||
         name.includes("bahar") ||
         name.includes("ab")
       )
         categorized["andar-bahar"].push(game);
+      else if (name.includes("lucky 7") || name.includes("lucky7"))
+        categorized["lucky-7"].push(game);
       else if (name.includes("poker")) categorized["poker"].push(game);
+      else if (name.includes("3 card") || name.includes("three card"))
+        categorized["3-card"].push(game);
       else if (name.includes("roulette")) categorized["roulette"].push(game);
+      else if (name.includes("war")) categorized["casino-war"].push(game);
       else if (name.includes("baccarat")) categorized["baccarat"].push(game);
       else if (name.includes("matka") || name.includes("worli"))
         categorized["matka"].push(game);
+      else if (name.includes("cricket")) categorized["cricket"].push(game);
       else if (name.includes("slot") || provider.includes("slot"))
         categorized["slots"].push(game);
       else if (name.includes("virtual") || provider.includes("virtual"))
@@ -214,14 +218,6 @@ export default function Casino() {
       : gamesByCategory["all"];
 
     // Macro filter (Conceptual implementation as we assume 'all' contains everything)
-    if (activeMacro === "RECENT") {
-      // Mock logic: just shuffle or take specific subset if we tracked history
-      // For now, no change or maybe random subset? Let's just keep 'all'
-    } else if (activeMacro === "SLOTS") {
-      games = gamesByCategory["slots"];
-    } else if (activeMacro === "MAC88 VIRTUALS") {
-      games = gamesByCategory["virtual"];
-    }
 
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -233,7 +229,7 @@ export default function Casino() {
     }
 
     return games || [];
-  }, [gamesByCategory, activeMicro, activeMacro, searchQuery]);
+  }, [gamesByCategory, activeMicro, searchQuery]);
 
   const handlePlay = (game: CasinoGame) => {
     const gameId = game.gmid.toLowerCase();
@@ -247,7 +243,7 @@ export default function Casino() {
   // Reset visible count on filter change
   useEffect(() => {
     setVisibleCount(30);
-  }, [activeMacro, activeMicro, searchQuery]);
+  }, [activeMicro, searchQuery]);
 
   if (isLoading) {
     return (
@@ -292,31 +288,11 @@ export default function Casino() {
           </div>
         </div>
 
-        {/* Macro Categories (Top Text Tabs) */}
-        <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide border-b border-white/10 mb-6 pb-1">
-          {MACRO_CATEGORIES.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => {
-                setActiveMacro(cat);
-                setActiveMicro(null);
-              }}
-              className={`px-4 py-3 text-sm font-bold uppercase whitespace-nowrap border-b-2 transition-all ${
-                activeMacro === cat
-                  ? "text-blue-500 border-blue-500"
-                  : "text-gray-400 border-transparent hover:text-white hover:border-gray-700"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-
         {/* Micro Categories (Icon Buttons) */}
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2 mb-8">
+        <div className="flex gap-2 mb-8 overflow-x-auto scrollbar-hide">
           <button
             onClick={() => setActiveMicro(null)}
-            className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border transition-all ${
+            className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border transition-all flex-shrink-0 min-w-[90px] ${
               !activeMicro
                 ? "bg-gradient-to-br from-blue-600 to-blue-800 border-blue-500 shadow-lg shadow-blue-500/20"
                 : "bg-[#121c2c] border-white/5 hover:border-blue-500/50 hover:bg-[#1a2638]"
@@ -332,7 +308,7 @@ export default function Casino() {
             <button
               key={cat.id}
               onClick={() => setActiveMicro(cat.id)}
-              className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border transition-all ${
+              className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border transition-all flex-shrink-0 min-w-[90px] ${
                 activeMicro === cat.id
                   ? "bg-gradient-to-br from-white text-black border-white shadow-lg"
                   : "bg-[#121c2c] text-gray-300 border-white/5 hover:border-blue-500/50 hover:bg-[#1a2638]" // Inverted selected style to match ref image white selection
@@ -356,7 +332,7 @@ export default function Casino() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-3 md:gap-4">
+            <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-3 md:gap-4">
               {filteredGames.slice(0, visibleCount).map((game) => (
                 <CasinoGameCard
                   key={game.gmid}

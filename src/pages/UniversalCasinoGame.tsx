@@ -1,8 +1,4 @@
-/**
- * Universal Casino Game Page
- * Handles ALL casino games dynamically based on gmid parameter
- * Fetches game data, odds, and results from Diamond API
- */
+
 
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -19,6 +15,7 @@ import {
   Info,
 } from "lucide-react";
 import { casinoBettingService } from "@/services/casinoBettingService";
+import { useCasinoWebSocket } from "@/services/casinoWebSocket";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -65,70 +62,73 @@ interface PlacedBet {
   odds: number;
 }
 
+import { mapGameId } from "@/data/gameRouteMapping";
+
 export default function UniversalCasinoGame() {
   const { gmid } = useParams<{ gmid: string }>();
   const navigate = useNavigate();
 
+  // Map the URL parameter ID to the correct API ID (e.g., t20 -> dt20)
+  const apiGmid = gmid ? mapGameId(gmid) : "";
+
   // State
-  const [gameData, setGameData] = useState<GameData | null>(null);
   const [resultData, setResultData] = useState<ResultData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [placedBets, setPlacedBets] = useState<PlacedBet[]>([]);
   const [selectedStake, setSelectedStake] = useState(100);
   const [countdown, setCountdown] = useState(0);
-  const hasDataRef = useRef(false);
+
+  // Use WebSocket hook for real-time game data
+  const {
+    data: wsGameData,
+    status: wsStatus,
+    error: wsError,
+  } = useCasinoWebSocket(apiGmid);
+
+  // Log any WS/Polling errors
+  useEffect(() => {
+    if (wsError) {
+      console.error("[UniversalGame] WS/Polling Error:", wsError);
+      setError(`Connection Error: ${wsError}`);
+    }
+  }, [wsError]);
 
   const stakes = [10, 50, 100, 500, 1000, 5000];
 
-  // Fetch game data
+  // Local state to hold displayed data (from WS or fallback)
+  const [gameData, setGameData] = useState<GameData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Sync WS data to local state
   useEffect(() => {
-    if (!gmid) return;
+    if (wsGameData) {
+      console.log("[UniversalGame] Received WS Data:", wsGameData);
+      setGameData(wsGameData as unknown as GameData); // Cast because types might slightly differ, check types!
+      setIsLoading(false);
 
-    let active = true;
-    hasDataRef.current = false;
-
-    const fetchGameData = async () => {
-      try {
-        const response = await fetch(
-          `${API_HOST}/casino/data?type=${gmid}&key=${API_KEY}`,
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && data.data && active) {
-            setGameData(data.data);
-            setIsLoading(false);
-            setError(null);
-            hasDataRef.current = true;
-
-            // Calculate countdown from ft and lt
-            if (data.data.ft && data.data.lt) {
-              const remaining = Math.max(
-                0,
-                Math.floor((data.data.ft - data.data.lt) / 1000),
-              );
-              setCountdown(remaining);
-            }
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching game data:", err);
-        if (active) {
-          setError("Failed to load game data");
-        }
+      // Update countdown
+      if (wsGameData.timer !== undefined) {
+        setCountdown(wsGameData.timer);
+      } else if (wsGameData.timestamp) {
+        // Fallback logic if needed, but service should provide timer or ft/lt
+        // The service maps apiData (which has ft/lt) to `timer`.
       }
-    };
+    }
+  }, [wsGameData]);
+
+  // Fetch results manually for now (or could use resultWebSocket service)
+  useEffect(() => {
+    if (!apiGmid) return;
 
     const fetchResults = async () => {
       try {
         const response = await fetch(
-          `${API_HOST}/casino/result?type=${gmid}&key=${API_KEY}`,
+          `${API_HOST}/casino/result?type=${apiGmid}&key=${API_KEY}`,
         );
 
         if (response.ok) {
           const data = await response.json();
-          if (data.success && data.data && active) {
+          if (data.success && data.data) {
             setResultData(data.data);
           }
         }
@@ -137,39 +137,33 @@ export default function UniversalCasinoGame() {
       }
     };
 
-    // Initial fetch
-    fetchGameData();
     fetchResults();
-
-    // Poll every second for game data
-    const gameInterval = setInterval(fetchGameData, 1000);
-    // Poll every 3 seconds for results
     const resultInterval = setInterval(fetchResults, 3000);
 
-    // Timeout for loading
+    return () => clearInterval(resultInterval);
+  }, [apiGmid]);
+
+  // Timeout for loading state if WS doesn't connect
+  useEffect(() => {
+    if (wsStatus === "connected" || wsStatus === "polling") {
+      setIsLoading(false);
+    }
+
     const timeout = setTimeout(() => {
-      if (!hasDataRef.current && active) {
-        setIsLoading(false);
-        setError("Game is currently unavailable. Please try again later.");
+      if (isLoading && !gameData) {
+        setError("Connecting to game server...");
+        // Don't error out completely, keep trying
       }
     }, 10000);
+    return () => clearTimeout(timeout);
+  }, [wsStatus, isLoading, gameData]);
 
-    return () => {
-      active = false;
-      clearInterval(gameInterval);
-      clearInterval(resultInterval);
-      clearTimeout(timeout);
-    };
-  }, [gmid]);
-
-  // Countdown timer
+  // Countdown timer local tick (optional, if WS provides absolute time, rely on that, but smoother to tick locally)
   useEffect(() => {
     if (countdown <= 0) return;
-
     const timer = setInterval(() => {
       setCountdown((prev) => Math.max(0, prev - 1));
     }, 1000);
-
     return () => clearInterval(timer);
   }, [countdown]);
 
@@ -188,7 +182,7 @@ export default function UniversalCasinoGame() {
 
     try {
       const result = await casinoBettingService.placeCasinoBet({
-        gameId: gmid,
+        gameId: apiGmid,
         gameName: gameData.gname || gmid,
         roundId: gameData.mid,
         marketId: market.sid.toString(),

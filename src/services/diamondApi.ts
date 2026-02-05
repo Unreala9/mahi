@@ -536,41 +536,76 @@ export const diamondApi = {
     return data?.data || null;
   },
 
-  // Bet placement
-  placeBet: async (betData: {
+  /**
+   * Register a placed bet with the provider (MANDATORY after bet placement)
+   * This MUST be called immediately after a bet is placed
+   */
+  registerPlacedBet: async (betData: {
     event_id: number;
     event_name: string;
     market_id: number;
     market_name: string;
     market_type: string;
-  }): Promise<any> => {
-    const data = await diamondApi._fetch("/placed_bets", {
-      method: "POST",
-      body: JSON.stringify(betData),
+  }): Promise<{ success: boolean; error?: string }> => {
+    console.log('[Diamond API] Registering placed bet:', betData);
+
+    // Validate event_id and market_id (remove any whitespace)
+    const cleanEventId = String(betData.event_id).trim();
+    const cleanMarketId = String(betData.market_id).trim();
+
+    if (!cleanEventId || !cleanMarketId) {
+      console.error('[Diamond API] Invalid event_id or market_id');
+      return { success: false, error: 'Invalid event_id or market_id' };
+    }
+
+    const data = await diamondApi._fetch('/placed_bets', {
+      method: 'POST',
+      body: JSON.stringify({
+        event_id: Number(cleanEventId),
+        event_name: betData.event_name,
+        market_id: Number(cleanMarketId),
+        market_name: betData.market_name,
+        market_type: betData.market_type,
+      }),
     });
-    return data;
+
+    if (!data) {
+      console.error('[Diamond API] Failed to register bet');
+      return { success: false, error: 'Failed to register bet with provider' };
+    }
+
+    console.log('[Diamond API] Bet registration response:', data);
+    return { success: true };
   },
 
-  // Get result
-  getResult: async (resultData: {
-    event_id: number;
-    event_name: string;
-    market_id: number;
-    market_name: string;
-  }): Promise<any> => {
-    const data = await diamondApi._fetch("/get-result", {
-      method: "POST",
-      body: JSON.stringify(resultData),
-    });
-    return data;
-  },
+  /**
+   * Fetch results for all markets of a specific event
+   * Returns results only for markets registered via registerPlacedBet
+   */
+  getPlacedBetsResults: async (eventId: number): Promise<any[]> => {
+    // Clean event_id (critical - no whitespace allowed)
+    const cleanEventId = String(eventId).trim();
 
-  // Get all placed bets results
-  getPlacedBetsResults: async (eventId: number): Promise<any> => {
+    if (!cleanEventId) {
+      console.error('[Diamond API] Invalid event_id for results');
+      return [];
+    }
+
+    console.log(`[Diamond API] Fetching results for event: ${cleanEventId}`);
+
     const data = await diamondApi._fetch(
-      `/get_placed_bets?event_id=${eventId}`,
+      `/get_placed_bets?event_id=${cleanEventId}`,
     );
-    return data?.data || [];
+
+    if (!data) {
+      console.warn(`[Diamond API] No results data for event ${cleanEventId}`);
+      return [];
+    }
+
+    console.log(`[Diamond API] Results response:`, data);
+
+    // Return the data array (should contain market results with market_id and result)
+    return Array.isArray(data?.data) ? data.data : [];
   },
 
   // Bulk fetch: odds for matches in a sport (limited by `max`)

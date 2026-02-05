@@ -47,37 +47,7 @@ export default defineConfig(({ mode }) => ({
           });
         },
       },
-      "/casino": {
-        target: "http://130.250.191.174:3009",
-        changeOrigin: true,
-        secure: false,
-        timeout: 5000,
-        configure: (proxy, options) => {
-          proxy.on("error", (err, req, res) => {
-            console.warn("⚠️ Casino API timeout (using fallback data)");
-            // Return empty response to prevent errors
-            if (!res.headersSent) {
-              res.writeHead(200, { "Content-Type": "application/json" });
-              res.end(JSON.stringify({ error: "API unavailable", data: [] }));
-            }
-          });
-        },
       },
-      "/casinoDetail": {
-        target: "http://130.250.191.174:3009",
-        changeOrigin: true,
-        secure: false,
-        timeout: 5000,
-        configure: (proxy, options) => {
-          proxy.on("error", (err, req, res) => {
-            if (!res.headersSent) {
-              res.writeHead(200, { "Content-Type": "application/json" });
-              res.end(JSON.stringify({ error: "API unavailable", data: {} }));
-            }
-          });
-        },
-      },
-    },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(
     Boolean,

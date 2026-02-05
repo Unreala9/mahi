@@ -182,11 +182,11 @@ export const CasinoShowcase = () => {
             <GameThumbnail game={game} />
 
             {/* Game Info */}
-            <div className="p-3 bg-[#1e2837] relative z-10">
-              <h3 className="text-white font-bold text-sm md:text-base truncate">
+            <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/90 via-black/60 to-transparent z-10">
+              <h3 className="text-white font-bold text-sm truncate drop-shadow-sm">
                 {game.gname}
               </h3>
-              <p className="text-gray-400 text-xs truncate">
+              <p className="text-gray-300 text-[10px] truncate opacity-90">
                 {inferCategory(game)}
               </p>
             </div>

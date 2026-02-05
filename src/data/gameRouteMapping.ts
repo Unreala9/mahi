@@ -27,6 +27,7 @@ export const GAME_ROUTE_MAPPING: Record<
   baccarat2: { gameType: "baccarat", displayName: "Baccarat 2" },
 
   // Dragon Tiger Games
+  t20: { gameType: "dt20", displayName: "Dragon Tiger 20-20" },
   dt20: { gameType: "dt20", displayName: "Dragon Tiger 20-20" },
   dt6: { gameType: "dt6", displayName: "Dragon Tiger 6" },
   dt202: { gameType: "dt20", displayName: "Dragon Tiger 2020 2" },
@@ -75,14 +76,44 @@ export const GAME_ROUTE_MAPPING: Record<
   sicbo: { gameType: "sicbo", displayName: "Sicbo" },
   sicbo2: { gameType: "sicbo2", displayName: "Sicbo 2" },
 
-  // Special Games
-  dolidana: { gameType: "teen20", displayName: "Dolidana" },
-  mogambo: { gameType: "teen20", displayName: "Mogambo" },
-  bollywood: { gameType: "teen20", displayName: "Bollywood" },
-  bollywood2: { gameType: "teen20", displayName: "Bollywood 2" },
+  // Special Games (use their own API types, not teen20)
+  dolidana: { gameType: "dolidana", displayName: "Dolidana" },
+  mogambo: { gameType: "mogambo", displayName: "Mogambo" },
+  bollywood: { gameType: "bollywood", displayName: "Bollywood" },
+  bollywood2: { gameType: "bollywood2", displayName: "Bollywood 2" },
   goalsuperover: { gameType: "ballbyball", displayName: "Goal Super Over" },
   instantworli: { gameType: "worli", displayName: "Instant Worli" },
+
+  // Cricket Line games
+  cricketline2: { gameType: "cricketline", displayName: "Cricket Line 2" },
+
+  // Trap games
+  trap20: { gameType: "trap", displayName: "Trap 20" },
+  thetrap: { gameType: "trap", displayName: "The Trap" },
+  trapracing: { gameType: "trap", displayName: "Trap Racing" },
 };
+
+/**
+ * Get mapped game ID for API calls (handles aliases like t20 -> dt20)
+ */
+export function mapGameId(gmid: string): string {
+  const normalizedId = gmid.toLowerCase();
+  const mapping = GAME_ROUTE_MAPPING[normalizedId];
+
+  // If a mapping exists and has a gameType, use it as the API ID
+  if (mapping?.gameType) {
+    return mapping.gameType;
+  }
+
+  // Fallback to explicit mappings for edge cases not in GAME_ROUTE_MAPPING
+  if (normalizedId === "t20") return "dt20";
+  if (normalizedId === "teenpatti") return "teen20";
+  if (normalizedId === "muflismax") return "teenmuf";
+  if (normalizedId === "teenmuf2") return "teenmuf";
+
+  // Return original if no mapping found
+  return gmid;
+}
 
 /**
  * Get game type for a given gmid
