@@ -289,7 +289,7 @@ export default function Casino() {
         </div>
 
         {/* Micro Categories (Icon Buttons) */}
-        <div className="flex gap-2 mb-8 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-blue-600 scrollbar-track-gray-800">
+        <div className="flex gap-2 mb-8 overflow-x-auto scrollbar-hide">
           <button
             onClick={() => setActiveMicro(null)}
             className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border transition-all flex-shrink-0 min-w-[90px] ${
