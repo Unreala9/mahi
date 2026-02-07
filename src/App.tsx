@@ -1,3 +1,5 @@
+import { MainLayout } from "@/components/layout/MainLayout";
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -96,102 +98,110 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/faq" element={<FAQ />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/responsible-gaming" element={<ResponsibleGaming />} />
+
             <Route path="/api-test" element={<ApiTest />} />
             <Route path="/test-settlement" element={<TestSettlement />} />
             <Route path="/test-betting" element={<TestBetting />} />
-            <Route path="/in-play" element={<InPlay />} />
 
-            {/* Redirect old dashboard to sports */}
-            <Route
-              path="/dashboard"
-              element={<Navigate to="/sports" replace />}
-            />
-            <Route
-              path="/sports"
-              element={
-                <ProtectedRoute>
-                  <Sportsbook />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/match/:gmid/:sid"
-              element={
-                <ProtectedRoute>
-                  <DiamondMatch />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/match/:gmid"
-              element={
-                <ProtectedRoute>
-                  <DiamondMatch />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino-live"
-              element={
-                <ProtectedRoute>
-                  <CasinoLive />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino"
-              element={
-                <ProtectedRoute>
-                  <Casino />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/casino-lobby"
-              element={<Navigate to="/casino" replace />}
-            />
+            {/* Main App Layout Routes */}
+            <Route element={<MainLayout />}>
+              <Route path="/" element={<Index />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route
+                path="/responsible-gaming"
+                element={<ResponsibleGaming />}
+              />
 
-            {/* Casino Game Routes - Category-based routing */}
-            <Route
-              path="/casino/:gmid"
-              element={
-                <ProtectedRoute>
-                  <CasinoGameRouter />
-                </ProtectedRoute>
-              }
-            />
+              <Route path="/in-play" element={<InPlay />} />
+              {/* Redirect old dashboard to sports */}
+              <Route
+                path="/dashboard"
+                element={<Navigate to="/sports" replace />}
+              />
+              <Route
+                path="/sports"
+                element={
+                  <ProtectedRoute>
+                    <Sportsbook />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/match/:gmid/:sid"
+                element={
+                  <ProtectedRoute>
+                    <DiamondMatch />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/match/:gmid"
+                element={
+                  <ProtectedRoute>
+                    <DiamondMatch />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/casino-live"
+                element={
+                  <ProtectedRoute>
+                    <CasinoLive />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/casino"
+                element={
+                  <ProtectedRoute>
+                    <Casino />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/casino-lobby"
+                element={<Navigate to="/casino" replace />}
+              />
 
-            <Route
-              path="/wallet"
-              element={
-                <ProtectedRoute>
-                  <Wallet />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/bets"
-              element={
-                <ProtectedRoute>
-                  <Bets />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
+              {/* Casino Game Routes - Category-based routing */}
+              <Route
+                path="/casino/:gmid"
+                element={
+                  <ProtectedRoute>
+                    <CasinoGameRouter />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/wallet"
+                element={
+                  <ProtectedRoute>
+                    <Wallet />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/bets"
+                element={
+                  <ProtectedRoute>
+                    <Bets />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
+            </Route>
 
             {/* Admin Login - Public */}
             <Route path="/admin/login" element={<AdminLogin />} />

@@ -84,9 +84,10 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["Rajdhani", "sans-serif"],
-        display: ["Rajdhani", "sans-serif"],
-        mono: ["JetBrains Mono", "monospace"],
+        display: ["Syne", "sans-serif"],
+        mono: ["DM Mono", "monospace"],
+        ui: ["Manrope", "sans-serif"],
+        sans: ["DM Mono", "monospace"], // Default to mono for terminal aesthetic
       },
       keyframes: {
         "accordion-down": {
