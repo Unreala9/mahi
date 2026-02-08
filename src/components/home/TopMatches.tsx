@@ -71,18 +71,35 @@ export const TopMatches = () => {
   }
 
   return (
-    <div className="mb-8">
+    <div className="mb-8 animate-fade-in-up delay-200">
       {/* Section Header */}
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl md:text-2xl font-bold text-white italic">
-          {liveMatches.length > 0 ? "LIVE MATCHES" : "TOP MATCHES"}
-        </h2>
+      <div className="flex items-center justify-between mb-6 border-b border-white/10 pb-2">
+        <div className="flex items-center gap-3">
+          <div className="w-1.5 h-6 bg-gradient-to-b from-primary to-transparent"></div>
+          <h2 className="text-2xl font-display font-black text-white uppercase tracking-wider">
+            {liveMatches.length > 0 ? (
+              <>
+                LIVE{" "}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-400">
+                  MATCHES
+                </span>
+              </>
+            ) : (
+              <>
+                TOP{" "}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-white">
+                  MATCHES
+                </span>
+              </>
+            )}
+          </h2>
+        </div>
         <button
           onClick={() => navigate("/sports")}
-          className="flex items-center gap-1 text-primary hover:text-primary/80 transition-colors text-sm font-medium"
+          className="flex items-center gap-2 text-primary hover:text-white transition-colors text-xs font-mono font-bold uppercase tracking-widest border border-primary/30 hover:bg-primary/10 px-4 py-1.5"
         >
           View All
-          <ChevronRight size={16} />
+          <ChevronRight size={14} />
         </button>
       </div>
 
@@ -93,7 +110,7 @@ export const TopMatches = () => {
             key={`${match.gmid}-${match.sid}`}
             match={{
               id: `${match.gmid}/${match.sid}`,
-              sport: match.sport_name || "Sport",
+              sport: match.sname || "Sport",
               sportId: match.sid,
               tournament: match.cname || "Tournament",
               team1: match.name.split(" v ")[0],

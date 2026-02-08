@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { X, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ChipAmount } from "@/components/ui/CasinoChip";
 
 export interface CasinoBetItem {
   id: string;
@@ -176,10 +177,9 @@ export function CasinoBetSlip({
             <div className="flex justify-between items-center text-sm">
               <span className="text-gray-400">Balance</span>
               <span className="text-white font-mono font-semibold">
-                ₹{balance.toFixed(2)}
+                <ChipAmount amount={balance} size="sm" />
               </span>
             </div>
-
             {/* Liability */}
             <div className="flex justify-between items-center text-sm">
               <span className="text-gray-400">Liability</span>
@@ -187,7 +187,6 @@ export function CasinoBetSlip({
                 {liability.toFixed(2)}
               </span>
             </div>
-
             {/* Potential Win */}
             <div className="flex justify-between items-center text-sm pt-2 border-t border-gray-700/50">
               <span className="text-gray-300 font-medium">Potential Win</span>
@@ -195,7 +194,6 @@ export function CasinoBetSlip({
                 ₹{totalPotentialWin.toFixed(2)}
               </span>
             </div>
-
             {/* Place Bets Button */}
             <Button
               onClick={onPlaceBets}

@@ -6,11 +6,11 @@ import { useLiveSportsData } from "@/hooks/api/useLiveSportsData";
 import { SportsIcon } from "@/components/ui/SportsIcon";
 
 interface SidebarProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
-export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
+export const Sidebar = ({ isOpen, onClose }: SidebarProps = {}) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [user, setUser] = useState<any>(null);
@@ -177,16 +177,16 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     const combined = [...STATIC_SPORTS];
 
     // Create a set of existing IDs
-    const existingIds = new Set(combined.map(s => s.sid));
+    const existingIds = new Set(combined.map((s) => s.sid));
 
     // Add any live sports that aren't in the static list
     if (sports && sports.length > 0) {
-      sports.forEach(s => {
+      sports.forEach((s) => {
         const sid = Number((s as any).sid);
         if (Number.isFinite(sid) && !existingIds.has(sid)) {
           combined.push({
-             sid,
-             name: String((s as any).name)
+            sid,
+            name: String((s as any).name),
           });
         }
       });
@@ -207,10 +207,16 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     <button
       type="button"
       onClick={onToggle}
-      className="w-full flex items-center justify-between px-3 py-2.5 bg-primary text-primary-foreground font-semibold text-base border-b border-border"
+      className="w-full flex items-center justify-between px-6 py-4 text-xs font-display font-bold uppercase tracking-[0.2em] text-gray-500 hover:text-white transition-colors group"
     >
-      <span className="truncate min-w-0 text-left">{title}</span>
-      <span className="text-sm flex-shrink-0">{open ? "▴" : "▾"}</span>
+      <span className="truncate min-w-0 text-left group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] transition-all">
+        {title}
+      </span>
+      <span
+        className={`text-[10px] transition-transform duration-300 ${open ? "rotate-0" : "-rotate-90"}`}
+      >
+        ▼
+      </span>
     </button>
   );
 
@@ -228,255 +234,184 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     <button
       type="button"
       onClick={onClick}
-      className={
-        "w-full flex items-center gap-2.5 px-3 py-2.5 text-base border-b border-border text-foreground min-w-0 overflow-hidden " +
-        (active ? "bg-muted" : "bg-muted/60 hover:bg-muted")
-      }
+      className={`group relative w-full flex items-center gap-3 px-6 py-3 text-sm font-ui font-medium transition-all duration-200 min-w-0 overflow-hidden outline-none ${
+        active
+          ? "text-white bg-gradient-to-r from-primary/10 to-transparent"
+          : "text-gray-400 hover:text-white hover:bg-white/5"
+      }`}
     >
-      {left}
-      <span className="truncate min-w-0">{label}</span>
+      {/* Active Indicator Strip */}
+      {active && (
+        <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-primary shadow-[0_0_10px_rgba(34,211,238,0.5)]"></div>
+      )}
+
+      {/* Hover Indicator Strip (Subtle) */}
+      {!active && (
+        <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+      )}
+
+      <div
+        className={`flex-shrink-0 transition-transform duration-200 ${active ? "scale-110 text-primary drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" : "text-gray-500 group-hover:text-white"}`}
+      >
+        {left}
+      </div>
+
+      <span className="truncate min-w-0 tracking-wide">{label}</span>
+
+      {/* Tech decoration on hover */}
+      <div className="absolute right-0 top-0 h-full w-[1px] bg-gradient-to-b from-transparent via-primary/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
     </button>
   );
 
   const ExpandBox = ({ expanded }: { expanded: boolean }) => (
-    <span className="w-5 h-5 border border-border bg-background text-sm leading-none flex items-center justify-center flex-shrink-0">
+    <span
+      className={`w-4 h-4 rounded-[2px] border flex items-center justify-center flex-shrink-0 text-[10px] transition-colors ${expanded ? "border-primary text-primary bg-primary/10" : "border-gray-600 text-gray-600 group-hover:border-gray-400"}`}
+    >
       {expanded ? "-" : "+"}
     </span>
   );
 
-  return (
+  const sidebarContent = (
     <>
-      {/* Desktop Sidebar (no internal scroll; grows with content) */}
-      <aside className="hidden md:flex w-64 bg-background border-r border-border flex-col overflow-x-hidden">
-        {/* Brand Header */}
-        <div className="h-16 flex items-center px-6 border-b border-border flex-shrink-0">
-          <img src="/mahiex.png" alt="" />
-        </div>
+      {/* Navigation */}
+      <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10 hover:scrollbar-thumb-white/20">
+        <nav className="pb-8">
+          {/* All sports */}
+          <SectionHeader
+            title="Markets"
+            open={isAllSportsOpen}
+            onToggle={() => setIsAllSportsOpen((v) => !v)}
+          />
 
-        {/* Navigation */}
-        <div className="flex-1 min-h-0">
-          <nav>
-            {/* All sports */}
-            <SectionHeader
-              title="All Sports"
-              open={isAllSportsOpen}
-              onToggle={() => setIsAllSportsOpen((v) => !v)}
-            />
-            {isAllSportsOpen && (
-              <div>
-                {displaySports.map((sport) => {
-                  const isSportExpanded = expandedSports.includes(sport.sid);
-                  const competitions = getCompetitionsBySport(sport.sid);
+          {isAllSportsOpen && (
+            <div className="animate-in slide-in-from-top-2 duration-200">
+              {displaySports.map((sport) => {
+                const isSportExpanded = expandedSports.includes(sport.sid);
+                const competitions = getCompetitionsBySport(sport.sid);
 
-                  return (
-                    <div key={sport.sid}>
-                      <RowButton
-                        label={sport.name}
-                        left={
-                          <div className="flex items-center gap-2">
-                            <ExpandBox expanded={isSportExpanded} />
-                            {getSportIcon(sport.name, sport.sid)}
-                          </div>
-                        }
-                        onClick={() => toggleSport(sport.sid)}
-                      />
+                return (
+                  <div key={sport.sid}>
+                    <RowButton
+                      label={sport.name}
+                      left={getSportIcon(sport.name, sport.sid)}
+                      active={
+                        location.pathname.includes(`/sports/${sport.sid}`) &&
+                        !isSportExpanded
+                      }
+                      onClick={() => toggleSport(sport.sid)}
+                    />
 
-                      {isSportExpanded && (
-                        <div className="bg-background">
-                          {competitions.length === 0 ? (
-                            <div className="px-3 py-2 text-sm text-muted-foreground border-b border-border">
-                              {loading ? "Loading…" : "No matches"}
-                            </div>
-                          ) : (
-                            competitions.map((comp) => {
-                              const isCompExpanded =
-                                expandedCompetitions.includes(comp.name);
-                              return (
-                                <div key={comp.name}>
-                                  <button
-                                    type="button"
-                                    onClick={() => toggleCompetition(comp.name)}
-                                    className="w-full flex items-center justify-between gap-2 px-7 py-2 text-sm bg-muted/40 hover:bg-muted border-b border-border"
-                                  >
-                                    <span className="truncate">
-                                      {isCompExpanded ? "-" : "+"} {comp.name}
-                                    </span>
-                                    <span className="text-xs text-muted-foreground">
-                                      {comp.matches.length}
-                                    </span>
-                                  </button>
-
-                                  {isCompExpanded && (
-                                    <div>
-                                      {comp.matches.map((match) => (
-                                        <button
-                                          key={match.gmid}
-                                          type="button"
-                                          onClick={() =>
-                                            handleNavigate(
-                                              `/match/${match.gmid}/${sport.sid}`,
-                                            )
-                                          }
-                                          className="w-full px-10 py-2 text-sm text-left bg-background hover:bg-muted border-b border-border"
-                                        >
-                                          <span className="truncate">
-                                            {match.name}
-                                          </span>
-                                        </button>
-                                      ))}
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </nav>
-        </div>
-
-        {/* Profile Section */}
-        <div className="border-t border-border">
-          {user ? (
-            <div>
-              <RowButton
-                label="Profile"
-                onClick={() => handleNavigate("/profile")}
-                active={location.pathname === "/profile"}
-              />
-            </div>
-          ) : null}
-        </div>
-      </aside>
-
-      {/* Mobile Sidebar (overlay scrolls; sidebar grows with content) */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-50 md:hidden bg-black/80 backdrop-blur-sm animate-in fade-in overflow-y-auto"
-          onClick={onClose}
-        >
-          <aside
-            className="w-64 bg-background border-r border-border flex flex-col overflow-x-hidden animate-in slide-in-from-left duration-200"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Brand Header */}
-            <div className="h-16 flex items-center px-6 border-b border-border flex-shrink-0">
-              <img src="/mahiex.png" alt="" />
-            </div>
-
-            {/* Navigation */}
-            <div className="flex-1 min-h-0">
-              <nav>
-                {/* All sports */}
-                <SectionHeader
-                  title="All Sports"
-                  open={isAllSportsOpen}
-                  onToggle={() => setIsAllSportsOpen((v) => !v)}
-                />
-                {isAllSportsOpen && (
-                  <div>
-                    {displaySports.map((sport) => {
-                      const isSportExpanded = expandedSports.includes(
-                        sport.sid,
-                      );
-                      const competitions = getCompetitionsBySport(sport.sid);
-
-                      return (
-                        <div key={sport.sid}>
-                          <RowButton
-                            label={sport.name}
-                            left={
+                    {/* Nested Competitions - Accordion Effect */}
+                    <div
+                      className={`grid transition-all duration-300 ease-in-out ${isSportExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
+                    >
+                      <div className="overflow-hidden bg-[#0a1120]/50 box-inner-shadow">
+                        {competitions.length === 0 ? (
+                          <div className="px-12 py-3 text-xs font-mono text-gray-600 flex items-center gap-2">
+                            {loading ? (
                               <div className="flex items-center gap-2">
-                                <ExpandBox expanded={isSportExpanded} />
-                                {getSportIcon(sport.name, sport.sid)}
+                                <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
+                                <span className="text-primary/70">
+                                  Loading markets...
+                                </span>
                               </div>
-                            }
-                            onClick={() => toggleSport(sport.sid)}
-                          />
+                            ) : (
+                              <span className="opacity-50">
+                                No active markets
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          competitions.map((comp) => {
+                            const isCompExpanded =
+                              expandedCompetitions.includes(comp.name);
+                            return (
+                              <div key={comp.name} className="relative">
+                                {/* Connector Line */}
+                                <div className="absolute left-9 top-0 bottom-0 w-[1px] bg-white/5"></div>
 
-                          {isSportExpanded && (
-                            <div className="bg-background">
-                              {competitions.length === 0 ? (
-                                <div className="px-3 py-2 text-sm text-muted-foreground border-b border-border">
-                                  {loading ? "Loading…" : "No matches"}
-                                </div>
-                              ) : (
-                                competitions.map((comp) => {
-                                  const isCompExpanded =
-                                    expandedCompetitions.includes(comp.name);
-                                  return (
-                                    <div key={comp.name}>
+                                <button
+                                  type="button"
+                                  onClick={() => toggleCompetition(comp.name)}
+                                  className="w-full flex items-center justify-between gap-2 px-6 pl-12 py-2.5 text-xs text-gray-400 hover:text-white hover:bg-white/5 transition-colors group/comp"
+                                >
+                                  <div className="flex items-center gap-2 truncate min-w-0">
+                                    <ExpandBox expanded={isCompExpanded} />
+                                    <span className="truncate font-mono tracking-tight group-hover/comp:text-primary transition-colors">
+                                      {comp.name}
+                                    </span>
+                                  </div>
+                                  <span className="text-[10px] font-mono text-gray-700 bg-white/5 px-1.5 py-0.5 rounded group-hover/comp:bg-primary/20 group-hover/comp:text-primary transition-colors">
+                                    {comp.matches.length}
+                                  </span>
+                                </button>
+
+                                {isCompExpanded && (
+                                  <div className="bg-black/20 pb-2">
+                                    {comp.matches.map((match) => (
                                       <button
+                                        key={match.gmid}
                                         type="button"
                                         onClick={() =>
-                                          toggleCompetition(comp.name)
+                                          handleNavigate(
+                                            `/match/${match.gmid}/${sport.sid}`,
+                                          )
                                         }
-                                        className="w-full flex items-center justify-between gap-2 px-7 py-2 text-sm bg-muted/40 hover:bg-muted border-b border-border min-w-0 overflow-hidden"
+                                        className="w-full pl-20 pr-4 py-2 text-xs text-left text-gray-500 hover:text-white hover:bg-primary/10 transition-all font-mono relative group/match"
                                       >
-                                        <span className="truncate min-w-0 flex-1 text-left">
-                                          {isCompExpanded ? "-" : "+"}{" "}
-                                          {comp.name}
-                                          <s-icon name="icon-sport-alpine"></s-icon>
-                                        </span>
-                                        <span className="text-xs text-muted-foreground flex-shrink-0">
-                                          {comp.matches.length}
+                                        {/* Dot indicator */}
+                                        <div className="absolute left-[70px] top-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-gray-700 group-hover/match:bg-primary group-hover/match:shadow-[0_0_5px_rgba(34,211,238,0.8)] transition-all"></div>
+                                        <span className="truncate block opacity-80 group-hover/match:opacity-100">
+                                          {match.name}
                                         </span>
                                       </button>
-
-                                      {isCompExpanded && (
-                                        <div>
-                                          {comp.matches.map((match) => (
-                                            <button
-                                              key={match.gmid}
-                                              type="button"
-                                              onClick={() =>
-                                                handleNavigate(
-                                                  `/match/${match.gmid}/${sport.sid}`,
-                                                )
-                                              }
-                                              className="w-full px-10 py-2 text-sm text-left bg-background hover:bg-muted border-b border-border min-w-0 overflow-hidden"
-                                            >
-                                              <span className="truncate min-w-0 block">
-                                                {match.name}
-                                              </span>
-                                            </button>
-                                          ))}
-                                        </div>
-                                      )}
-                                    </div>
-                                  );
-                                })
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                    </div>
                   </div>
-                )}
-              </nav>
+                );
+              })}
             </div>
+          )}
+        </nav>
+      </div>
 
-            {/* Profile Section */}
-            <div className="border-t border-border">
-              {user ? (
-                <div>
-                  <RowButton
-                    label="Profile"
-                    onClick={() => handleNavigate("/profile")}
-                    active={location.pathname === "/profile"}
-                  />
-                </div>
-              ) : null}
-            </div>
-          </aside>
-        </div>
-      )}
+      {/* Profile Section - Footer */}
+      <div className="border-t border-white/5 p-2 bg-[#03070d]">
+        {user ? (
+          <RowButton
+            label="MY PROFILE"
+            left={
+              <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-primary to-blue-600 flex items-center justify-center text-[10px] text-white font-bold">
+                {profile?.full_name?.[0] || "U"}
+              </div>
+            }
+            onClick={() => handleNavigate("/profile")}
+            active={location.pathname === "/profile"}
+          />
+        ) : (
+          <div className="px-4 py-2">
+            <button
+              onClick={() => handleNavigate("/auth")}
+              className="w-full btn-primary-v2 py-2 text-xs uppercase tracking-widest"
+            >
+              Login / Join
+            </button>
+          </div>
+        )}
+      </div>
     </>
+  );
+
+  return (
+    <aside className="w-full h-full bg-[#050b14] flex flex-col overflow-hidden">
+      {sidebarContent}
+    </aside>
   );
 };
