@@ -1,137 +1,143 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { MainLayout } from "@/components/layout/MainLayout";
-import { CASINO_CATEGORIES } from "@/data/casinoCategories";
 import { fetchCasinoGames } from "@/services/casino";
 import type { CasinoGame } from "@/types/casino";
 import { Button } from "@/components/ui/button";
 import { hasCustomPage } from "@/data/gameRouteMapping";
 import {
-  Search,
-  X,
   Loader2,
-  Dices,
-  Gamepad2,
-  Ticket,
-  Play,
-  TrendingUp,
   Zap,
-  Crown,
+  Flame,
+  Plane,
+  Bomb,
+  Palette,
+  Spade,
+  Club,
+  Gamepad2,
+  Gift,
+  Dices,
+  Trophy,
+  LayoutGrid,
+  Cpu,
+  Layers,
+  Target,
+  Swords,
+  Landmark,
+  Search,
 } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { getImageCandidates } from "@/services/casino";
+import { CasinoHero } from "@/components/casino/CasinoHero";
+import { CasinoToolbar } from "@/components/casino/CasinoToolbar";
+import { CasinoGameCard } from "@/components/casino/CasinoGameCard";
 
-// Extended categories to match the reference image
+// Using the same categories but structured for the toolbar
 const MICRO_CATEGORIES = [
-  { id: "dragon-tiger", name: "Dragon Tiger", icon: "🐉" },
-  { id: "aviator", name: "Aviator", icon: "✈️" },
-  { id: "mines", name: "Mines", icon: "💣" },
-  { id: "color-game", name: "Color Game", icon: "🎨" },
-  { id: "teenpatti", name: "Teenpatti", icon: "🃏" },
-  { id: "32-cards", name: "32 Cards", icon: "🂠" },
-  { id: "andar-bahar", name: "Andar Bahar", icon: "🂡" },
-  { id: "lucky-7", name: "Lucky 7", icon: "7️⃣" },
-  { id: "poker", name: "Live Poker", icon: "♣️" },
-  { id: "3-card", name: "3 Card Judgement", icon: "⚖️" },
-  { id: "roulette", name: "Roulette", icon: "🎡" },
-  { id: "casino-war", name: "Casino War", icon: "⚔️" },
-  { id: "baccarat", name: "Baccarat", icon: "🏦" },
-  { id: "matka", name: "Matka", icon: "🎲" },
-  { id: "cricket", name: "Cricket", icon: "🏏" },
-  { id: "slots", name: "Slots", icon: "🎰" },
-  { id: "virtual", name: "Virtual", icon: "🎮" },
-  { id: "others", name: "Others", icon: "📦" },
+  {
+    id: "dragon-tiger",
+    name: "Dragon Tiger",
+    icon: <Flame className="w-5 h-5 text-orange-500" />,
+  },
+  {
+    id: "aviator",
+    name: "Aviator",
+    icon: <Plane className="w-5 h-5 text-red-500" />,
+  },
+  {
+    id: "mines",
+    name: "Mines",
+    icon: <Bomb className="w-5 h-5 text-yellow-500" />,
+  },
+  {
+    id: "color-game",
+    name: "Color Game",
+    icon: <Palette className="w-5 h-5 text-purple-500" />,
+  },
+  {
+    id: "teenpatti",
+    name: "Teenpatti",
+    icon: <Spade className="w-5 h-5 text-green-500" />,
+  },
+  {
+    id: "32-cards",
+    name: "32 Cards",
+    icon: <LayoutGrid className="w-5 h-5 text-blue-500" />,
+  },
+  {
+    id: "andar-bahar",
+    name: "Andar Bahar",
+    icon: <Layers className="w-5 h-5 text-indigo-500" />,
+  },
+  {
+    id: "lucky-7",
+    name: "Lucky 7",
+    icon: <Dices className="w-5 h-5 text-pink-500" />,
+  },
+  {
+    id: "poker",
+    name: "Live Poker",
+    icon: <Club className="w-5 h-5 text-emerald-500" />,
+  },
+  {
+    id: "3-card",
+    name: "3 Card Judgement",
+    icon: <Gamepad2 className="w-5 h-5 text-cyan-500" />,
+  },
+  {
+    id: "roulette",
+    name: "Roulette",
+    icon: <Target className="w-5 h-5 text-red-400" />,
+  },
+  {
+    id: "casino-war",
+    name: "Casino War",
+    icon: <Swords className="w-5 h-5 text-gray-400" />,
+  },
+  {
+    id: "baccarat",
+    name: "Baccarat",
+    icon: <Landmark className="w-5 h-5 text-amber-500" />,
+  },
+  {
+    id: "matka",
+    name: "Matka",
+    icon: <Dices className="w-5 h-5 text-orange-400" />,
+  },
+  {
+    id: "cricket",
+    name: "Cricket",
+    icon: <Trophy className="w-5 h-5 text-blue-400" />,
+  },
+  {
+    id: "slots",
+    name: "Slots",
+    icon: <Cpu className="w-5 h-5 text-purple-400" />,
+  },
+  {
+    id: "virtual",
+    name: "Virtual",
+    icon: <Gamepad2 className="w-5 h-5 text-teal-400" />,
+  },
+  {
+    id: "others",
+    name: "Others",
+    icon: <Gift className="w-5 h-5 text-rose-400" />,
+  },
 ];
-
-// Helper component for robust image loading
-const CasinoGameCard = ({
-  game,
-  onClick,
-}: {
-  game: CasinoGame;
-  onClick: (g: CasinoGame) => void;
-}) => {
-  const [imgSrc, setImgSrc] = useState<string>("");
-  const [imgIndex, setImgIndex] = useState(0);
-  const [hasError, setHasError] = useState(false);
-
-  // Construct candidates including the specific CDN URL that uses gmid
-  const candidates = useMemo(() => {
-    const list = [
-      `https://diamond-api.b-cdn.net/game-image/${game.gmid}/${game.imgpath}`,
-      ...getImageCandidates(game.imgpath),
-    ];
-    return list;
-  }, [game.gmid, game.imgpath]);
-
-  useEffect(() => {
-    if (candidates && candidates.length > 0) {
-      setImgSrc(candidates[0]);
-      setImgIndex(0);
-      setHasError(false);
-    }
-  }, [candidates]);
-
-  const handleError = () => {
-    const nextIndex = imgIndex + 1;
-    if (nextIndex < candidates.length) {
-      setImgSrc(candidates[nextIndex]);
-      setImgIndex(nextIndex);
-    } else {
-      setHasError(true);
-    }
-  };
-
-  return (
-    <div
-      className="group relative aspect-[3/4] rounded-xl overflow-hidden bg-[#121c2c] border border-white/5 hover:border-blue-500/50 transition-all hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-1 cursor-pointer"
-      onClick={() => onClick(game)}
-    >
-      {/* Image */}
-      <img
-        src={hasError ? "/placeholder-game.jpg" : imgSrc}
-        alt={game.gname}
-        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-        loading="lazy"
-        onError={handleError}
-      />
-
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-100 transition-opacity" />
-
-      {/* Content */}
-      <div className="absolute bottom-0 left-0 right-0 p-3">
-        <h3 className="text-sm font-bold text-white line-clamp-1 mb-1 shadow-black drop-shadow-md">
-          {game.gname}
-        </h3>
-        <button className="hidden md:block w-full py-1.5 bg-blue-600 text-white text-[10px] font-bold uppercase rounded hover:bg-blue-500 transition-colors opacity-0 group-hover:opacity-100">
-          Play Now
-        </button>
-      </div>
-
-      {/* Provider Badge (Optional) */}
-      <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-black/60 backdrop-blur rounded text-[8px] font-medium text-gray-300 border border-white/10">
-        {game.provider || "Casino"}
-      </div>
-    </div>
-  );
-};
 
 export default function Casino() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [activeMicro, setActiveMicro] = useState<string | null>(null); // null means 'all' in context of micro
+  const [activeMicro, setActiveMicro] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(30);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   // Parse URL params
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const cat = params.get("cat");
     if (cat) {
-      // Try to match with micro categories first
       if (MICRO_CATEGORIES.some((c) => c.id === cat)) {
         setActiveMicro(cat);
       }
@@ -217,8 +223,6 @@ export default function Casino() {
       ? gamesByCategory[activeMicro] || []
       : gamesByCategory["all"];
 
-    // Macro filter (Conceptual implementation as we assume 'all' contains everything)
-
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       games = games.filter(
@@ -247,98 +251,56 @@ export default function Casino() {
 
   if (isLoading) {
     return (
-      <MainLayout>
-        <div className="flex items-center justify-center h-[60vh] bg-[#050b14]">
-          <Loader2 className="h-10 w-10 text-blue-500 animate-spin" />
+      <div className="flex items-center justify-center h-[60vh] bg-[#050b14]">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-10 w-10 text-primary animate-spin" />
+          <p className="font-mono text-xs text-primary animate-pulse">
+            Initializing Casino Protocol...
+          </p>
         </div>
-      </MainLayout>
+      </div>
     );
   }
 
   return (
-    <MainLayout>
-      <div className="min-h-screen bg-[#050b14] text-white -mt-4 -mx-4 md:p-6 p-4">
-        {/* Header Bar */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#121c2c] p-4 rounded-lg border border-blue-900/30 shadow-lg mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-              <Dices className="text-white w-6 h-6" />
-            </div>
-            <h1 className="text-xl md:text-2xl font-black uppercase tracking-wider text-white">
-              Casino
-            </h1>
-          </div>
+    <div className="min-h-screen bg-[#050b14] text-white -mt-4 -mx-4 pb-20 md:p-6 p-0 overflow-x-hidden">
+      {/* 1. Hero Section */}
+      <CasinoHero />
 
-          <div className="relative w-full md:w-1/3">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search games..."
-              className="pl-10 bg-[#0b121e] border-blue-900/50 text-white placeholder:text-gray-500 rounded-full focus:ring-blue-500/50"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        </div>
+      <div className="px-4 md:px-0">
+        {/* 2. Toolbar (Sticky) */}
+        <CasinoToolbar
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          activeCategory={activeMicro}
+          setActiveCategory={setActiveMicro}
+          categories={MICRO_CATEGORIES}
+          totalGames={filteredGames.length}
+        />
 
-        {/* Micro Categories (Icon Buttons) */}
-        <div className="flex gap-2 mb-8 overflow-x-auto scrollbar-hide">
-          <button
-            onClick={() => setActiveMicro(null)}
-            className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border transition-all flex-shrink-0 min-w-[90px] ${
-              !activeMicro
-                ? "bg-gradient-to-br from-blue-600 to-blue-800 border-blue-500 shadow-lg shadow-blue-500/20"
-                : "bg-[#121c2c] border-white/5 hover:border-blue-500/50 hover:bg-[#1a2638]"
-            }`}
-          >
-            <span className="text-2xl">⚡</span>
-            <span className="text-[10px] font-bold uppercase tracking-wide">
-              All Games
-            </span>
-          </button>
-
-          {MICRO_CATEGORIES.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setActiveMicro(cat.id)}
-              className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border transition-all flex-shrink-0 min-w-[90px] ${
-                activeMicro === cat.id
-                  ? "bg-gradient-to-br from-white text-black border-white shadow-lg"
-                  : "bg-[#121c2c] text-gray-300 border-white/5 hover:border-blue-500/50 hover:bg-[#1a2638]" // Inverted selected style to match ref image white selection
-              }`}
-            >
-              <span className="text-2xl filter drop-shadow-sm">{cat.icon}</span>
-              <span
-                className={`text-[10px] font-bold uppercase tracking-wide ${activeMicro === cat.id ? "text-black" : "text-gray-300"}`}
-              >
-                {cat.name}
-              </span>
-            </button>
-          ))}
-        </div>
-
-        {/* Games Grid */}
+        {/* 3. Games Grid */}
         {filteredGames.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-gray-500">
-            <Gamepad2 className="w-16 h-16 opacity-20 mb-4" />
-            <p>No games found in this category.</p>
+          <div className="flex flex-col items-center justify-center py-32 text-gray-600 font-mono border border-dashed border-white/5 rounded-lg bg-[#0a1120]/50">
+            <Zap className="w-12 h-12 opacity-50 mb-4 animate-pulse text-yellow-500" />
+            <p className="tracking-widest uppercase text-sm">
+              No Active Protocols Found
+            </p>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-3 md:gap-4">
-              {filteredGames.slice(0, visibleCount).map((game) => (
-                <CasinoGameCard
+            <div className="grid gap-3 grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7">
+              {filteredGames.slice(0, visibleCount).map((game, index) => (
+                <div
                   key={game.gmid}
-                  game={game}
-                  onClick={handlePlay}
-                />
+                  className="animate-fade-in-up"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <CasinoGameCard
+                    game={game}
+                    onClick={handlePlay}
+                    priority={index < 8}
+                  />
+                </div>
               ))}
             </div>
 
@@ -347,15 +309,18 @@ export default function Casino() {
                 <Button
                   variant="outline"
                   onClick={() => setVisibleCount((c) => c + 30)}
-                  className="bg-[#121c2c] border-blue-900 text-blue-400 hover:bg-blue-900/20 hover:text-blue-300 min-w-[200px]"
+                  className="bg-[#0a1120] border-primary/30 text-primary hover:bg-primary hover:text-black rounded-full px-8 h-12 font-bold uppercase tracking-widest text-xs transition-all relative overflow-hidden group shadow-lg hover:shadow-primary/20"
                 >
-                  Load More Games
+                  <span className="relative z-10 flex items-center gap-2">
+                    <Loader2 className="w-3 h-3 group-hover:animate-spin" />
+                    Load More
+                  </span>
                 </Button>
               </div>
             )}
           </>
         )}
       </div>
-    </MainLayout>
+    </div>
   );
 }

@@ -1,4 +1,5 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
+/* Distinctive Typography System - Financial Terminal Brutalism */
+@import url("https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Mono:wght@400;500;600&family=Manrope:wght@500;600;700;800&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -6,6 +7,11 @@
 
 @layer base {
   :root {
+    /* Typography System - Financial Terminal Brutalism */
+    --font-display: "Syne", sans-serif; /* Bold headings, hero text */
+    --font-mono: "DM Mono", monospace; /* Body, data, terminal feel */
+    --font-ui: "Manrope", sans-serif; /* Buttons, labels, UI elements */
+
     /* CSK Theme (Yellow #FFFF3C & Blue #0081E9) - Light Theme */
     --background: 210 40% 96.1%; /* Off-white (Slate-100) #f1f5f9 */
     --foreground: 222 47% 11%; /* Dark Slate #0f172a */
@@ -37,7 +43,6 @@
 
     --radius: 0.75rem;
 
-    /* Extended Color Palette aliases */
     --yellow-bright: 60 100% 45%;
     --yellow-light: 60 100% 75%;
     --yellow-dark: 55 100% 45%;
@@ -45,6 +50,17 @@
     --blue-electric: 207 100% 46%;
     --blue-light: 207 100% 60%;
     --blue-dark: 207 90% 35%;
+
+    /* Data Visualization Accents */
+    --success: 142 76% 36%; /* Green for wins */
+    --danger: 0 84% 60%; /* Red for losses */
+    --warning: 38 92% 50%; /* Orange for pending */
+    --info: 199 89% 48%; /* Cyan for info */
+
+    /* Neon Accents */
+    --neon-cyan: #00fff9;
+    --neon-pink: #ff00ff;
+    --neon-yellow: #ffff00;
   }
 
   * {
@@ -52,18 +68,26 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
-    font-family:
-      "Inter",
-      -apple-system,
-      BlinkMacSystemFont,
-      "Segoe UI",
-      sans-serif !important;
-    background-color: #f1f5f9; /* Explicit Off-White */
-    background-image:
-      linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-mono) !important; /* Terminal aesthetic */
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    background-color: #0a0e1a; /* Dark Navy Base */
+    background-image: 
+      /* Scanline effect */
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(255, 255, 60, 0.02) 2px,
+        rgba(255, 255, 60, 0.02) 4px
+      ),
+      /* Grid */ linear-gradient(rgba(255, 255, 60, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 60, 0.03) 1px, transparent 1px);
+    background-size:
+      100% 100%,
+      40px 40px,
+      40px 40px;
     background-attachment: fixed;
     zoom: 0.8; /* ~20% zoom out by default (Chrome/Edge) */
     overflow-x: hidden;
@@ -93,13 +117,15 @@
   h4,
   h5,
   h6 {
-    @apply font-display tracking-tight text-foreground;
-    font-family: "Inter", sans-serif !important;
-    font-weight: 600;
+    font-family: var(--font-display) !important;
+    font-weight: 800;
+    letter-spacing: -0.02em; /* Tighter for impact */
+    @apply text-foreground;
   }
 
   .dark {
     /* Dark Blue Theme - Richer Navy (Lotus365 Style) */
+    color-scheme: dark;
     --background: 222 47% 6%; /* #0a0e1a Even Darker Navy */
     --foreground: 210 40% 98%; /* Off-white #f8fafc */
 
@@ -323,6 +349,158 @@
     @apply inline-flex items-center justify-center;
     line-height: 1;
     vertical-align: middle;
+  }
+
+  /* Typography Utilities - Financial Terminal Brutalism */
+  .font-display {
+    font-family: var(--font-display) !important;
+  }
+
+  .font-mono {
+    font-family: var(--font-mono) !important;
+  }
+
+  .font-ui {
+    font-family: var(--font-ui) !important;
+  }
+
+  /* Button Typography */
+  button,
+  .btn,
+  [role="button"] {
+    font-family: var(--font-ui) !important;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+
+  /* Data Display Typography (odds, stats, numbers) */
+  .odds,
+  .stats,
+  .data-display,
+  .numeric-data {
+    font-family: var(--font-mono) !important;
+    font-variant-numeric: tabular-nums; /* Aligned numbers */
+  }
+
+  /* Terminal-style text */
+  .terminal-text {
+    font-family: var(--font-mono) !important;
+    letter-spacing: 0.02em;
+    font-weight: 500;
+  }
+
+  /* Financial Terminal Brutalism Components */
+
+  /* Brutalist Card */
+  .card-premium-v2 {
+    @apply relative bg-background/40 backdrop-blur-md border border-white/5 transition-all duration-300;
+    border-left: 3px solid var(--primary);
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.2),
+      0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+
+  .card-premium-v2:hover {
+    @apply -translate-y-1 bg-background/60;
+    border-left-color: var(--secondary);
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.2),
+      0 12px 32px rgba(0, 0, 0, 0.6),
+      0 0 20px rgba(255, 255, 60, 0.05);
+  }
+
+  /* Geometric Corner Accent */
+  .card-premium-v2::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, var(--primary) 0%, transparent 50%);
+    clip-path: polygon(100% 0, 0 0, 100% 100%);
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  /* High-Impact Button */
+  .btn-primary-v2 {
+    @apply relative bg-primary text-black font-ui font-bold uppercase tracking-widest px-6 py-3 transition-all duration-200 border-none;
+    clip-path: polygon(
+      8px 0,
+      100% 0,
+      100% calc(100% - 8px),
+      calc(100% - 8px) 100%,
+      0 100%,
+      0 8px
+    );
+  }
+
+  .btn-primary-v2:hover {
+    @apply bg-white text-black -translate-y-0.5 shadow-[0_0_20px_rgba(255,255,60,0.4)];
+  }
+
+  .btn-primary-v2:active {
+    @apply translate-y-0 shadow-none;
+  }
+
+  /* --- Motion Design (Phase 4) --- */
+
+  /* Keyframes */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 20px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  @keyframes scanlineMove {
+    0% {
+      background-position: 0% 0%;
+    }
+    100% {
+      background-position: 0% 100%;
+    }
+  }
+
+  @keyframes techReveal {
+    0% {
+      clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+    }
+    100% {
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    }
+  }
+
+  /* Utility Classes for Animation */
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0; /* Star hidden */
+  }
+
+  .delay-100 {
+    animation-delay: 100ms;
+  }
+  .delay-200 {
+    animation-delay: 200ms;
+  }
+  .delay-300 {
+    animation-delay: 300ms;
+  }
+  .delay-500 {
+    animation-delay: 500ms;
+  }
+
+  .animate-scanline {
+    animation: scanlineMove 8s linear infinite;
+  }
+
+  .animate-tech-reveal {
+    animation: techReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 }
 

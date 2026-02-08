@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { MainLayout } from "@/components/layout/MainLayout";
+
 import { BettingMatchRow } from "@/components/sportsbook/BettingMatchRow";
 import {
   useLiveSportsData,
@@ -173,82 +173,80 @@ const InPlay = () => {
   }, [liveMatches, allMatches, searchQuery]);
 
   return (
-    <MainLayout>
-      <div className="min-h-screen bg-[#0b121e]">
-        {/* Marquee */}
-        <MarqueeHeader />
+    <div className="min-h-screen bg-[#0b121e]">
+      {/* Marquee */}
+      <MarqueeHeader />
 
-        <div className="max-w-[1600px] mx-auto px-2 md:px-4 py-4">
-          {/* Search */}
-          <div className="relative mb-2">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              <Search size={16} />
+      <div className="max-w-[1600px] mx-auto px-2 md:px-4 py-4">
+        {/* Search */}
+        <div className="relative mb-2">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <Search size={16} />
+          </div>
+          <input
+            type="text"
+            placeholder="search events"
+            className="w-full bg-[#1e2837] border border-gray-700 rounded-full py-2 pl-10 pr-10 text-sm text-white focus:outline-none focus:border-primary"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          {searchQuery && (
+            <button
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+              onClick={() => setSearchQuery("")}
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
+
+        {/* Match Chips */}
+        <MatchChips matches={displayMatches} />
+
+        {/* Sport Filter Tabs */}
+        <SportTabs activeSport={activeSport} onSelect={setActiveSport} />
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-12 gap-6">
+          {/* Match List Column */}
+          <div className="col-span-12 lg:col-span-9 space-y-2">
+            {/* Header for List */}
+            <div className="flex items-center justify-between bg-[#1e2837] p-3 rounded-t-lg border-b border-gray-700">
+              <div className="flex items-center gap-2 text-white font-bold uppercase">
+                <Trophy className="text-primary w-5 h-5" />
+                {activeSport === "all"
+                  ? "In-Play Matches"
+                  : sports.find((s) => s.sid === activeSport)?.name ||
+                    "Matches"}
+              </div>
+              <div className="hidden md:grid grid-cols-3 gap-8 w-[350px] pr-4 text-center text-xs text-gray-400 font-bold">
+                <div>1</div>
+                <div>X</div>
+                <div>2</div>
+              </div>
             </div>
-            <input
-              type="text"
-              placeholder="search events"
-              className="w-full bg-[#1e2837] border border-gray-700 rounded-full py-2 pl-10 pr-10 text-sm text-white focus:outline-none focus:border-primary"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            {searchQuery && (
-              <button
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-                onClick={() => setSearchQuery("")}
-              >
-                <X size={16} />
-              </button>
-            )}
+
+            {/* List */}
+            <div className="space-y-1">
+              {displayMatches.length > 0 ? (
+                displayMatches.map((match) => (
+                  <BettingMatchRow key={match.gmid} match={match} />
+                ))
+              ) : (
+                <div className="p-8 text-center bg-[#1e2837] text-gray-400 rounded-b-lg">
+                  No in-Play matches available for this category right now.
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Match Chips */}
-          <MatchChips matches={displayMatches} />
-
-          {/* Sport Filter Tabs */}
-          <SportTabs activeSport={activeSport} onSelect={setActiveSport} />
-
-          {/* Main Content Grid */}
-          <div className="grid grid-cols-12 gap-6">
-            {/* Match List Column */}
-            <div className="col-span-12 lg:col-span-9 space-y-2">
-              {/* Header for List */}
-              <div className="flex items-center justify-between bg-[#1e2837] p-3 rounded-t-lg border-b border-gray-700">
-                <div className="flex items-center gap-2 text-white font-bold uppercase">
-                  <Trophy className="text-primary w-5 h-5" />
-                  {activeSport === "all"
-                    ? "In-Play Matches"
-                    : sports.find((s) => s.sid === activeSport)?.name ||
-                      "Matches"}
-                </div>
-                <div className="hidden md:grid grid-cols-3 gap-8 w-[350px] pr-4 text-center text-xs text-gray-400 font-bold">
-                  <div>1</div>
-                  <div>X</div>
-                  <div>2</div>
-                </div>
-              </div>
-
-              {/* List */}
-              <div className="space-y-1">
-                {displayMatches.length > 0 ? (
-                  displayMatches.map((match) => (
-                    <BettingMatchRow key={match.gmid} match={match} />
-                  ))
-                ) : (
-                  <div className="p-8 text-center bg-[#1e2837] text-gray-400 rounded-b-lg">
-                    No in-Play matches available for this category right now.
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Sidebar Column */}
-            <div className="hidden lg:block lg:col-span-3">
-              <TrendingSidebar />
-            </div>
+          {/* Sidebar Column */}
+          <div className="hidden lg:block lg:col-span-3">
+            <TrendingSidebar />
           </div>
         </div>
       </div>
-    </MainLayout>
+    </div>
   );
 };
 
