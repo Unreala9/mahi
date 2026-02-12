@@ -6,6 +6,7 @@ import {
   useLiveSportMatches,
 } from "@/hooks/api/useLiveSportsData";
 import { Button } from "@/components/ui/button";
+import SportIcon from "@/components/SportIcon";
 import type { MatchEvent } from "@/services/diamondApi";
 import { useLiveMatchOdds } from "@/hooks/api/useWebSocket";
 import {
@@ -16,6 +17,8 @@ import {
   ChevronUp,
   Trophy,
 } from "lucide-react";
+import { BannerCarousel } from "@/components/sportsbook/BannerCarousel";
+import { SportsDebug } from "@/components/SportsDebug";
 
 // --- Components ---
 
@@ -84,25 +87,6 @@ const SportFilterTabs = ({
   activeSport: number;
   onSelect: (sid: number) => void;
 }) => {
-  const icons: Record<string, string> = {
-    Cricket: "🏏",
-    Soccer: "⚽",
-    Football: "⚽",
-    Tennis: "🎾",
-    Basketball: "🏀",
-    Baseball: "⚾",
-    Badminton: "🏸",
-    "Table Tennis": "🏓",
-    "Ice Hockey": "🏒",
-    Volleyball: "🏐",
-    Snooker: "🎱",
-    Darts: "🎯",
-    Kabaddi: "🤼",
-    Boxing: "🥊",
-    MMA: "🥊",
-    Default: "🏆",
-  };
-
   return (
     <div className="flex gap-2 overflow-x-auto scrollbar-hide mb-6 pb-2">
       {sports.slice(0, 15).map((s) => (
@@ -115,8 +99,14 @@ const SportFilterTabs = ({
               : "bg-[#0a1120] text-gray-500 border-white/5 hover:border-white/20 hover:text-white"
           }`}
         >
-          <span className="text-xl filter drop-shadow-sm group-hover:scale-110 transition-transform">
-            {icons[s.name] || icons["Default"]}
+          <span className="text-2xl filter drop-shadow-sm group-hover:scale-110 transition-transform">
+            <SportIcon
+              eventId={s.sid}
+              size={24}
+              className={
+                activeSport === s.sid ? "brightness-0" : "brightness-100"
+              }
+            />
           </span>
           <span className="text-[9px] font-bold uppercase tracking-widest whitespace-nowrap">
             {s.name}
@@ -255,7 +245,7 @@ const MatchRow = ({ match }: { match: MatchEvent }) => {
             <span
               className={`text-sm font-bold uppercase tracking-tight ${isActive ? "text-white" : "text-gray-300 group-hover:text-white"}`}
             >
-              {match.name.split(" v ")[0]}
+              {match.name ? match.name.split(" v ")[0] || match.name : "Team 1"}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -267,7 +257,7 @@ const MatchRow = ({ match }: { match: MatchEvent }) => {
             <span
               className={`text-sm font-bold uppercase tracking-tight ${isActive ? "text-white" : "text-gray-300 group-hover:text-white"}`}
             >
-              {match.name.split(" v ")[1]}
+              {match.name ? match.name.split(" v ")[1] || "Team 2" : "Team 2"}
             </span>
           </div>
         </div>
@@ -334,9 +324,22 @@ const LeagueGroup = ({
 const Sportsbook = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const sportParam = searchParams.get("sport");
+  const debugMode = searchParams.get("debug") === "true";
   const [selectedSport, setSelectedSport] = useState<number>(
     sportParam ? parseInt(sportParam) : 4,
   ); // Default Cricket
+
+  console.log(
+    "[Sportsbook] Rendering with sport:",
+    selectedSport,
+    "param:",
+    sportParam,
+  );
+
+  // Show debug panel if debug=true
+  if (debugMode) {
+    return <SportsDebug />;
+  }
 
   useEffect(() => {
     if (sportParam) setSelectedSport(parseInt(sportParam));
@@ -350,6 +353,14 @@ const Sportsbook = () => {
   const { sports, isConnected } = useLiveSportsData();
   const { matches, liveMatches, isLoading } =
     useLiveSportMatches(selectedSport);
+
+  console.log("[Sportsbook] Data state:", {
+    selectedSport,
+    sportsCount: sports.length,
+    matchesCount: matches.length,
+    isLoading,
+    isConnected,
+  });
 
   const liveList = matches.filter((m) => m.is_live);
   const upcomingList = matches
@@ -379,16 +390,25 @@ const Sportsbook = () => {
 
   return (
     <div className="flex flex-col bg-[#050b14] min-h-screen text-white -m-4">
-      {/* Top Banner */}
-      <SportsbookBanner match={featuredMatch} />
+      {/* Top Banner Carousel */}
+      <BannerCarousel />
 
       <div className="max-w-[1600px] mx-auto w-full px-4 pb-20">
         {/* Filters */}
-        <SportFilterTabs
-          sports={sports}
-          activeSport={selectedSport}
-          onSelect={handleSportSelect}
-        />
+        {sports.length > 0 ? (
+          <SportFilterTabs
+            sports={sports}
+            activeSport={selectedSport}
+            onSelect={handleSportSelect}
+          />
+        ) : (
+          <div className="bg-red-500/20 border border-red-500 text-white p-4 rounded mb-4">
+            <p className="font-bold">⚠️ No sports data available</p>
+            <p className="text-sm">
+              The sports feed is not loading. Please check your connection.
+            </p>
+          </div>
+        )}
 
         {/* Live Events Section */}
         <div className="mb-10 animate-in slide-in-from-bottom duration-500">
@@ -415,8 +435,25 @@ const Sportsbook = () => {
               ))}
             </div>
           ) : (
-            <div className="p-12 text-center text-gray-500 text-xs font-mono uppercase bg-[#0a1120] border border-white/5">
-              No active live markets. Check upcoming schedule.
+            <div className="p-16 text-center bg-[#0a1120] border border-white/5 rounded">
+              <div className="flex justify-center mb-4">
+                <SportIcon
+                  eventId={selectedSport}
+                  size={48}
+                  className="opacity-30"
+                />
+              </div>
+              <h3 className="text-lg font-bold text-white mb-2 uppercase tracking-wider">
+                No Live Matches
+              </h3>
+              <p className="text-sm text-gray-400 mb-1">
+                There are currently no live{" "}
+                {sports.find((s) => s.sid === selectedSport)?.name || "matches"}{" "}
+                markets available.
+              </p>
+              <p className="text-xs text-gray-500 font-mono uppercase">
+                Check upcoming schedule below or try another sport
+              </p>
             </div>
           )}
         </div>
@@ -441,8 +478,25 @@ const Sportsbook = () => {
               ))}
             </div>
           ) : (
-            <div className="p-12 text-center text-gray-500 text-xs font-mono uppercase bg-[#0a1120] border border-white/5">
-              No scheduled events found.
+            <div className="p-16 text-center bg-[#0a1120] border border-white/5 rounded">
+              <div className="flex justify-center mb-4">
+                <SportIcon
+                  eventId={selectedSport}
+                  size={48}
+                  className="opacity-30"
+                />
+              </div>
+              <h3 className="text-lg font-bold text-white mb-2 uppercase tracking-wider">
+                No Scheduled Matches
+              </h3>
+              <p className="text-sm text-gray-400 mb-1">
+                There are no upcoming{" "}
+                {sports.find((s) => s.sid === selectedSport)?.name || "matches"}{" "}
+                scheduled at this time.
+              </p>
+              <p className="text-xs text-gray-500 font-mono uppercase">
+                Try selecting a different sport from the tabs above
+              </p>
             </div>
           )}
         </div>

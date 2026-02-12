@@ -1,0 +1,3638 @@
+{
+  "success": true,
+  "msg": "Success",
+  "status": 200,
+  "data": [
+    {
+      "gmid": 856162940,
+      "mid": 6273906464321,
+      "pmid": null,
+      "mname": "MATCH_ODDS",
+      "rem": "",
+      "gtype": "match",
+      "status": "OPEN",
+      "rc": 2,
+      "visible": false,
+      "pid": 0,
+      "gscode": 1,
+      "maxb": 25000,
+      "sno": 1,
+      "dtype": 4,
+      "ocnt": 6,
+      "m": 0,
+      "max": 2000,
+      "min": 0,
+      "biplay": true,
+      "umaxbof": 1,
+      "boplay": true,
+      "iplay": true,
+      "btcnt": 4,
+      "company": null,
+      "section": [
+        {
+          "sid": 50050,
+          "psid": 0,
+          "sno": 1,
+          "psrno": 1,
+          "gstatus": "ACTIVE",
+          "nat": "South Africa W",
+          "gscode": 1,
+          "max": 0,
+          "min": 0,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 1.09,
+              "otype": "back",
+              "oname": "back3",
+              "tno": 2,
+              "size": 5036.94
+            },
+            {
+              "psid": 0,
+              "odds": 1.1,
+              "otype": "back",
+              "oname": "back2",
+              "tno": 1,
+              "size": 14123.56
+            },
+            {
+              "psid": 0,
+              "odds": 1.11,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 2222.12
+            },
+            {
+              "psid": 0,
+              "odds": 1.12,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 9741.09
+            },
+            {
+              "psid": 0,
+              "odds": 1.13,
+              "otype": "lay",
+              "oname": "lay2",
+              "tno": 1,
+              "size": 536.09
+            },
+            {
+              "psid": 0,
+              "odds": 1.14,
+              "otype": "lay",
+              "oname": "lay3",
+              "tno": 2,
+              "size": 20435.41
+            }
+          ]
+        },
+        {
+          "sid": 77251,
+          "psid": 0,
+          "sno": 2,
+          "psrno": 2,
+          "gstatus": "ACTIVE",
+          "nat": "Pakistan W",
+          "gscode": 1,
+          "max": 0,
+          "min": 0,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 8,
+              "otype": "back",
+              "oname": "back3",
+              "tno": 2,
+              "size": 2912.05
+            },
+            {
+              "psid": 0,
+              "odds": 8.6,
+              "otype": "back",
+              "oname": "back2",
+              "tno": 1,
+              "size": 70.44
+            },
+            {
+              "psid": 0,
+              "odds": 9.2,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 1185.87
+            },
+            {
+              "psid": 0,
+              "odds": 10.5,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 235.87
+            },
+            {
+              "psid": 0,
+              "odds": 11,
+              "otype": "lay",
+              "oname": "lay2",
+              "tno": 1,
+              "size": 1411.44
+            },
+            {
+              "psid": 0,
+              "odds": 12.5,
+              "otype": "lay",
+              "oname": "lay3",
+              "tno": 2,
+              "size": 439.22
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "gmid": 856162940,
+      "mid": 5165047054483,
+      "pmid": null,
+      "mname": "Bookmaker",
+      "rem": "Win big in T10 Card Cricket — the shortest format, biggest rewards",
+      "gtype": "match1",
+      "status": "SUSPENDED",
+      "rc": 2,
+      "visible": false,
+      "pid": 0,
+      "gscode": 1,
+      "maxb": 0,
+      "sno": 2,
+      "dtype": 4,
+      "ocnt": 6,
+      "m": 0,
+      "max": 200000,
+      "min": 100,
+      "biplay": true,
+      "umaxbof": 0,
+      "boplay": true,
+      "iplay": true,
+      "btcnt": 0,
+      "company": null,
+      "section": [
+        {
+          "sid": 1,
+          "psid": 0,
+          "sno": 1,
+          "psrno": 1,
+          "gstatus": "ACTIVE",
+          "nat": "South Africa W",
+          "gscode": 1,
+          "max": 0,
+          "min": 0,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 0,
+              "otype": "back",
+              "oname": "back3",
+              "tno": 2,
+              "size": 0
+            },
+            {
+              "psid": 0,
+              "odds": 0,
+              "otype": "back",
+              "oname": "back2",
+              "tno": 1,
+              "size": 0
+            },
+            {
+              "psid": 0,
+              "odds": 11,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 200000
+            },
+            {
+              "psid": 0,
+              "odds": 13,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 200000
+            },
+            {
+              "psid": 0,
+              "odds": 0,
+              "otype": "lay",
+              "oname": "lay2",
+              "tno": 1,
+              "size": 0
+            },
+            {
+              "psid": 0,
+              "odds": 0,
+              "otype": "lay",
+              "oname": "lay3",
+              "tno": 2,
+              "size": 0
+            }
+          ]
+        },
+        {
+          "sid": 2,
+          "psid": 0,
+          "sno": 2,
+          "psrno": 2,
+          "gstatus": "ACTIVE",
+          "nat": "Pakistan W",
+          "gscode": 1,
+          "max": 0,
+          "min": 0,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 0,
+              "otype": "back",
+              "oname": "back3",
+              "tno": 2,
+              "size": 0
+            },
+            {
+              "psid": 0,
+              "odds": 0,
+              "otype": "back",
+              "oname": "back2",
+              "tno": 1,
+              "size": 0
+            },
+            {
+              "psid": 0,
+              "odds": 769,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 20000
+            },
+            {
+              "psid": 0,
+              "odds": 909,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 20000
+            },
+            {
+              "psid": 0,
+              "odds": 0,
+              "otype": "lay",
+              "oname": "lay2",
+              "tno": 1,
+              "size": 0
+            },
+            {
+              "psid": 0,
+              "odds": 0,
+              "otype": "lay",
+              "oname": "lay3",
+              "tno": 2,
+              "size": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "gmid": 856162940,
+      "mid": 7700635677853,
+      "pmid": null,
+      "mname": "Tied Match",
+      "rem": "",
+      "gtype": "match1",
+      "status": "SUSPENDED",
+      "rc": 2,
+      "visible": false,
+      "pid": 0,
+      "gscode": 1,
+      "maxb": 0,
+      "sno": 2.1,
+      "dtype": 2,
+      "ocnt": 2,
+      "m": 0,
+      "max": 100000,
+      "min": 100,
+      "biplay": true,
+      "umaxbof": 0,
+      "boplay": true,
+      "iplay": true,
+      "btcnt": 0,
+      "company": null,
+      "section": [
+        {
+          "sid": 1,
+          "psid": 0,
+          "sno": 1,
+          "psrno": 1,
+          "gstatus": "SUSPENDED",
+          "nat": "YES",
+          "gscode": 0,
+          "max": 0,
+          "min": 0,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 0,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 0
+            },
+            {
+              "psid": 0,
+              "odds": 0,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 0
+            }
+          ]
+        },
+        {
+          "sid": 2,
+          "psid": 0,
+          "sno": 2,
+          "psrno": 2,
+          "gstatus": "ACTIVE",
+          "nat": "NO",
+          "gscode": 1,
+          "max": 0,
+          "min": 0,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 0.75,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100000
+            },
+            {
+              "psid": 0,
+              "odds": 1.5,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 100000
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "gmid": 856162940,
+      "mid": 8672192392814,
+      "pmid": null,
+      "mname": "1st Innings 10 Overs Line",
+      "rem": "",
+      "gtype": "fancy2",
+      "status": "OPEN",
+      "rc": 1,
+      "visible": false,
+      "pid": 0,
+      "gscode": 1,
+      "maxb": 1,
+      "sno": 2.9,
+      "dtype": 14,
+      "ocnt": 6,
+      "m": 0,
+      "max": 0,
+      "min": 0,
+      "biplay": true,
+      "umaxbof": 1,
+      "boplay": true,
+      "iplay": true,
+      "btcnt": 0,
+      "company": null,
+      "section": [
+        {
+          "sid": 690160,
+          "psid": 0,
+          "sno": 1,
+          "psrno": 1,
+          "gstatus": "ACTIVE",
+          "nat": "Total Runs",
+          "gscode": 1,
+          "max": 0,
+          "min": 0,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 0,
+              "otype": "back",
+              "oname": "back3",
+              "tno": 2,
+              "size": 0
+            },
+            {
+              "psid": 0,
+              "odds": 52,
+              "otype": "back",
+              "oname": "back2",
+              "tno": 1,
+              "size": 200
+            },
+            {
+              "psid": 0,
+              "odds": 66,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 789.56
+            },
+            {
+              "psid": 0,
+              "odds": 68,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 122.52
+            },
+            {
+              "psid": 0,
+              "odds": 69,
+              "otype": "lay",
+              "oname": "lay2",
+              "tno": 1,
+              "size": 122.52
+            },
+            {
+              "psid": 0,
+              "odds": 89,
+              "otype": "lay",
+              "oname": "lay3",
+              "tno": 2,
+              "size": 200
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "gmid": 856162940,
+      "mid": 5828147832812,
+      "pmid": null,
+      "mname": "1st Innings 20 Overs Line",
+      "rem": "",
+      "gtype": "fancy2",
+      "status": "OPEN",
+      "rc": 1,
+      "visible": false,
+      "pid": 0,
+      "gscode": 1,
+      "maxb": 1,
+      "sno": 2.9,
+      "dtype": 14,
+      "ocnt": 6,
+      "m": 0,
+      "max": 0,
+      "min": 0,
+      "biplay": true,
+      "umaxbof": 1,
+      "boplay": true,
+      "iplay": true,
+      "btcnt": 0,
+      "company": null,
+      "section": [
+        {
+          "sid": 50250,
+          "psid": 0,
+          "sno": 1,
+          "psrno": 1,
+          "gstatus": "ACTIVE",
+          "nat": "Total Runs",
+          "gscode": 1,
+          "max": 0,
+          "min": 0,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 121,
+              "otype": "back",
+              "oname": "back3",
+              "tno": 2,
+              "size": 10.89
+            },
+            {
+              "psid": 0,
+              "odds": 130,
+              "otype": "back",
+              "oname": "back2",
+              "tno": 1,
+              "size": 19.65
+            },
+            {
+              "psid": 0,
+              "odds": 131,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 1.73
+            },
+            {
+              "psid": 0,
+              "odds": 132,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 2704.25
+            },
+            {
+              "psid": 0,
+              "odds": 133,
+              "otype": "lay",
+              "oname": "lay2",
+              "tno": 1,
+              "size": 1349.67
+            },
+            {
+              "psid": 0,
+              "odds": 134,
+              "otype": "lay",
+              "oname": "lay3",
+              "tno": 2,
+              "size": 836.71
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "gmid": 856162940,
+      "mid": 140153994319,
+      "pmid": null,
+      "mname": "Normal",
+      "rem": "",
+      "gtype": "fancy",
+      "status": "OPEN",
+      "rc": 2,
+      "visible": false,
+      "pid": 0,
+      "gscode": 1,
+      "maxb": 0,
+      "sno": 3,
+      "dtype": 6,
+      "ocnt": 6,
+      "m": 0,
+      "max": 0,
+      "min": 0,
+      "biplay": true,
+      "umaxbof": 0,
+      "boplay": true,
+      "iplay": true,
+      "btcnt": 0,
+      "company": null,
+      "section": [
+        {
+          "sid": 11,
+          "psid": 0,
+          "sno": 1,
+          "psrno": 1,
+          "gstatus": "",
+          "nat": "10 over runs PAK W(SA W vs PAK W)adv",
+          "gscode": 1,
+          "max": 400000,
+          "min": 100,
+          "rem": "",
+          "br": true,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 68,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            },
+            {
+              "psid": 0,
+              "odds": 67,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 12,
+          "psid": 0,
+          "sno": 1,
+          "psrno": 1,
+          "gstatus": "",
+          "nat": "10 over run bhav PAK W",
+          "gscode": 1,
+          "max": 50000,
+          "min": 100,
+          "rem": "",
+          "br": true,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 67,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 80
+            },
+            {
+              "psid": 0,
+              "odds": 67,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 120,
+          "psid": 0,
+          "sno": 2,
+          "psrno": 2,
+          "gstatus": "",
+          "nat": "7 over run PAK W",
+          "gscode": 1,
+          "max": 400000,
+          "min": 100,
+          "rem": "",
+          "br": true,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 51,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            },
+            {
+              "psid": 0,
+              "odds": 50,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 121,
+          "psid": 0,
+          "sno": 2,
+          "psrno": 2,
+          "gstatus": "",
+          "nat": "7.3 over run PAK W",
+          "gscode": 1,
+          "max": 40000,
+          "min": 100,
+          "rem": "",
+          "br": true,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 54,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            },
+            {
+              "psid": 0,
+              "odds": 53,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 122,
+          "psid": 0,
+          "sno": 2,
+          "psrno": 2,
+          "gstatus": "",
+          "nat": "8 over run PAK W",
+          "gscode": 1,
+          "max": 400000,
+          "min": 100,
+          "rem": "",
+          "br": true,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 56,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            },
+            {
+              "psid": 0,
+              "odds": 55,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 26,
+          "psid": 0,
+          "sno": 4,
+          "psrno": 4,
+          "gstatus": "",
+          "nat": "20 over runs PAK W(SA W vs PAK W)adv",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": true,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 132,
+              "otype": "back",
+              "oname": "back3",
+              "tno": 2,
+              "size": 100
+            },
+            {
+              "psid": 0,
+              "odds": 131,
+              "otype": "back",
+              "oname": "back2",
+              "tno": 1,
+              "size": 90
+            },
+            {
+              "psid": 0,
+              "odds": 132,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            },
+            {
+              "psid": 0,
+              "odds": 130,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 100
+            },
+            {
+              "psid": 0,
+              "odds": 131,
+              "otype": "lay",
+              "oname": "lay2",
+              "tno": 1,
+              "size": 110
+            },
+            {
+              "psid": 0,
+              "odds": 132,
+              "otype": "lay",
+              "oname": "lay3",
+              "tno": 2,
+              "size": 125
+            }
+          ]
+        },
+        {
+          "sid": 27,
+          "psid": 0,
+          "sno": 4,
+          "psrno": 4,
+          "gstatus": "",
+          "nat": "20 over runs PAK W 2",
+          "gscode": 1,
+          "max": 25000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 132,
+              "otype": "back",
+              "oname": "back3",
+              "tno": 2,
+              "size": 100
+            },
+            {
+              "psid": 0,
+              "odds": 131,
+              "otype": "back",
+              "oname": "back2",
+              "tno": 1,
+              "size": 80
+            },
+            {
+              "psid": 0,
+              "odds": 132,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            },
+            {
+              "psid": 0,
+              "odds": 131,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 100
+            },
+            {
+              "psid": 0,
+              "odds": 131,
+              "otype": "lay",
+              "oname": "lay2",
+              "tno": 1,
+              "size": 100
+            },
+            {
+              "psid": 0,
+              "odds": 132,
+              "otype": "lay",
+              "oname": "lay3",
+              "tno": 2,
+              "size": 120
+            }
+          ]
+        },
+        {
+          "sid": 28,
+          "psid": 0,
+          "sno": 4,
+          "psrno": 4,
+          "gstatus": "",
+          "nat": "20 over Run bhav PAK W",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": true,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 130,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 80
+            },
+            {
+              "psid": 0,
+              "odds": 130,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 199,
+          "psid": 0,
+          "sno": 5,
+          "psrno": 5,
+          "gstatus": "",
+          "nat": "1st 4 wkt runs PAK W",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": true,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 63,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 90
+            },
+            {
+              "psid": 0,
+              "odds": 63,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 110
+            }
+          ]
+        },
+        {
+          "sid": 200,
+          "psid": 0,
+          "sno": 5,
+          "psrno": 5,
+          "gstatus": "",
+          "nat": "Fall of 5th wkt PAK W",
+          "gscode": 1,
+          "max": 25000,
+          "min": 100,
+          "rem": "",
+          "br": true,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 85,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 90
+            },
+            {
+              "psid": 0,
+              "odds": 85,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 110
+            }
+          ]
+        },
+        {
+          "sid": 227,
+          "psid": 0,
+          "sno": 5,
+          "psrno": 5,
+          "gstatus": "",
+          "nat": "Fall of 4th wkt run bhav PAK W",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": true,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 66,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            },
+            {
+              "psid": 0,
+              "odds": 66,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 130
+            }
+          ]
+        },
+        {
+          "sid": 229,
+          "psid": 0,
+          "sno": 5,
+          "psrno": 5,
+          "gstatus": "",
+          "nat": "Fall of 4th wkt run bhav PAK W 2",
+          "gscode": 1,
+          "max": 300000,
+          "min": 100,
+          "rem": "",
+          "br": true,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 48,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 9
+            },
+            {
+              "psid": 0,
+              "odds": 48,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 12
+            }
+          ]
+        },
+        {
+          "sid": 35,
+          "psid": 0,
+          "sno": 6,
+          "psrno": 6,
+          "gstatus": "",
+          "nat": "M Ali run(SA W vs PAK W)adv",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": true,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 20,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 90
+            },
+            {
+              "psid": 0,
+              "odds": 20,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 110
+            }
+          ]
+        },
+        {
+          "sid": 289,
+          "psid": 0,
+          "sno": 6,
+          "psrno": 6,
+          "gstatus": "",
+          "nat": "N Pervaiz run",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": true,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 33,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 90
+            },
+            {
+              "psid": 0,
+              "odds": 33,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 110
+            }
+          ]
+        },
+        {
+          "sid": 290,
+          "psid": 0,
+          "sno": 6,
+          "psrno": 6,
+          "gstatus": "",
+          "nat": "N Pervaiz run bhav",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": true,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 36,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            },
+            {
+              "psid": 0,
+              "odds": 36,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 130
+            }
+          ]
+        },
+        {
+          "sid": 291,
+          "psid": 0,
+          "sno": 6,
+          "psrno": 6,
+          "gstatus": "SUSPENDED",
+          "nat": "N Pervaiz run bhav 2",
+          "gscode": 0,
+          "max": 300000,
+          "min": 100,
+          "rem": "",
+          "br": true,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 0,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 0
+            },
+            {
+              "psid": 0,
+              "odds": 0,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 0
+            }
+          ]
+        },
+        {
+          "sid": 294,
+          "psid": 0,
+          "sno": 6,
+          "psrno": 6,
+          "gstatus": "",
+          "nat": "M Ali run bhav.",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": true,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 23,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 110
+            },
+            {
+              "psid": 0,
+              "odds": 23,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 140
+            }
+          ]
+        },
+        {
+          "sid": 295,
+          "psid": 0,
+          "sno": 6,
+          "psrno": 6,
+          "gstatus": "SUSPENDED",
+          "nat": "M Ali run bhav 2.",
+          "gscode": 0,
+          "max": 300000,
+          "min": 100,
+          "rem": "",
+          "br": true,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 0,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 0
+            },
+            {
+              "psid": 0,
+              "odds": 0,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 0
+            }
+          ]
+        },
+        {
+          "sid": 255,
+          "psid": 0,
+          "sno": 7,
+          "psrno": 7,
+          "gstatus": "",
+          "nat": "4th wkt pship boundaries PAK W",
+          "gscode": 1,
+          "max": 10000,
+          "min": 100,
+          "rem": "",
+          "br": true,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 6,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            },
+            {
+              "psid": 0,
+              "odds": 5,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 41,
+          "psid": 0,
+          "sno": 8,
+          "psrno": 8,
+          "gstatus": "",
+          "nat": "M Ali Boundaries(SA W vs PAK W)adv",
+          "gscode": 1,
+          "max": 10000,
+          "min": 100,
+          "rem": "",
+          "br": true,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 3,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            },
+            {
+              "psid": 0,
+              "odds": 2,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 292,
+          "psid": 0,
+          "sno": 8,
+          "psrno": 8,
+          "gstatus": "",
+          "nat": "N Pervaiz boundaries",
+          "gscode": 1,
+          "max": 10000,
+          "min": 100,
+          "rem": "",
+          "br": true,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            },
+            {
+              "psid": 0,
+              "odds": 4,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 47,
+          "psid": 0,
+          "sno": 10,
+          "psrno": 10,
+          "gstatus": "",
+          "nat": "How many balls face by M Ali(SA W vs PAK W)adv",
+          "gscode": 1,
+          "max": 10000,
+          "min": 100,
+          "rem": "",
+          "br": true,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 23,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            },
+            {
+              "psid": 0,
+              "odds": 23,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 120
+            }
+          ]
+        },
+        {
+          "sid": 293,
+          "psid": 0,
+          "sno": 10,
+          "psrno": 10,
+          "gstatus": "",
+          "nat": "How many balls face by N Pervaiz",
+          "gscode": 1,
+          "max": 10000,
+          "min": 100,
+          "rem": "",
+          "br": true,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 27,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 90
+            },
+            {
+              "psid": 0,
+              "odds": 27,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 110
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "gmid": 856162940,
+      "mid": 666119717072,
+      "pmid": null,
+      "mname": "Over By Over",
+      "rem": "",
+      "gtype": "fancy",
+      "status": "OPEN",
+      "rc": 2,
+      "visible": false,
+      "pid": 0,
+      "gscode": 1,
+      "maxb": 0,
+      "sno": 3.1,
+      "dtype": 6,
+      "ocnt": 6,
+      "m": 0,
+      "max": 0,
+      "min": 0,
+      "biplay": true,
+      "umaxbof": 0,
+      "boplay": true,
+      "iplay": true,
+      "btcnt": 0,
+      "company": null,
+      "section": [
+        {
+          "sid": 172,
+          "psid": 0,
+          "sno": 1,
+          "psrno": 1,
+          "gstatus": "",
+          "nat": "Only 8 over run PAK W",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": true,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 6,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            },
+            {
+              "psid": 0,
+              "odds": 5,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "gmid": 856162940,
+      "mid": 879996832824,
+      "pmid": null,
+      "mname": "fancy1",
+      "rem": "",
+      "gtype": "fancy1",
+      "status": "OPEN",
+      "rc": 2,
+      "visible": false,
+      "pid": 0,
+      "gscode": 1,
+      "maxb": 0,
+      "sno": 4,
+      "dtype": 7,
+      "ocnt": 2,
+      "m": 0,
+      "max": 0,
+      "min": 0,
+      "biplay": true,
+      "umaxbof": 0,
+      "boplay": true,
+      "iplay": true,
+      "btcnt": 0,
+      "company": null,
+      "section": [
+        {
+          "sid": 2559,
+          "psid": 0,
+          "sno": 1,
+          "psrno": 1,
+          "gstatus": "",
+          "nat": "4th wkt Caught out PAK W",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": true,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 1.45,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100000
+            },
+            {
+              "psid": 0,
+              "odds": 1.7,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 100000
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "gmid": 856162940,
+      "mid": 551958915890,
+      "pmid": null,
+      "mname": "oddeven",
+      "rem": "",
+      "gtype": "oddeven",
+      "status": "OPEN",
+      "rc": 2,
+      "visible": false,
+      "pid": 0,
+      "gscode": 1,
+      "maxb": 0,
+      "sno": 4.1,
+      "dtype": 8,
+      "ocnt": 2,
+      "m": 0,
+      "max": 0,
+      "min": 0,
+      "biplay": true,
+      "umaxbof": 0,
+      "boplay": true,
+      "iplay": true,
+      "btcnt": 0,
+      "company": null,
+      "section": [
+        {
+          "sid": 2524,
+          "psid": 0,
+          "sno": 3,
+          "psrno": 3,
+          "gstatus": "",
+          "nat": "1st inn 8 over run odd even(SA W vs PAK W)adv",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 1.96,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 1000000
+            },
+            {
+              "psid": 0,
+              "odds": 1.96,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 1000000
+            }
+          ]
+        },
+        {
+          "sid": 2525,
+          "psid": 0,
+          "sno": 3,
+          "psrno": 3,
+          "gstatus": "",
+          "nat": "1st inn 9 over run odd even(SA W vs PAK W)adv",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 1.96,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 1000000
+            },
+            {
+              "psid": 0,
+              "odds": 1.96,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 1000000
+            }
+          ]
+        },
+        {
+          "sid": 2526,
+          "psid": 0,
+          "sno": 3,
+          "psrno": 3,
+          "gstatus": "",
+          "nat": "1st inn 10 over run odd even(SA W vs PAK W)adv",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 1.96,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 1000000
+            },
+            {
+              "psid": 0,
+              "odds": 1.96,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 1000000
+            }
+          ]
+        },
+        {
+          "sid": 2527,
+          "psid": 0,
+          "sno": 3,
+          "psrno": 3,
+          "gstatus": "",
+          "nat": "1st inn 11 over run odd even(SA W vs PAK W)adv",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 1.96,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 1000000
+            },
+            {
+              "psid": 0,
+              "odds": 1.96,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 1000000
+            }
+          ]
+        },
+        {
+          "sid": 2528,
+          "psid": 0,
+          "sno": 3,
+          "psrno": 3,
+          "gstatus": "",
+          "nat": "1st inn 12 over run odd even(SA W vs PAK W)adv",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 1.96,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 1000000
+            },
+            {
+              "psid": 0,
+              "odds": 1.96,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 1000000
+            }
+          ]
+        },
+        {
+          "sid": 2529,
+          "psid": 0,
+          "sno": 3,
+          "psrno": 3,
+          "gstatus": "",
+          "nat": "1st inn 13 over run odd even(SA W vs PAK W)adv",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 1.96,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 1000000
+            },
+            {
+              "psid": 0,
+              "odds": 1.96,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 1000000
+            }
+          ]
+        },
+        {
+          "sid": 2530,
+          "psid": 0,
+          "sno": 3,
+          "psrno": 3,
+          "gstatus": "",
+          "nat": "1st inn 14 over run odd even(SA W vs PAK W)adv",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 1.96,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 1000000
+            },
+            {
+              "psid": 0,
+              "odds": 1.96,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 1000000
+            }
+          ]
+        },
+        {
+          "sid": 2531,
+          "psid": 0,
+          "sno": 3,
+          "psrno": 3,
+          "gstatus": "",
+          "nat": "1st inn 15 over run odd even(SA W vs PAK W)adv",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 1.96,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 1000000
+            },
+            {
+              "psid": 0,
+              "odds": 1.96,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 1000000
+            }
+          ]
+        },
+        {
+          "sid": 2532,
+          "psid": 0,
+          "sno": 4,
+          "psrno": 4,
+          "gstatus": "",
+          "nat": "1st inn run odd even(SA W vs PAK W)adv",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 1.96,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 1000000
+            },
+            {
+              "psid": 0,
+              "odds": 1.96,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 1000000
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "gmid": 856162940,
+      "mid": 685565228836,
+      "pmid": null,
+      "mname": "khado",
+      "rem": "",
+      "gtype": "khado",
+      "status": "OPEN",
+      "rc": 2,
+      "visible": false,
+      "pid": 0,
+      "gscode": 1,
+      "maxb": 0,
+      "sno": 4.1,
+      "dtype": 10,
+      "ocnt": 2,
+      "m": 0,
+      "max": 0,
+      "min": 0,
+      "biplay": true,
+      "umaxbof": 0,
+      "boplay": true,
+      "iplay": true,
+      "btcnt": 0,
+      "company": null,
+      "section": [
+        {
+          "sid": 2516,
+          "psid": 0,
+          "sno": 2,
+          "psrno": 2,
+          "gstatus": "",
+          "nat": "20 over Khado run PAK W adv",
+          "gscode": 1,
+          "max": 50000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 120,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            },
+            {
+              "psid": 0,
+              "odds": 17,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "gmid": 856162940,
+      "mid": 774284604250,
+      "pmid": null,
+      "mname": "meter",
+      "rem": "",
+      "gtype": "meter",
+      "status": "OPEN",
+      "rc": 2,
+      "visible": false,
+      "pid": 0,
+      "gscode": 1,
+      "maxb": 0,
+      "sno": 4.1,
+      "dtype": 6,
+      "ocnt": 2,
+      "m": 0,
+      "max": 0,
+      "min": 0,
+      "biplay": true,
+      "umaxbof": 0,
+      "boplay": true,
+      "iplay": true,
+      "btcnt": 0,
+      "company": null,
+      "section": [
+        {
+          "sid": 2548,
+          "psid": 0,
+          "sno": 5,
+          "psrno": 5,
+          "gstatus": "",
+          "nat": "Fall of 4th wkt meter PAK W",
+          "gscode": 1,
+          "max": 3000,
+          "min": 10,
+          "rem": "",
+          "br": true,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 71,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            },
+            {
+              "psid": 0,
+              "odds": 68,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 2511,
+          "psid": 0,
+          "sno": 6,
+          "psrno": 6,
+          "gstatus": "",
+          "nat": "M Ali meter adv",
+          "gscode": 1,
+          "max": 10000,
+          "min": 10,
+          "rem": "",
+          "br": true,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 27,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            },
+            {
+              "psid": 0,
+              "odds": 24,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 2553,
+          "psid": 0,
+          "sno": 6,
+          "psrno": 6,
+          "gstatus": "",
+          "nat": "Natalia Pervaiz meter",
+          "gscode": 1,
+          "max": 10000,
+          "min": 10,
+          "rem": "",
+          "br": true,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 41,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            },
+            {
+              "psid": 0,
+              "odds": 38,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "gmid": 856162940,
+      "mid": 308403019414,
+      "pmid": null,
+      "mname": "1ST INN 10 OVER SA W VS PAK W",
+      "rem": "",
+      "gtype": "cricketcasino",
+      "status": "OPEN",
+      "rc": 2,
+      "visible": false,
+      "pid": 0,
+      "gscode": 1,
+      "maxb": 0,
+      "sno": 4.299999999999999,
+      "dtype": 9,
+      "ocnt": 2,
+      "m": 0,
+      "max": 0,
+      "min": 0,
+      "biplay": true,
+      "umaxbof": 0,
+      "boplay": true,
+      "iplay": true,
+      "btcnt": 0,
+      "company": null,
+      "section": [
+        {
+          "sid": 1,
+          "psid": 0,
+          "sno": 1,
+          "psrno": 1,
+          "gstatus": "",
+          "nat": "0 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 2,
+          "psid": 0,
+          "sno": 2,
+          "psrno": 2,
+          "gstatus": "",
+          "nat": "1 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 3,
+          "psid": 0,
+          "sno": 3,
+          "psrno": 3,
+          "gstatus": "",
+          "nat": "2 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 4,
+          "psid": 0,
+          "sno": 4,
+          "psrno": 4,
+          "gstatus": "",
+          "nat": "3 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 5,
+          "psid": 0,
+          "sno": 5,
+          "psrno": 5,
+          "gstatus": "",
+          "nat": "4 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 6,
+          "psid": 0,
+          "sno": 6,
+          "psrno": 6,
+          "gstatus": "",
+          "nat": "5 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 7,
+          "psid": 0,
+          "sno": 7,
+          "psrno": 7,
+          "gstatus": "",
+          "nat": "6 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 8,
+          "psid": 0,
+          "sno": 8,
+          "psrno": 8,
+          "gstatus": "",
+          "nat": "7 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 9,
+          "psid": 0,
+          "sno": 9,
+          "psrno": 9,
+          "gstatus": "",
+          "nat": "8 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 10,
+          "psid": 0,
+          "sno": 10,
+          "psrno": 10,
+          "gstatus": "",
+          "nat": "9 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "gmid": 856162940,
+      "mid": 355090794576,
+      "pmid": null,
+      "mname": "1ST INN 15 OVER SA W VS PAK W ",
+      "rem": "",
+      "gtype": "cricketcasino",
+      "status": "OPEN",
+      "rc": 2,
+      "visible": false,
+      "pid": 0,
+      "gscode": 1,
+      "maxb": 0,
+      "sno": 4.399999999999999,
+      "dtype": 9,
+      "ocnt": 2,
+      "m": 0,
+      "max": 0,
+      "min": 0,
+      "biplay": true,
+      "umaxbof": 0,
+      "boplay": true,
+      "iplay": true,
+      "btcnt": 0,
+      "company": null,
+      "section": [
+        {
+          "sid": 1,
+          "psid": 0,
+          "sno": 1,
+          "psrno": 1,
+          "gstatus": "",
+          "nat": "0 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 2,
+          "psid": 0,
+          "sno": 2,
+          "psrno": 2,
+          "gstatus": "",
+          "nat": "1 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 3,
+          "psid": 0,
+          "sno": 3,
+          "psrno": 3,
+          "gstatus": "",
+          "nat": "2 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 4,
+          "psid": 0,
+          "sno": 4,
+          "psrno": 4,
+          "gstatus": "",
+          "nat": "3 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 5,
+          "psid": 0,
+          "sno": 5,
+          "psrno": 5,
+          "gstatus": "",
+          "nat": "4 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 6,
+          "psid": 0,
+          "sno": 6,
+          "psrno": 6,
+          "gstatus": "",
+          "nat": "5 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 7,
+          "psid": 0,
+          "sno": 7,
+          "psrno": 7,
+          "gstatus": "",
+          "nat": "6 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 8,
+          "psid": 0,
+          "sno": 8,
+          "psrno": 8,
+          "gstatus": "",
+          "nat": "7 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 9,
+          "psid": 0,
+          "sno": 9,
+          "psrno": 9,
+          "gstatus": "",
+          "nat": "8 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 10,
+          "psid": 0,
+          "sno": 10,
+          "psrno": 10,
+          "gstatus": "",
+          "nat": "9 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "gmid": 856162940,
+      "mid": 663840912226,
+      "pmid": null,
+      "mname": "1ST INN LAMBI SA W VS PAK W",
+      "rem": "",
+      "gtype": "cricketcasino",
+      "status": "OPEN",
+      "rc": 2,
+      "visible": false,
+      "pid": 0,
+      "gscode": 1,
+      "maxb": 0,
+      "sno": 4.499999999999998,
+      "dtype": 9,
+      "ocnt": 2,
+      "m": 0,
+      "max": 0,
+      "min": 0,
+      "biplay": true,
+      "umaxbof": 0,
+      "boplay": true,
+      "iplay": true,
+      "btcnt": 0,
+      "company": null,
+      "section": [
+        {
+          "sid": 1,
+          "psid": 0,
+          "sno": 1,
+          "psrno": 1,
+          "gstatus": "",
+          "nat": "0 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 2,
+          "psid": 0,
+          "sno": 2,
+          "psrno": 2,
+          "gstatus": "",
+          "nat": "1 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 3,
+          "psid": 0,
+          "sno": 3,
+          "psrno": 3,
+          "gstatus": "",
+          "nat": "2 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 4,
+          "psid": 0,
+          "sno": 4,
+          "psrno": 4,
+          "gstatus": "",
+          "nat": "3 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 5,
+          "psid": 0,
+          "sno": 5,
+          "psrno": 5,
+          "gstatus": "",
+          "nat": "4 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 6,
+          "psid": 0,
+          "sno": 6,
+          "psrno": 6,
+          "gstatus": "",
+          "nat": "5 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 7,
+          "psid": 0,
+          "sno": 7,
+          "psrno": 7,
+          "gstatus": "",
+          "nat": "6 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 8,
+          "psid": 0,
+          "sno": 8,
+          "psrno": 8,
+          "gstatus": "",
+          "nat": "7 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 9,
+          "psid": 0,
+          "sno": 9,
+          "psrno": 9,
+          "gstatus": "",
+          "nat": "8 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 10,
+          "psid": 0,
+          "sno": 10,
+          "psrno": 10,
+          "gstatus": "",
+          "nat": "9 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "gmid": 856162940,
+      "mid": 503216384191,
+      "pmid": null,
+      "mname": " 2ND INN 6 OVER SA W VS PAK W",
+      "rem": "",
+      "gtype": "cricketcasino",
+      "status": "OPEN",
+      "rc": 2,
+      "visible": false,
+      "pid": 0,
+      "gscode": 1,
+      "maxb": 0,
+      "sno": 4.599999999999998,
+      "dtype": 9,
+      "ocnt": 2,
+      "m": 0,
+      "max": 0,
+      "min": 0,
+      "biplay": true,
+      "umaxbof": 0,
+      "boplay": true,
+      "iplay": true,
+      "btcnt": 0,
+      "company": null,
+      "section": [
+        {
+          "sid": 1,
+          "psid": 0,
+          "sno": 1,
+          "psrno": 1,
+          "gstatus": "",
+          "nat": "0 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 2,
+          "psid": 0,
+          "sno": 2,
+          "psrno": 2,
+          "gstatus": "",
+          "nat": "1 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 3,
+          "psid": 0,
+          "sno": 3,
+          "psrno": 3,
+          "gstatus": "",
+          "nat": "2 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 4,
+          "psid": 0,
+          "sno": 4,
+          "psrno": 4,
+          "gstatus": "",
+          "nat": "3 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 5,
+          "psid": 0,
+          "sno": 5,
+          "psrno": 5,
+          "gstatus": "",
+          "nat": "4 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 6,
+          "psid": 0,
+          "sno": 6,
+          "psrno": 6,
+          "gstatus": "",
+          "nat": "5 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 7,
+          "psid": 0,
+          "sno": 7,
+          "psrno": 7,
+          "gstatus": "",
+          "nat": "6 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 8,
+          "psid": 0,
+          "sno": 8,
+          "psrno": 8,
+          "gstatus": "",
+          "nat": "7 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 9,
+          "psid": 0,
+          "sno": 9,
+          "psrno": 9,
+          "gstatus": "",
+          "nat": "8 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 10,
+          "psid": 0,
+          "sno": 10,
+          "psrno": 10,
+          "gstatus": "",
+          "nat": "9 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "gmid": 856162940,
+      "mid": 616734811588,
+      "pmid": null,
+      "mname": "2ND INN 10 OVER SA W VS PAK W  ",
+      "rem": "",
+      "gtype": "cricketcasino",
+      "status": "OPEN",
+      "rc": 2,
+      "visible": false,
+      "pid": 0,
+      "gscode": 1,
+      "maxb": 0,
+      "sno": 4.6999999999999975,
+      "dtype": 9,
+      "ocnt": 2,
+      "m": 0,
+      "max": 0,
+      "min": 0,
+      "biplay": true,
+      "umaxbof": 0,
+      "boplay": true,
+      "iplay": true,
+      "btcnt": 0,
+      "company": null,
+      "section": [
+        {
+          "sid": 1,
+          "psid": 0,
+          "sno": 1,
+          "psrno": 1,
+          "gstatus": "",
+          "nat": "0 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 2,
+          "psid": 0,
+          "sno": 2,
+          "psrno": 2,
+          "gstatus": "",
+          "nat": "1 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 3,
+          "psid": 0,
+          "sno": 3,
+          "psrno": 3,
+          "gstatus": "",
+          "nat": "2 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 4,
+          "psid": 0,
+          "sno": 4,
+          "psrno": 4,
+          "gstatus": "",
+          "nat": "3 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 5,
+          "psid": 0,
+          "sno": 5,
+          "psrno": 5,
+          "gstatus": "",
+          "nat": "4 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 6,
+          "psid": 0,
+          "sno": 6,
+          "psrno": 6,
+          "gstatus": "",
+          "nat": "5 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 7,
+          "psid": 0,
+          "sno": 7,
+          "psrno": 7,
+          "gstatus": "",
+          "nat": "6 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 8,
+          "psid": 0,
+          "sno": 8,
+          "psrno": 8,
+          "gstatus": "",
+          "nat": "7 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 9,
+          "psid": 0,
+          "sno": 9,
+          "psrno": 9,
+          "gstatus": "",
+          "nat": "8 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        },
+        {
+          "sid": 10,
+          "psid": 0,
+          "sno": 10,
+          "psrno": 10,
+          "gstatus": "",
+          "nat": "9 Number",
+          "gscode": 1,
+          "max": 100000,
+          "min": 100,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 9.5,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 100
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "gmid": 856162940,
+      "mid": 6631456847730,
+      "pmid": null,
+      "mname": "TIED_MATCH",
+      "rem": "",
+      "gtype": "match",
+      "status": "OPEN",
+      "rc": 2,
+      "visible": false,
+      "pid": 0,
+      "gscode": 1,
+      "maxb": 1,
+      "sno": 7.001,
+      "dtype": 4,
+      "ocnt": 6,
+      "m": 0,
+      "max": 0,
+      "min": 0,
+      "biplay": true,
+      "umaxbof": 1,
+      "boplay": true,
+      "iplay": true,
+      "btcnt": 4,
+      "company": null,
+      "section": [
+        {
+          "sid": 704140,
+          "psid": 0,
+          "sno": 1,
+          "psrno": 1,
+          "gstatus": "ACTIVE",
+          "nat": "Yes",
+          "gscode": 1,
+          "max": 0,
+          "min": 0,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 34,
+              "otype": "back",
+              "oname": "back3",
+              "tno": 2,
+              "size": 43.06
+            },
+            {
+              "psid": 0,
+              "odds": 50,
+              "otype": "back",
+              "oname": "back2",
+              "tno": 1,
+              "size": 34.26
+            },
+            {
+              "psid": 0,
+              "odds": 55,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 14.64
+            },
+            {
+              "psid": 0,
+              "odds": 110,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 22.41
+            },
+            {
+              "psid": 0,
+              "odds": 0,
+              "otype": "lay",
+              "oname": "lay2",
+              "tno": 1,
+              "size": 0
+            },
+            {
+              "psid": 0,
+              "odds": 0,
+              "otype": "lay",
+              "oname": "lay3",
+              "tno": 2,
+              "size": 0
+            }
+          ]
+        },
+        {
+          "sid": 572271,
+          "psid": 0,
+          "sno": 2,
+          "psrno": 2,
+          "gstatus": "ACTIVE",
+          "nat": "No",
+          "gscode": 1,
+          "max": 0,
+          "min": 0,
+          "rem": "",
+          "br": false,
+          "ik": 0,
+          "ikm": 0,
+          "odds": [
+            {
+              "psid": 0,
+              "odds": 0,
+              "otype": "back",
+              "oname": "back3",
+              "tno": 2,
+              "size": 0
+            },
+            {
+              "psid": 0,
+              "odds": 0,
+              "otype": "back",
+              "oname": "back2",
+              "tno": 1,
+              "size": 0
+            },
+            {
+              "psid": 0,
+              "odds": 1.01,
+              "otype": "back",
+              "oname": "back1",
+              "tno": 0,
+              "size": 2440.88
+            },
+            {
+              "psid": 0,
+              "odds": 1.02,
+              "otype": "lay",
+              "oname": "lay1",
+              "tno": 0,
+              "size": 2468.72
+            },
+            {
+              "psid": 0,
+              "odds": 1.03,
+              "otype": "lay",
+              "oname": "lay2",
+              "tno": 1,
+              "size": 1421.35
+            },
+            {
+              "psid": 0,
+              "odds": 1.04,
+              "otype": "lay",
+              "oname": "lay3",
+              "tno": 2,
+              "size": 118.13
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "lastUpdatedaAt": "2026-02-10T22:01:32.306Z"
+}

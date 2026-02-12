@@ -20,17 +20,24 @@ import {
   settlementMonitor,
   settleSportsBets,
   settleCasinoBets,
+  settleSingleCasinoBet,
 } from "@/services/autoSettlementService";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { ChipAmount } from "@/components/ui/CasinoChip";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Bets = () => {
   const { data: bets = [], isLoading, error, refetch } = useMyBets();
   const { toast } = useToast();
   const [isSettling, setIsSettling] = useState(false);
+  const queryClient = useQueryClient();
 
   const handleManualSettlement = async () => {
+    console.log("[Bets] ========== SETTLE BUTTON CLICKED ==========");
+    console.log("[Bets] Total bets:", bets.length);
+    console.log("[Bets] All bets:", bets);
+    
     setIsSettling(true);
     toast({
       title: "System Alert",
@@ -39,17 +46,67 @@ const Bets = () => {
 
     try {
       const pendingBets = bets.filter((b: any) => b.status === "pending");
-      const eventIds = new Set(
-        pendingBets.filter((b: any) => b.event_id).map((b: any) => b.event_id),
+
+      console.log("[Bets] Total pending bets:", pendingBets.length);
+      console.log("[Bets] Pending bets details:", pendingBets);
+      
+      if (pendingBets.length === 0) {
+        console.log("[Bets] ⚠️ No pending bets found! Exiting settlement.");
+        toast({
+          title: "No Pending Bets",
+          description: "All bets are already settled.",
+        });
+        setIsSettling(false);
+        return;
+      }
+      
+      console.log("[Bets] Sample bet:", pendingBets[0]);
+
+      // Log ALL pending bets structure for debugging
+      pendingBets.forEach((bet: any, i: number) => {
+        console.log(`[Bets] Bet ${i + 1}:`, {
+          sport: bet.sport,
+          event: bet.event,
+          market: bet.market,
+          market_id: bet.market_id,
+          event_name: bet.event_name,
+          bet_on: bet.bet_on,
+        });
+      });
+
+      // Separate casino and sports bets
+      const sportsBets = pendingBets.filter(
+        (b: any) =>
+          b.event_id &&
+          b.sport !== "CASINO" &&
+          b.sport !== "casino" &&
+          b.bet_on !== "fancy",
       );
-      const gameIds = new Set(
-        pendingBets.filter((b: any) => b.sport).map((b: any) => b.sport),
+
+      // Casino bets: sport='casino' OR bet_on='fancy' only
+      const casinoBets = pendingBets.filter(
+        (b: any) =>
+          b.sport === "CASINO" ||
+          b.sport === "casino" ||
+          b.bet_on === "fancy",
       );
+
+      console.log("[Bets] Sports bets:", sportsBets.length);
+      console.log("[Bets] Casino bets:", casinoBets.length);
+      console.log("[Bets] Casino bets:", casinoBets.length);
+      console.log("[Bets] Sample casino bet:", casinoBets[0]);
+
+      const eventIds = new Set(sportsBets.map((b: any) => b.event_id));
+
+      // For casino bets with sport='casino', we can't determine game type from bet alone
+      // We'll settle them all together by calling a different settlement method
+      console.log("[Bets] Settling casino bets by round IDs...");
 
       let settledCount = 0;
       let wonCount = 0;
       let totalWinnings = 0;
 
+      // Settle sports bets
       for (const eventId of eventIds) {
         const results = await settleSportsBets(Number(eventId));
         settledCount += results.length;
@@ -59,18 +116,96 @@ const Bets = () => {
           .reduce((sum, r) => sum + (r.payout || 0), 0);
       }
 
-      for (const gameId of gameIds) {
-        const results = await settleCasinoBets(String(gameId));
-        settledCount += results.length;
-        wonCount += results.filter((r) => r.status === "won").length;
-        totalWinnings += results
-          .filter((r) => r.status === "won")
-          .reduce((sum, r) => sum + (r.payout || 0), 0);
+      // Settle casino bets - settle each bet individually by checking its round
+      if (casinoBets.length > 0) {
+        console.log(
+          `[Bets] Processing ${casinoBets.length} casino bets individually...`,
+        );
+        console.log(`[Bets] Casino bets to settle:`, casinoBets.map(b => ({
+          id: b.id.slice(0, 8),
+          event_name: b.event_name,
+          event: b.event,
+          status: b.status
+        })));
+        
+        for (const bet of casinoBets) {
+          try {
+            console.log(`[Bets] ========== Starting settlement for bet ${bet.id.slice(0, 8)} ==========`);
+            // Call settlement for each bet by ID
+            const results = await settleSingleCasinoBet(bet.id);
+            console.log(`[Bets] Settlement for bet ${bet.id}:`, results);
+            
+            if (results.length > 0) {
+              console.log(`[Bets] ✅ Bet ${bet.id.slice(0, 8)} settled:`, results[0].status);
+              settledCount += results.length;
+              wonCount += results.filter((r) => r.status === "won").length;
+              totalWinnings += results
+                .filter((r) => r.status === "won")
+                .reduce((sum, r) => sum + (r.payout || 0), 0);
+            } else {
+              console.log(`[Bets] ⚠️ No results returned for bet ${bet.id.slice(0, 8)}`);
+            }
+          } catch (err) {
+            console.error(`[Bets] ❌ Failed to settle bet ${bet.id}:`, err);
+          }
+        }
+        
+        console.log(`[Bets] ========== Finished settling all casino bets ==========`);
       }
 
-      await refetch();
+      // Force data refresh using hook's refetch function
+      console.log("[Bets] Refetching fresh data from database...");
 
-      if (wonCount > 0) {
+      // Wait a bit for database to process all updates
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Invalidate cache first
+      queryClient.invalidateQueries({ queryKey: ["my-bets"] });
+      queryClient.invalidateQueries({ queryKey: ["wallet-balance"] });
+
+      // Use the refetch function from the hook - this updates the hook's internal state
+      const result = await refetch();
+
+      console.log("[Bets] Data refreshed successfully");
+      console.log("[Bets] Fresh bets count:", result.data?.length || 0);
+      console.table(
+        result.data?.map((b) => ({
+          id: b.id.slice(0, 8),
+          status: b.status,
+          sport: b.sport,
+          event_name: b.event_name?.slice(0, 30),
+          stake: b.stake,
+          payout: b.payout || 0,
+        })),
+      );
+
+      console.log(`[Bets] ===== SETTLEMENT SUMMARY =====`);
+      console.log(`[Bets] Total Settled: ${settledCount}`);
+      console.log(`[Bets] Won: ${wonCount}`);
+      console.log(`[Bets] Total Winnings: ₹${totalWinnings}`);
+      console.log(`[Bets] ================================`);
+
+      if (settledCount === 0) {
+        const hasPendingCasino = casinoBets.length > 0;
+        const hasPendingSports = eventIds.size > 0;
+
+        let message = "No results available yet.";
+        if (hasPendingCasino && !hasPendingSports) {
+          message =
+            "Casino round results not available yet. Please wait for the round to finish and try again in 1-2 minutes.";
+        } else if (hasPendingSports && !hasPendingCasino) {
+          message =
+            "Sports match results not available yet. Check back after the match ends.";
+        } else {
+          message = "Results not available yet. Please wait and try again.";
+        }
+
+        toast({
+          title: "No Settlement",
+          description: message,
+          variant: "destructive",
+        });
+      } else if (wonCount > 0) {
         toast({
           title: "Result Confirmed",
           description: `Win detected: +₹${totalWinnings.toLocaleString()}`,
@@ -78,7 +213,7 @@ const Bets = () => {
       } else {
         toast({
           title: "Settlement Complete",
-          description: "All positions updated.",
+          description: `${settledCount} bet(s) settled - All lost. Check your bet history below.`,
         });
       }
     } catch (error) {
@@ -91,6 +226,12 @@ const Bets = () => {
       setIsSettling(false);
     }
   };
+
+  // Debug: Log all bets and their status
+  console.log(
+    "[Bets] All bets:",
+    bets.map((b: any) => ({ id: b.id, status: b.status, stake: b.stake })),
+  );
 
   const stats = {
     total: bets.length,
@@ -134,17 +275,15 @@ const Bets = () => {
           >
             <RefreshCcw className="w-3 h-3 mr-2" /> Sync
           </Button>
+          {/* Manual settlement button */}
           <Button
             onClick={handleManualSettlement}
             disabled={isSettling}
-            className="bg-primary hover:bg-white text-black h-10 px-4 rounded-none text-xs font-bold uppercase tracking-wider transition-all"
+            className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 h-10 px-4 rounded-none text-xs font-bold uppercase tracking-wider transition-all"
+            title="Manually settle pending bets"
           >
-            {isSettling ? (
-              <Loader2 className="w-3 h-3 animate-spin mr-2" />
-            ) : (
-              <Terminal className="w-3 h-3 mr-2" />
-            )}
-            {isSettling ? "Processing..." : "Force Settle"}
+            <Terminal className="w-3 h-3 mr-2" />
+            {isSettling ? "Settling..." : "Settle"}
           </Button>
         </div>
       </div>

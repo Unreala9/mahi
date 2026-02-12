@@ -41,7 +41,7 @@ const Index = () => {
             className="block w-full overflow-hidden rounded-xl border border-white/10 shadow-lg active:scale-[0.98] transition-transform"
           >
             <img
-              src="/cricket_battle.9a44e4b8.webp"
+              src="/images/cricket_battle.9a44e4b8.webp"
               alt="Cricket Battle"
               className="w-full h-auto object-cover min-h-[120px]"
             />

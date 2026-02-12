@@ -16,5 +16,9 @@ export const useMyBets = () => {
   return useQuery({
     queryKey: ["my-bets"],
     queryFn: () => bettingService.getMyBets(),
+    staleTime: 0, // Always fetch fresh data
+    gcTime: 0, // Don't cache (previously cacheTime in v4)
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 };

@@ -140,16 +140,16 @@ export const MainHeader = ({
             {/* New Branding for Mobile/Header */}
             <div className="flex items-center gap-2">
               <img
-                src="/mahiexchange.png"
+                src="/images/mahiexchange.png"
                 alt="MahiExchange"
-                className="h-16 w-auto object-contain"
+                className="h-40 w-auto object-contain"
               />
             </div>
           </div>
 
           <div className="flex items-center gap-3 text-sm flex-shrink-0">
             {/* Utility Links */}
-            <div className="hidden lg:flex items-center gap-6 mr-6 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+            <div className="hidden lg:flex items-center gap-6 mr-6 text-[14px] font-bold uppercase tracking-widest text-gray-400">
               <button className="hover:text-primary transition-colors flex items-center gap-1 group">
                 <span className="w-1 h-1 bg-gray-600 group-hover:bg-primary rounded-full transition-colors" />{" "}
                 Rules
@@ -163,7 +163,7 @@ export const MainHeader = ({
             {/* Balance Display - Terminal Style */}
             <div className="flex items-center gap-px bg-[#0a1120] border border-white/10 h-10 group hover:border-primary/50 transition-colors">
               <div className="px-3 h-full flex flex-col justify-center border-r border-white/5">
-                <span className="text-[8px] text-gray-500 font-bold uppercase tracking-wider leading-none mb-1">
+                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider leading-none mb-1">
                   Total Balance
                 </span>
                 <span className="font-mono text-primary font-bold text-sm leading-none tracking-tight">
@@ -269,15 +269,15 @@ export const MainHeader = ({
         <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-primary to-transparent z-10" />
         <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-primary to-transparent z-10" />
 
-        <div className="w-full overflow-hidden">
-          <div className="animate-marquee whitespace-nowrap flex items-center gap-8">
-            <span className="text-[10px] font-mono font-bold uppercase tracking-widest flex items-center gap-4">
+        <div className="w-full overflow-hidden text-[12px]">
+          <div className="animate-marquee whitespace-nowrap flex items-center gap-8 ">
+            <span className=" font-mono font-bold uppercase tracking-widest flex items-center gap-4">
               {marqueeText}
             </span>
-            <span className="text-[10px] font-mono font-bold uppercase tracking-widest flex items-center gap-4">
+            <span className=" font-mono font-bold uppercase tracking-widest flex items-center gap-4">
               {marqueeText}
             </span>
-            <span className="text-[10px] font-mono font-bold uppercase tracking-widest flex items-center gap-4">
+            <span className=" font-mono font-bold uppercase tracking-widest flex items-center gap-4">
               {marqueeText}
             </span>
           </div>
@@ -295,7 +295,7 @@ export const MainHeader = ({
                   key={item.label}
                   to={item.to}
                   className={`
-                    px-6 py-3 text-[10px] font-bold tracking-[0.15em] relative group transition-colors min-w-max
+                    px-6 py-3 text-[12px] font-bold tracking-[0.15em] relative group transition-colors min-w-max
                     ${active ? "text-white" : "text-gray-500 hover:text-gray-300"}
                   `}
                 >

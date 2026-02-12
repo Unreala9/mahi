@@ -40,9 +40,13 @@ import AdminAuditLogs from "./pages/admin/AdminAuditLogs";
 import AdminWithdrawals from "./pages/admin/AdminWithdrawals";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
-import TestSettlement from "./pages/TestSettlement";
-import TestBetting from "./pages/TestBetting";
+
 import InPlay from "./pages/InPlay";
+import { ResultFetchingTest } from "./components/ResultFetchingTest";
+import { ResultFetchingTestSimple } from "./components/ResultFetchingTestSimple";
+import { ResultFetchingDebug } from "./components/ResultFetchingDebug";
+import { CasinoResultTest } from "./components/CasinoResultTest";
+import TestSportsResults from "./pages/TestSportsResults";
 
 const queryClient = new QueryClient();
 
@@ -81,6 +85,9 @@ const App = () => {
   }, []);
 
   // Initialize result WebSocket for real-time settlements
+  // TEMPORARILY DISABLED: Most game types not supported by backend, causing 401 errors
+  // TODO: Re-enable when backend supports proper game type list
+  /*
   useEffect(() => {
     console.log("[App] Starting result WebSocket...");
     resultWebSocket.start();
@@ -90,6 +97,7 @@ const App = () => {
       resultWebSocket.stop();
     };
   }, []);
+  */
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -101,8 +109,17 @@ const App = () => {
             <Route path="/auth" element={<Auth />} />
 
             <Route path="/api-test" element={<ApiTest />} />
-            <Route path="/test-settlement" element={<TestSettlement />} />
-            <Route path="/test-betting" element={<TestBetting />} />
+            <Route path="/result-test" element={<ResultFetchingTest />} />
+            <Route
+              path="/result-test-simple"
+              element={<ResultFetchingTestSimple />}
+            />
+            <Route path="/result-debug" element={<ResultFetchingDebug />} />
+            <Route path="/casino-result-test" element={<CasinoResultTest />} />
+            <Route
+              path="/test-sports-results"
+              element={<TestSportsResults />}
+            />
 
             {/* Main App Layout Routes */}
             <Route element={<MainLayout />}>

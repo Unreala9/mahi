@@ -1,15 +1,5 @@
 import { useState } from "react";
 import {
-  Trophy,
-  Dribbble,
-  Circle,
-  Dumbbell,
-  Basketball,
-  Target,
-  TableTennis,
-  Horse,
-  Dog,
-  Volleyball,
   Gamepad2,
   Feather,
 } from "lucide-react";
@@ -22,23 +12,61 @@ interface SportCategory {
 }
 
 const sportCategories: SportCategory[] = [
-  { id: 4, name: "Cricket", icon: <Trophy className="w-4 h-4" />, badge: 25 },
+  {
+    id: 4,
+    name: "Cricket",
+    icon: <i className="s-icon s-icon-sport-cricket text-lg" />,
+    badge: 25,
+  },
   {
     id: 1,
     name: "Football",
-    icon: <Dribbble className="w-4 h-4" />,
+    icon: <i className="s-icon s-icon-sport-soccer text-lg" />,
     badge: 18,
   },
-  { id: 2, name: "Tennis", icon: <Circle className="w-4 h-4" />, badge: 12 },
-  { id: 3, name: "Kabaddi", icon: <Dumbbell className="w-4 h-4" /> },
-  { id: 8, name: "Basketball", icon: <Basketball className="w-4 h-4" /> },
-  { id: 13, name: "Darts", icon: <Target className="w-4 h-4" /> },
-  { id: 6, name: "Table Tennis", icon: <TableTennis className="w-4 h-4" /> },
-  { id: 7, name: "Horse Race", icon: <Horse className="w-4 h-4" /> },
-  { id: 12, name: "GreyHound", icon: <Dog className="w-4 h-4" /> },
-  { id: 10, name: "Volleyball", icon: <Volleyball className="w-4 h-4" /> },
-  { id: 9, name: "Binary", icon: <Gamepad2 className="w-4 h-4" /> },
-  { id: 14, name: "Politics", icon: <Feather className="w-4 h-4" /> },
+  {
+    id: 2,
+    name: "Tennis",
+    icon: <i className="s-icon s-icon-sport-tennis text-lg" />,
+    badge: 12,
+  },
+  {
+    id: 3,
+    name: "Kabaddi",
+    icon: <i className="s-icon s-icon-sport-kabaddi text-lg" />,
+  },
+  {
+    id: 8,
+    name: "Basketball",
+    icon: <i className="s-icon s-icon-sport-basketball text-lg" />,
+  },
+  {
+    id: 13,
+    name: "Darts",
+    icon: <i className="s-icon s-icon-sport-darts text-lg" />,
+  },
+  {
+    id: 6,
+    name: "Table Tennis",
+    icon: <i className="s-icon s-icon-sport-table-tennis text-lg" />,
+  },
+  {
+    id: 7,
+    name: "Horse Race",
+    icon: <i className="s-icon s-icon-sport-horse-racing text-lg" />,
+  },
+  {
+    id: 12,
+    name: "GreyHound",
+    icon: <i className="s-icon s-icon-sport-greyhound text-lg" />,
+  },
+  {
+    id: 10,
+    name: "Volleyball",
+    icon: <i className="s-icon s-icon-sport-volleyball text-lg" />,
+  },
+  { id: 9, name: "Binary", icon: <Gamepad2 className="w-4 h-4 ml-1" /> },
+  { id: 14, name: "Politics", icon: <Feather className="w-4 h-4 ml-1" /> },
 ];
 
 interface SportsCategoryBarProps {

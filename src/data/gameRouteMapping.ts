@@ -29,6 +29,7 @@ export const GAME_ROUTE_MAPPING: Record<
   // Dragon Tiger Games
   t20: { gameType: "dt20", displayName: "Dragon Tiger 20-20" },
   dt20: { gameType: "dt20", displayName: "Dragon Tiger 20-20" },
+  dt1day: { gameType: "dt1day", displayName: "Dragon Tiger One Day" },
   dt6: { gameType: "dt6", displayName: "Dragon Tiger 6" },
   dt202: { gameType: "dt20", displayName: "Dragon Tiger 2020 2" },
 

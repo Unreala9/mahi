@@ -1,5 +1,7 @@
 /* Distinctive Typography System - Financial Terminal Brutalism */
 @import url("https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Mono:wght@400;500;600&family=Manrope:wght@500;600;700;800&display=swap");
+@import url("https://cdn.jsdelivr.net/npm/sidearm-icons@0.1.0/font/sidearm-icons.css");
+
 
 @tailwind base;
 @tailwind components;
@@ -73,7 +75,7 @@
     font-weight: 400;
     letter-spacing: 0.01em;
     background-color: #0a0e1a; /* Dark Navy Base */
-    background-image: 
+    background-image:
       /* Scanline effect */
       repeating-linear-gradient(
         0deg,

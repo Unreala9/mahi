@@ -1,6 +1,8 @@
 import { Sport } from "@/services/sportbex";
 import { cn } from "@/lib/utils";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { SportsIcon } from "@/components/ui/SportsIcon";
+import { Home } from "lucide-react";
 
 interface SportSidebarProps {
   sports: Sport[];
@@ -29,11 +31,13 @@ export const SportSidebar = ({
                   "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                   selectedSportId === "all"
                     ? "bg-sidebar-accent text-sidebar-primary"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent/50"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent/50",
                 )}
               >
                 <div className="flex items-center gap-3">
-                  <span>🏠</span>
+                  <span className="w-4 h-4 flex items-center justify-center">
+                    <Home className="w-4 h-4" />
+                  </span>
                   <span>All Sports</span>
                 </div>
               </button>
@@ -45,11 +49,11 @@ export const SportSidebar = ({
                     "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                     selectedSportId === sport.id
                       ? "bg-sidebar-accent text-sidebar-primary"
-                      : "text-sidebar-foreground hover:bg-sidebar-accent/50"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent/50",
                   )}
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-lg">{sport.icon}</span>
+                    <SportsIcon sportName={sport.name} size={16} />
                     <span>{sport.name}</span>
                   </div>
                   {sport.count && (
@@ -66,38 +70,40 @@ export const SportSidebar = ({
 
       {/* Mobile Horizontal Bar */}
       <div className="lg:hidden fixed top-20 left-0 right-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border shadow-sm">
-         <ScrollArea className="w-full whitespace-nowrap">
-            <div className="flex p-2 gap-2">
+        <ScrollArea className="w-full whitespace-nowrap">
+          <div className="flex p-2 gap-2">
+            <button
+              onClick={() => onSelectSport("all")}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors border",
+                selectedSportId === "all"
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-card text-card-foreground border-border hover:bg-accent",
+              )}
+            >
+              <div className="w-4 h-4 flex items-center justify-center">
+                <Home className="w-4 h-4" />
+              </div>
+              <span>All</span>
+            </button>
+            {sports.map((sport) => (
               <button
-                onClick={() => onSelectSport("all")}
+                key={sport.id}
+                onClick={() => onSelectSport(sport.id)}
                 className={cn(
                   "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors border",
-                  selectedSportId === "all"
+                  selectedSportId === sport.id
                     ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-card text-card-foreground border-border hover:bg-accent"
+                    : "bg-card text-card-foreground border-border hover:bg-accent",
                 )}
               >
-                <span>🏠</span>
-                <span>All</span>
+                <SportsIcon sportName={sport.name} size={16} />
+                <span>{sport.name}</span>
               </button>
-              {sports.map((sport) => (
-                <button
-                  key={sport.id}
-                  onClick={() => onSelectSport(sport.id)}
-                  className={cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors border",
-                    selectedSportId === sport.id
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-card text-card-foreground border-border hover:bg-accent"
-                  )}
-                >
-                  <span>{sport.icon}</span>
-                  <span>{sport.name}</span>
-                </button>
-              ))}
-            </div>
-            <ScrollBar orientation="horizontal" />
-         </ScrollArea>
+            ))}
+          </div>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
       </div>
     </>
   );

@@ -42,6 +42,49 @@ export const CasinoToolbar = ({
           )}
         </div>
       </div>
+
+      {/* Categories Scroller */}
+      {categories.length > 0 && (
+        <div className="bg-[#080c14] border-t border-white/5">
+          <div className="flex items-center">
+            <button className="p-3 text-gray-500 hover:text-white hover:bg-white/5 border-r border-white/5 transition-colors">
+              <List className="w-4 h-4" />
+            </button>
+            <div className="flex-1 overflow-x-auto scrollbar-hide">
+              <div className="flex">
+                {categories.map((cat) => {
+                  const isActive = activeCategory === cat.id;
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => setActiveCategory(cat.id)}
+                      className={`
+                        relative px-6 py-4 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap transition-all border-r border-white/5
+                        ${
+                          isActive
+                            ? "bg-red-500 text-black"
+                            : "text-gray-400 hover:text-white hover:bg-white/5"
+                        }
+                      `}
+                    >
+                      <span className="relative z-10 flex items-center gap-2">
+                        {cat.name}
+                        {cat.id === "all" && (
+                          <span
+                            className={`text-[9px] px-1.5 py-0.5 rounded ${isActive ? "bg-black/20 text-black" : "bg-white/10 text-gray-500"}`}
+                          >
+                            {totalGames}
+                          </span>
+                        )}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
