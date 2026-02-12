@@ -71,7 +71,9 @@ export const SportIcon: React.FC<SportIconProps> = ({
         verticalAlign: "middle",
       }}
       onError={() => {
-        console.warn(`Failed to load sport icon for eventId ${eventId}, using emoji fallback`);
+        console.warn(
+          `Failed to load sport icon for eventId ${eventId}, using emoji fallback`,
+        );
         setImageError(true);
       }}
       loading="lazy"

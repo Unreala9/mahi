@@ -4,8 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { loadStripe } from "@stripe/stripe-js";
-import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+// Removed Stripe and PayPal imports - only using Razorpay
 import {
   Wallet as WalletIcon,
   Plus,
@@ -28,7 +27,7 @@ import { cn } from "@/lib/utils";
 
 import { ChipAmount } from "@/components/ui/CasinoChip";
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || "");
+// Removed Stripe initialization - only using Razorpay
 
 const Wallet = () => {
   const navigate = useNavigate();
@@ -41,9 +40,8 @@ const Wallet = () => {
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [upiId, setUpiId] = useState("");
   const [activeTab, setActiveTab] = useState<"deposit" | "withdraw">("deposit");
-  const [selectedGateway, setSelectedGateway] = useState<
-    "stripe" | "razorpay" | "paypal" | "bank_transfer"
-  >("razorpay");
+  // Removed gateway selection - only Razorpay is available
+  const selectedGateway = "razorpay";
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -135,41 +133,31 @@ const Wallet = () => {
 
     try {
       setLoading(true);
-      if (selectedGateway === "stripe") {
-        // Stripe Logic (Simplified for brevity as logic is same)
-        toast({ title: "Initiating Stripe", description: "Redirecting..." });
-      } else if (selectedGateway === "razorpay") {
-        // Razorpay Logic (Same as before)
-        const res = await supabase.functions.invoke("create-payment-intent", {
-          body: JSON.stringify({
-            amount: parseFloat(depositAmount),
-            currency: "INR",
-            provider: "razorpay",
-          }),
-          headers: { "Content-Type": "application/json" },
-        });
+      // Only Razorpay payment gateway
+      const res = await supabase.functions.invoke("create-payment-intent", {
+        body: JSON.stringify({
+          amount: parseFloat(depositAmount),
+          currency: "INR",
+          provider: "razorpay",
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
 
-        if (!res.error && res.data) {
-          const options = {
-            key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-            amount: res.data.amount,
-            currency: res.data.currency,
-            name: "MahiExchange",
-            description: "Terminal Deposit",
-            order_id: res.data.order_id,
-            handler: function (response: any) {
-              verifyPayment(response, "razorpay");
-            },
-            theme: { color: "#050b14" },
-          };
-          const rzp = new (window as any).Razorpay(options);
-          rzp.open();
-        }
-      } else {
-        toast({
-          title: "Bank Transfer",
-          description: "Contact Support for Wire Instructions",
-        });
+      if (!res.error && res.data) {
+        const options = {
+          key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+          amount: res.data.amount,
+          currency: res.data.currency,
+          name: "MahiExchange",
+          description: "Terminal Deposit",
+          order_id: res.data.order_id,
+          handler: function (response: any) {
+            verifyPayment(response, "razorpay");
+          },
+          theme: { color: "#050b14" },
+        };
+        const rzp = new (window as any).Razorpay(options);
+        rzp.open();
       }
     } catch (err: any) {
       toast({
@@ -178,7 +166,7 @@ const Wallet = () => {
         variant: "destructive",
       });
     } finally {
-      if (selectedGateway !== "paypal") setLoading(false);
+      setLoading(false);
     }
   };
 
@@ -332,41 +320,20 @@ const Wallet = () => {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4">
-                    Payment Protocol
-                  </label>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {[
-                      { id: "razorpay", name: "Razorpay", icon: CreditCard },
-                      { id: "stripe", name: "Stripe", icon: CardIcon },
-                      { id: "paypal", name: "PayPal", icon: WalletIcon },
-                      {
-                        id: "bank_transfer",
-                        name: "Bank Wire",
-                        icon: Landmark,
-                      },
-                    ].map((gateway) => (
-                      <button
-                        key={gateway.id}
-                        onClick={() => setSelectedGateway(gateway.id as any)}
-                        className={cn(
-                          "flex flex-col items-center justify-center gap-3 p-6 border transition-all relative overflow-hidden group",
-                          selectedGateway === gateway.id
-                            ? "bg-white text-black border-white"
-                            : "bg-[#050b14] border-white/5 text-gray-500 hover:border-white/20 hover:text-white",
-                        )}
-                      >
-                        <gateway.icon className="w-6 h-6" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest">
-                          {gateway.name}
-                        </span>
-                        {selectedGateway === gateway.id && (
-                          <div className="absolute top-0 right-0 w-2 h-2 bg-primary" />
-                        )}
-                      </button>
-                    ))}
+                {/* Payment method - Razorpay only */}
+                <div className="p-4 bg-[#050b14] border border-white/10 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <CreditCard className="w-5 h-5 text-primary" />
+                    <div>
+                      <p className="text-xs font-bold text-white uppercase tracking-wider">
+                        Razorpay
+                      </p>
+                      <p className="text-[10px] text-gray-500 font-mono">
+                        UPI, Cards, NetBanking
+                      </p>
+                    </div>
                   </div>
+                  <div className="w-2 h-2 bg-primary rounded-full" />
                 </div>
 
                 <Button

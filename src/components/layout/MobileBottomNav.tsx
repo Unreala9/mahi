@@ -1,4 +1,12 @@
-import { Home, Trophy, Play, Info, Settings, Menu } from "lucide-react";
+import {
+  Home,
+  Trophy,
+  Play,
+  Wallet,
+  Receipt,
+  Settings,
+  Menu,
+} from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 export const MobileBottomNav = () => {
@@ -13,20 +21,20 @@ export const MobileBottomNav = () => {
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent pointer-events-none" />
 
       {/* Navigation Bar */}
-      <div className="relative bg-[#0a1120]/80 backdrop-blur-xl border-t border-white/10 px-6 py-2 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
-        <div className="flex items-center justify-between max-w-sm mx-auto relative z-10">
+      <div className="relative bg-[#0a1120]/80 backdrop-blur-xl border-t border-white/10 px-2 py-2 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+        <div className="flex items-center justify-between max-w-full mx-auto relative z-10">
           {/* Sportsbook */}
           <button
-            onClick={() => navigate("/sportsbook")}
-            className={`group flex flex-col items-center gap-1 w-12 transition-all duration-300 ${isActive("/sportsbook") ? "text-blue-400" : "text-gray-500 hover:text-gray-300"}`}
+            onClick={() => navigate("/sports")}
+            className={`group flex flex-col items-center gap-1 flex-1 transition-all duration-300 ${isActive("/sports") ? "text-blue-400" : "text-gray-500 hover:text-gray-300"}`}
           >
             <div
-              className={`relative p-2 rounded-xl transition-all duration-300 ${isActive("/sportsbook") ? "bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.3)]" : ""}`}
+              className={`relative p-1.5 rounded-xl transition-all duration-300 ${isActive("/sports") ? "bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.3)]" : ""}`}
             >
               <Trophy
-                size={20}
-                strokeWidth={isActive("/sportsbook") ? 2.5 : 2}
-                className={`transition-transform duration-300 ${isActive("/sportsbook") ? "scale-110" : "group-hover:scale-110"}`}
+                size={18}
+                strokeWidth={isActive("/sports") ? 2.5 : 2}
+                className={`transition-transform duration-300 ${isActive("/sports") ? "scale-110" : "group-hover:scale-110"}`}
               />
             </div>
             <span className="text-[10px] font-bold tracking-wide">Sports</span>
@@ -35,13 +43,13 @@ export const MobileBottomNav = () => {
           {/* In-Play */}
           <button
             onClick={() => navigate("/in-play")}
-            className={`group flex flex-col items-center gap-1 w-12 transition-all duration-300 ${isActive("/in-play") ? "text-blue-400" : "text-gray-500 hover:text-gray-300"}`}
+            className={`group flex flex-col items-center gap-1 flex-1 transition-all duration-300 ${isActive("/in-play") ? "text-blue-400" : "text-gray-500 hover:text-gray-300"}`}
           >
             <div
-              className={`relative p-2 rounded-xl transition-all duration-300 ${isActive("/in-play") ? "bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.3)]" : ""}`}
+              className={`relative p-1.5 rounded-xl transition-all duration-300 ${isActive("/in-play") ? "bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.3)]" : ""}`}
             >
               <Play
-                size={20}
+                size={18}
                 strokeWidth={isActive("/in-play") ? 2.5 : 2}
                 className={`transition-transform duration-300 ${isActive("/in-play") ? "scale-110" : "group-hover:scale-110"}`}
               />
@@ -49,11 +57,28 @@ export const MobileBottomNav = () => {
             <span className="text-[10px] font-bold tracking-wide">In-Play</span>
           </button>
 
+          {/* My Bets */}
+          <button
+            onClick={() => navigate("/bets")}
+            className={`group flex flex-col items-center gap-1 flex-1 transition-all duration-300 ${isActive("/bets") ? "text-blue-400" : "text-gray-500 hover:text-gray-300"}`}
+          >
+            <div
+              className={`relative p-1.5 rounded-xl transition-all duration-300 ${isActive("/bets") ? "bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.3)]" : ""}`}
+            >
+              <Receipt
+                size={18}
+                strokeWidth={isActive("/bets") ? 2.5 : 2}
+                className={`transition-transform duration-300 ${isActive("/bets") ? "scale-110" : "group-hover:scale-110"}`}
+              />
+            </div>
+            <span className="text-[10px] font-bold tracking-wide">Bets</span>
+          </button>
+
           {/* Home - Reactor Switch Button */}
-          <div className="relative -top-8 group">
+          <div className="relative -top-8 group flex-1">
             <button
               onClick={() => navigate("/")}
-              className="relative w-16 h-16 flex items-center justify-center transition-all duration-300"
+              className="relative w-14 h-14 flex items-center justify-center transition-all duration-300 mx-auto"
             >
               {/* Outer Glow Ring - Spins slow */}
               <div
@@ -75,7 +100,7 @@ export const MobileBottomNav = () => {
                 {/* Icon */}
                 <div className="relative z-20">
                   <Home
-                    size={24}
+                    size={22}
                     className={`transition-all duration-300 ${isActive("/") ? "text-blue-400 drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]" : "text-gray-400 group-hover:text-white"}`}
                     fill={isActive("/") ? "currentColor" : "none"}
                   />
@@ -86,7 +111,7 @@ export const MobileBottomNav = () => {
               </div>
             </button>
             <span
-              className={`absolute -bottom-3 left-1/2 -translate-x-1/2 text-[9px] font-black tracking-widest ${isActive("/") ? "text-blue-400 drop-shadow-[0_0_5px_rgba(59,130,246,0.5)]" : "text-gray-600"} transition-all scale-75 md:scale-100`}
+              className={`absolute -bottom-3 left-1/2 -translate-x-1/2 text-[9px] font-black tracking-widest ${isActive("/") ? "text-blue-400 drop-shadow-[0_0_5px_rgba(59,130,246,0.5)]" : "text-gray-600"} transition-all`}
             >
               HOME
             </span>
@@ -100,28 +125,45 @@ export const MobileBottomNav = () => {
           {/* Casino */}
           <button
             onClick={() => navigate("/casino")}
-            className={`group flex flex-col items-center gap-1 w-12 transition-all duration-300 ${isActive("/casino") ? "text-blue-400" : "text-gray-500 hover:text-gray-300"}`}
+            className={`group flex flex-col items-center gap-1 flex-1 transition-all duration-300 ${isActive("/casino") ? "text-blue-400" : "text-gray-500 hover:text-gray-300"}`}
           >
             <div
-              className={`relative p-2 rounded-xl transition-all duration-300 ${isActive("/casino") ? "bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.3)]" : ""}`}
+              className={`relative p-1.5 rounded-xl transition-all duration-300 ${isActive("/casino") ? "bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.3)]" : ""}`}
             >
               <div className="w-5 h-5 rounded-full border-2 border-current flex items-center justify-center transition-transform duration-300 group-hover:rotate-180">
-                <span className="text-[10px] font-black">C</span>
+                <span className="text-[9px] font-black">C</span>
               </div>
             </div>
             <span className="text-[10px] font-bold tracking-wide">Casino</span>
           </button>
 
+          {/* Wallet */}
+          <button
+            onClick={() => navigate("/wallet")}
+            className={`group flex flex-col items-center gap-1 flex-1 transition-all duration-300 ${isActive("/wallet") ? "text-blue-400" : "text-gray-500 hover:text-gray-300"}`}
+          >
+            <div
+              className={`relative p-1.5 rounded-xl transition-all duration-300 ${isActive("/wallet") ? "bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.3)]" : ""}`}
+            >
+              <Wallet
+                size={18}
+                strokeWidth={isActive("/wallet") ? 2.5 : 2}
+                className={`transition-transform duration-300 ${isActive("/wallet") ? "scale-110" : "group-hover:scale-110"}`}
+              />
+            </div>
+            <span className="text-[10px] font-bold tracking-wide">Wallet</span>
+          </button>
+
           {/* Account */}
           <button
             onClick={() => navigate("/profile")}
-            className={`group flex flex-col items-center gap-1 w-12 transition-all duration-300 ${isActive("/profile") ? "text-blue-400" : "text-gray-500 hover:text-gray-300"}`}
+            className={`group flex flex-col items-center gap-1 flex-1 transition-all duration-300 ${isActive("/profile") ? "text-blue-400" : "text-gray-500 hover:text-gray-300"}`}
           >
             <div
-              className={`relative p-2 rounded-xl transition-all duration-300 ${isActive("/profile") ? "bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.3)]" : ""}`}
+              className={`relative p-1.5 rounded-xl transition-all duration-300 ${isActive("/profile") ? "bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.3)]" : ""}`}
             >
               <Settings
-                size={20}
+                size={18}
                 strokeWidth={isActive("/profile") ? 2.5 : 2}
                 className={`transition-transform duration-300 ${isActive("/profile") ? "scale-110 rotate-90" : "group-hover:rotate-90"}`}
               />

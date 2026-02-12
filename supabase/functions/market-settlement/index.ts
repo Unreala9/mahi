@@ -306,13 +306,59 @@ serve(async (req) => {
 
       for (const bet of pendingBets) {
         try {
-          const isCasino = bet.sport === "CASINO" || bet.bet_on === "fancy";
+          const isCasino =
+            bet.sport === "CASINO" ||
+            bet.sport === "casino" ||
+            bet.bet_on === "fancy";
           let result: any = null;
 
           // Fetch result from Diamond API
           if (isCasino) {
-            const gameType = bet.market_id || bet.event || "dt20";
-            const roundId = bet.provider_bet_id || bet.event;
+            // Extract game type from event_name (e.g., "teen62 - Round 195260212134756")
+            let gameType = null;
+
+            if (bet.event_name) {
+              const eventNameLower = bet.event_name.toLowerCase();
+              if (eventNameLower.includes("teen")) gameType = "teen62";
+              else if (eventNameLower.includes("dolidana"))
+                gameType = "dolidana";
+              else if (
+                eventNameLower.includes("dragon") ||
+                eventNameLower.includes("tiger")
+              )
+                gameType = "dt20";
+              else if (
+                eventNameLower.includes("andar") ||
+                eventNameLower.includes("bahar")
+              )
+                gameType = "ab20";
+              else if (eventNameLower.includes("poker")) gameType = "poker20";
+              else if (eventNameLower.includes("baccarat"))
+                gameType = "baccarat";
+              else if (eventNameLower.includes("teen20")) gameType = "teen20";
+              else if (eventNameLower.includes("teen8")) gameType = "teen8";
+              else if (eventNameLower.includes("3card")) gameType = "3cardjud";
+            }
+
+            // Fallback: try provider_bet_id format (casino_teen62_1234567)
+            if (!gameType && bet.provider_bet_id) {
+              const parts = bet.provider_bet_id.split("_");
+              if (parts.length >= 2 && parts[0] === "casino") {
+                gameType = parts[1];
+              }
+            }
+
+            if (!gameType) {
+              console.error(
+                `[AutoSettle] Cannot determine game type for bet ${bet.id}`,
+              );
+              continue;
+            }
+
+            console.log(
+              `[AutoSettle] Determined game type: ${gameType} for bet ${bet.id}`,
+            );
+            const roundId = bet.event; // Round ID from bet.event field
 
             // Try detail result first
             if (roundId) {
@@ -320,7 +366,12 @@ serve(async (req) => {
               const response = await fetch(detailUrl);
               if (response.ok) {
                 const data = await response.json();
-                if (data?.data) result = data.data;
+                if (data?.data) {
+                  console.log(
+                    `[AutoSettle] Found detail result for round ${roundId}`,
+                  );
+                  result = data.data;
+                }
               }
             }
 
@@ -330,7 +381,25 @@ serve(async (req) => {
               const response = await fetch(resultUrl);
               if (response.ok) {
                 const data = await response.json();
-                if (data?.data?.[0]) result = data.data[0];
+                if (data?.data?.res?.[0]) {
+                  const latestResult = data.data.res[0];
+                  console.log(
+                    `[AutoSettle] Latest result: roundId=${latestResult.mid}, winner=${latestResult.win}`,
+                  );
+
+                  // Only use if it matches the bet's round
+                  if (
+                    roundId &&
+                    latestResult.mid &&
+                    latestResult.mid.toString() === roundId.toString()
+                  ) {
+                    result = latestResult;
+                  } else {
+                    console.log(
+                      `[AutoSettle] Latest result round (${latestResult.mid}) doesn't match bet round (${roundId})`,
+                    );
+                  }
+                }
               }
             }
           } else {
@@ -360,10 +429,19 @@ serve(async (req) => {
 
           // Determine win/loss
           const betType = bet.bet_type?.toUpperCase() || "BACK";
-          const selection = bet.selection?.toLowerCase() || "";
-          const winner = (result.result || result.winner || "")
+          const selection = (
+            bet.selection_name ||
+            bet.selection ||
+            ""
+          ).toLowerCase();
+          // Casino results use 'win' field, sports use 'winner' or 'result'
+          const winner = (result.win || result.winner || result.result || "")
             .toString()
             .toLowerCase();
+
+          console.log(
+            `[AutoSettle] Checking bet ${bet.id}: selection="${selection}", winner="${winner}", betType="${betType}"`,
+          );
 
           let isWin = false;
           if (betType === "BACK") {
@@ -378,6 +456,10 @@ serve(async (req) => {
               winner.includes(selection)
             );
           }
+
+          console.log(
+            `[AutoSettle] Bet ${bet.id} result: ${isWin ? "WON" : "LOST"}`,
+          );
 
           const status = isWin ? "won" : "lost";
           const payout = isWin ? bet.potential_payout : 0;

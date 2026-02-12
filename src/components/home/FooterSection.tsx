@@ -56,16 +56,8 @@ export const FooterSection = () => {
 
             {/* Credentials */}
             <div className="flex items-center gap-4 pt-2">
-              <div className="flex items-center gap-2 bg-[#0a1120] border border-white/10 px-3 py-2 rounded">
-                <Lock size={14} className="text-green-500" />
-                <div className="flex flex-col">
-                  <span className="text-[9px] font-bold text-gray-500 uppercase leading-none">
-                    Encrypted by
-                  </span>
-                  <span className="text-[10px] font-bold text-white uppercase">
-                    256-Bit SSL
-                  </span>
-                </div>
+              <div className="">
+                <img src="/images/ssl.png" alt="" />
               </div>
             </div>
           </div>

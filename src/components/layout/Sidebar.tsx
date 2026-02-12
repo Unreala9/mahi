@@ -1,9 +1,9 @@
 import { useMemo, useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { MatchEvent } from "@/services/diamondApi";
+import { MatchEvent, SportId, diamondApi } from "@/services/diamondApi";
 import { useLiveSportsData } from "@/hooks/api/useLiveSportsData";
-import { SportsIcon } from "@/components/ui/SportsIcon";
+import SportIcon from "@/components/SportIcon";
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -24,12 +24,29 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps = {}) => {
 
   // Use live sports data hook - only call once
   const sportsData = useLiveSportsData();
-  const {
-    sports,
-    matches: allMatches,
-    liveMatches,
-    isLoading: loading,
-  } = sportsData;
+  const { matches: allMatches, liveMatches, isLoading: loading } = sportsData;
+
+  const [allSportsList, setAllSportsList] = useState<SportId[]>([]);
+  const [isSportsLoading, setIsSportsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSports = async () => {
+      try {
+        const data = await diamondApi.getAllSportIds();
+        // Filter for active sports and sort by OID
+        // Display ALL active sports as requested (ignoring tab flag for the full list)
+        const filtered = data
+          .filter((s) => s.active !== false)
+          .sort((a, b) => (a.oid || 999) - (b.oid || 999));
+        setAllSportsList(filtered);
+      } catch (e) {
+        console.error("Failed to fetch sports list", e);
+      } finally {
+        setIsSportsLoading(false);
+      }
+    };
+    fetchSports();
+  }, []);
 
   useEffect(() => {
     // Get initial session
@@ -60,14 +77,19 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps = {}) => {
   useEffect(() => {
     if (
       location.pathname === "/sportsbook" &&
-      sports.length > 0 &&
+      allSportsList.length > 0 &&
       expandedSports.length === 0
     ) {
-      // Auto-expand cricket by default
-      setExpandedSports([4]);
+      // Auto-expand cricket (id 4) by default if present
+      const cricket = allSportsList.find(
+        (s) => s.name === "Cricket" || s.sid === 4,
+      );
+      if (cricket) {
+        setExpandedSports([cricket.sid]);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sports.length]); // Only depend on length, not full array
+  }, [allSportsList.length]); // Only depend on length, not full array
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -147,53 +169,13 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps = {}) => {
     }));
   };
 
-  // Get icon for sport
+  // Get icon for sport - using new SVG icons
   const getSportIcon = (sportName: string, sid: number) => {
-    return <SportsIcon sportName={sportName} sportId={sid} size={18} />;
+    return <SportIcon eventId={sid} size={18} />;
   };
 
-  // Static sports list to ensure all basic sports are always visible
-  // IDs based on LeftSidebar.tsx and SportsCategoryBar.tsx
-  const STATIC_SPORTS = [
-    { sid: 4, name: "Cricket" },
-    { sid: 1, name: "Football" },
-    { sid: 2, name: "Tennis" },
-    { sid: 3, name: "Kabaddi" },
-    { sid: 8, name: "Basketball" },
-    { sid: 11, name: "Baseball" },
-    { sid: 12, name: "GreyHound" },
-    { sid: 7, name: "Horse Race" },
-    { sid: 10, name: "Volleyball" },
-    { sid: 13, name: "Darts" },
-    { sid: 5, name: "Futsal" },
-    { sid: 6, name: "Table Tennis" },
-    { sid: 9, name: "Binary" },
-    { sid: 14, name: "Politics" },
-  ];
-
-  // Sports list with icons - merge static list with live data
-  const displaySports = useMemo(() => {
-    // Start with static list
-    const combined = [...STATIC_SPORTS];
-
-    // Create a set of existing IDs
-    const existingIds = new Set(combined.map((s) => s.sid));
-
-    // Add any live sports that aren't in the static list
-    if (sports && sports.length > 0) {
-      sports.forEach((s) => {
-        const sid = Number((s as any).sid);
-        if (Number.isFinite(sid) && !existingIds.has(sid)) {
-          combined.push({
-            sid,
-            name: String((s as any).name),
-          });
-        }
-      });
-    }
-
-    return combined;
-  }, [sports]);
+  // Use the fetched sports list directly
+  const displaySports = allSportsList;
 
   const SectionHeader = ({
     title,

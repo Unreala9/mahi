@@ -232,3 +232,38 @@ export interface GetPlacedBetsResponse {
   page?: number;
   limit?: number;
 }
+
+// ===== Result Fetching Types =====
+export interface ResultRequest {
+  event_id: number;
+  event_name: string;
+  market_id: number;
+  market_name: string;
+  market_type?: string; // MATCH_ODDS, BOOKMAKER, FANCY
+  sport_id?: number; // Sport ID (default: 4 for cricket)
+}
+
+export interface MarketResult {
+  market_id: number;
+  market_name: string;
+  result: "WON" | "LOST" | "VOID" | "PENDING" | "SUSPENDED";
+  settlement_status?: string;
+  winner?: string;
+  winner_id?: number;
+  declared_at?: string;
+  result_value?: number; // For fancy markets
+}
+
+export interface EventResults {
+  event_id: number;
+  event_name: string;
+  markets: MarketResult[];
+  fetched_at: string;
+}
+
+export interface ResultFetchResponse {
+  success: boolean;
+  data?: MarketResult;
+  message?: string;
+  error?: string;
+}
