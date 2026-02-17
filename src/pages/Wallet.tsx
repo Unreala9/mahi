@@ -240,9 +240,36 @@ const Wallet = () => {
       });
       return;
     }
-    // Simulation
-    toast({ title: "Request Sent", description: "Payout processing via UPI" });
-    setWithdrawAmount("");
+
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.rpc("request_withdrawal", {
+        p_amount: parseFloat(withdrawAmount),
+        p_upi_id: upiId,
+        p_user_id: user?.id,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Withdrawal request submitted successfully.",
+      });
+
+      setWithdrawAmount("");
+      setUpiId("");
+      fetchWalletData(user!.id);
+      fetchTransactions(user!.id);
+    } catch (error: any) {
+      console.error("Error requesting withdrawal:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to submit withdrawal request",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -299,8 +326,8 @@ const Wallet = () => {
               <div className="flex gap-px bg-[#050b14] border border-white/10 p-1">
                 <Button
                   onClick={() => {
-                     setActiveTab("deposit");
-                     setDepositStep(1);
+                    setActiveTab("deposit");
+                    setDepositStep(1);
                   }}
                   className={cn(
                     "h-12 w-32 rounded-none text-xs font-bold uppercase tracking-widest transition-all",
@@ -712,12 +739,21 @@ const Wallet = () => {
                     <span className="text-xs text-gray-400 font-mono truncate max-w-[150px]">
                       {tx.description || "System Transaction"}
                     </span>
-                    <span
-                      className={`font-mono font-bold text-sm ${isPositive ? "text-white" : "text-gray-500"}`}
-                    >
-                      {isPositive ? "+" : "-"}{" "}
-                      <ChipAmount amount={tx.display_amount} size="sm" />
-                    </span>
+                    <div className="flex flex-col items-end">
+                      <span
+                        className={`font-mono font-bold text-sm ${isPositive ? "text-white" : "text-gray-500"}`}
+                      >
+                        {isPositive ? "+" : "-"}{" "}
+                        <ChipAmount amount={tx.display_amount} size="sm" />
+                      </span>
+                      <span className={`text-[9px] uppercase tracking-wider ${
+                        tx.status === 'completed' ? 'text-green-500' :
+                        tx.status === 'pending' ? 'text-yellow-500' :
+                        tx.status === 'cancelled' ? 'text-red-500' : 'text-gray-500'
+                      }`}>
+                        {tx.status}
+                      </span>
+                    </div>
                   </div>
                 </div>
               );

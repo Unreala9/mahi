@@ -29,10 +29,8 @@ const AdminTransactions = () => {
         if (error) throw error;
         if (!data.success) throw new Error(data.message);
       } else if (tx.type === "withdraw") {
-        // Existing withdrawal logic or new RPC if needed, but keeping simple update for now if no RPC exists for withdraw
-        // actually we have approve_withdrawal RPC from previous schema inspection!
         const { data, error } = await supabase.rpc("approve_withdrawal", {
-          p_transaction_id: tx.id,
+          p_transaction_id: tx.id, // Updated to match the unified RPC parameter name
         });
         if (error) throw error;
         if (!data.success) throw new Error(data.message);

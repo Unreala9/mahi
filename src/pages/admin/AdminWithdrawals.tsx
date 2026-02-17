@@ -57,16 +57,15 @@ export default function AdminWithdrawals() {
   useEffect(() => {
     fetchWithdrawals();
 
-    // Real-time subscription for withdraw transactions
+    // Real-time subscription for withdrawal requests
     const subscription = supabase
-      .channel("transactions_changes")
+      .channel("withdrawal_requests_changes")
       .on(
         "postgres_changes",
         {
           event: "*",
           schema: "public",
-          table: "transactions",
-          filter: "type=eq.withdraw",
+          table: "withdrawal_requests",
         },
         () => {
           fetchWithdrawals();
@@ -84,17 +83,16 @@ export default function AdminWithdrawals() {
 
   const fetchWithdrawals = async () => {
     try {
-      // Fetch transactions with type 'withdraw' (not 'withdrawal')
-      const { data: transactions, error: txError } = await supabase
-        .from("transactions")
+      // Fetch from withdrawal_requests table
+      const { data: requests, error: reqError } = await supabase
+        .from("withdrawal_requests")
         .select("*")
-        .eq("type", "withdraw")
         .order("created_at", { ascending: false });
 
-      if (txError) throw txError;
+      if (reqError) throw reqError;
 
-      // Fetch user profiles for each transaction
-      const userIds = [...new Set(transactions?.map((t) => t.user_id) || [])];
+      // Fetch user profiles for each request
+      const userIds = [...new Set(requests?.map((t) => t.user_id) || [])];
       const { data: profiles, error: profileError } = await supabase
         .from("profiles")
         .select("id, full_name, email")
@@ -105,9 +103,9 @@ export default function AdminWithdrawals() {
       // Merge data
       const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
       const enrichedData =
-        transactions?.map((tx) => ({
-          ...tx,
-          profiles: profileMap.get(tx.user_id),
+        requests?.map((req) => ({
+          ...req,
+          profiles: profileMap.get(req.user_id),
         })) || [];
 
       setWithdrawals(enrichedData);
@@ -133,17 +131,20 @@ export default function AdminWithdrawals() {
 
     setProcessing(true);
     try {
-      // Call existing RPC function to approve
+      // Call updated RPC function to approve
       const { data, error } = await supabase.rpc("approve_withdrawal", {
         p_transaction_id: selectedWithdrawal.id,
       });
 
       if (error) throw error;
+      if (error) throw error;
+      if (data && !data.success)
+        throw new Error(data.message || "Operation failed");
 
-      // Update admin notes
+      // Update admin notes if any
       if (adminNotes) {
         await supabase
-          .from("transactions")
+          .from("withdrawal_requests")
           .update({ admin_notes: adminNotes })
           .eq("id", selectedWithdrawal.id);
       }
@@ -168,7 +169,7 @@ export default function AdminWithdrawals() {
     }
   };
 
-  const handleReject = async (transactionId: string) => {
+  const handleReject = async (requestId: string) => {
     if (
       !confirm(
         "Are you sure you want to reject this withdrawal? The amount will be refunded to user.",
@@ -177,12 +178,14 @@ export default function AdminWithdrawals() {
       return;
 
     try {
-      // Call existing RPC function to reject (refund)
+      // Call updated RPC function to reject
       const { data, error } = await supabase.rpc("reject_withdrawal", {
-        p_transaction_id: transactionId,
+        p_transaction_id: requestId,
       });
 
       if (error) throw error;
+      if (data && !data.success)
+        throw new Error(data.message || "Operation failed");
 
       toast({
         title: "Success",
