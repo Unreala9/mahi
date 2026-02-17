@@ -12,6 +12,7 @@ import {
   LogOut,
   Shield,
   DollarSign,
+  Settings,
 } from "lucide-react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
@@ -61,7 +62,12 @@ const AdminLayout = () => {
     { name: "Users", path: "/admin/users", icon: Users },
     { name: "Bets", path: "/admin/bets", icon: Gamepad2 },
     { name: "Requests", path: "/admin/withdrawals", icon: Wallet },
-    { name: "Transactions history", path: "/admin/transactions", icon: FileText },
+    {
+      name: "Transactions history",
+      path: "/admin/transactions",
+      icon: FileText,
+    },
+    { name: "Settings", path: "/admin/settings", icon: Settings },
   ];
 
   if (loading) {
@@ -86,7 +92,9 @@ const AdminLayout = () => {
             </div>
             <div>
               <div className="font-bold text-base text-white">Betting</div>
-              <div className="text-xs text-gray-400 uppercase tracking-wider">Admin Panel</div>
+              <div className="text-xs text-gray-400 uppercase tracking-wider">
+                Admin Panel
+              </div>
             </div>
           </Link>
         </div>
@@ -103,9 +111,13 @@ const AdminLayout = () => {
                     : "text-gray-400 hover:text-white hover:bg-white/5"
                 }`}
               >
-                <item.icon className={`w-5 h-5 transition-transform ${
-                  location.pathname === item.path ? "scale-110" : "group-hover:scale-105"
-                }`} />
+                <item.icon
+                  className={`w-5 h-5 transition-transform ${
+                    location.pathname === item.path
+                      ? "scale-110"
+                      : "group-hover:scale-105"
+                  }`}
+                />
                 <span className="text-sm">{item.name}</span>
                 {location.pathname === item.path && (
                   <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
@@ -117,7 +129,10 @@ const AdminLayout = () => {
 
         <div className="p-4 border-t border-white/5 space-y-2">
           <Link to="/sports" className="block">
-            <Button variant="outline" className="w-full border-white/10 text-gray-300 hover:bg-white/5 hover:border-blue-500/30 transition-all">
+            <Button
+              variant="outline"
+              className="w-full border-white/10 text-gray-300 hover:bg-white/5 hover:border-blue-500/30 transition-all"
+            >
               Back to Player View
             </Button>
           </Link>

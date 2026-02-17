@@ -37,11 +37,27 @@ const Wallet = () => {
   const [walletData, setWalletData] = useState<any>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [depositAmount, setDepositAmount] = useState("");
+  const [transactionId, setTransactionId] = useState("");
+  const [screenshot, setScreenshot] = useState<File | null>(null);
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [upiId, setUpiId] = useState("");
   const [activeTab, setActiveTab] = useState<"deposit" | "withdraw">("deposit");
-  // Removed gateway selection - only Razorpay is available
-  const selectedGateway = "razorpay";
+  const [depositMethod, setDepositMethod] = useState<"bank" | "upi" | "qr">(
+    "bank",
+  );
+  const [depositStep, setDepositStep] = useState<number>(1);
+
+  // Dynamic Settings State
+  const [settings, setSettings] = useState({
+    bank: {
+      bankName: "Loading...",
+      accountHolder: "Loading...",
+      accountNumber: "Loading...",
+      ifsc: "Loading...",
+    },
+    upi: { upiId: "Loading..." },
+    qr: { url: "" },
+  });
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -51,6 +67,7 @@ const Wallet = () => {
       } else {
         fetchWalletData(session.user.id);
         fetchTransactions(session.user.id);
+        fetchSystemSettings(); // Fetch dynamic settings
       }
       setLoading(false);
     });
@@ -64,6 +81,23 @@ const Wallet = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const fetchSystemSettings = async () => {
+    const { data } = await supabase
+      .from("system_settings")
+      .select("*")
+      .in("key", ["bank_details", "upi_details", "qr_code"]);
+
+    if (data) {
+      const newSettings = { ...settings };
+      data.forEach((item) => {
+        if (item.key === "bank_details") newSettings.bank = item.value;
+        if (item.key === "upi_details") newSettings.upi = item.value;
+        if (item.key === "qr_code") newSettings.qr = item.value;
+      });
+      setSettings(newSettings);
+    }
+  };
 
   const fetchWalletData = async (userId: string) => {
     try {
@@ -121,11 +155,27 @@ const Wallet = () => {
     setTransactions(allActivities.slice(0, 50));
   };
 
-  const handleDeposit = async () => {
+  const handleManualDeposit = async () => {
     if (!depositAmount || parseFloat(depositAmount) <= 0) {
       toast({
-        title: "Error",
-        description: "Please enter a valid amount",
+        title: "Invalid Amount",
+        description: "Please enter a valid amount.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!transactionId) {
+      toast({
+        title: "Missing Transaction ID",
+        description: "Please enter the bank/UPI transaction ID.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!screenshot) {
+      toast({
+        title: "Missing Screenshot",
+        description: "Please upload the payment screenshot.",
         variant: "destructive",
       });
       return;
@@ -133,59 +183,51 @@ const Wallet = () => {
 
     try {
       setLoading(true);
-      // Only Razorpay payment gateway
-      const res = await supabase.functions.invoke("create-payment-intent", {
-        body: JSON.stringify({
-          amount: parseFloat(depositAmount),
-          currency: "INR",
-          provider: "razorpay",
-        }),
-        headers: { "Content-Type": "application/json" },
+      const fileExt = screenshot.name.split(".").pop();
+      const fileName = `${user?.id}/${Date.now()}.${fileExt}`;
+
+      // Upload Screenshot
+      const { error: uploadError, data: uploadData } = await supabase.storage
+        .from("deposit_proofs")
+        .upload(fileName, screenshot);
+
+      if (uploadError) throw uploadError;
+
+      const screenshotUrl = uploadData?.path; // Or get public URL if needed
+
+      // Create Transaction
+      const { error: txError } = await supabase.from("transactions").insert({
+        user_id: user?.id,
+        type: "deposit",
+        amount: parseFloat(depositAmount),
+        status: "pending",
+        description: "Manual Deposit",
+        provider: "manual",
+        provider_ref_id: transactionId,
+        screenshot_url: screenshotUrl,
+        payment_details: `Manual Deposit - ${depositMethod.toUpperCase()}`,
       });
 
-      if (!res.error && res.data) {
-        const options = {
-          key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-          amount: res.data.amount,
-          currency: res.data.currency,
-          name: "MahiExchange",
-          description: "Terminal Deposit",
-          order_id: res.data.order_id,
-          handler: function (response: any) {
-            verifyPayment(response, "razorpay");
-          },
-          theme: { color: "#050b14" },
-        };
-        const rzp = new (window as any).Razorpay(options);
-        rzp.open();
-      }
+      if (txError) throw txError;
+
+      toast({
+        title: "Deposit Requested",
+        description: "Your deposit request has been submitted for approval.",
+      });
+
+      setDepositAmount("");
+      setTransactionId("");
+      setScreenshot(null);
+      fetchTransactions(user!.id);
     } catch (err: any) {
+      console.error(err);
       toast({
         title: "Error",
-        description: err.message,
+        description: err.message || "Failed to submit deposit request.",
         variant: "destructive",
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const verifyPayment = async (response: any, provider: string) => {
-    try {
-      await supabase.functions.invoke("handle-webhook", {
-        body: JSON.stringify({ ...response, provider }),
-        headers: { "Content-Type": "application/json" },
-      });
-      toast({ title: "Success", description: "Funds Added Successfully" });
-      fetchWalletData(user!.id);
-      fetchTransactions(user!.id);
-      setDepositAmount("");
-    } catch (err) {
-      toast({
-        title: "Error",
-        description: "Verification failed",
-        variant: "destructive",
-      });
     }
   };
 
@@ -256,7 +298,10 @@ const Wallet = () => {
 
               <div className="flex gap-px bg-[#050b14] border border-white/10 p-1">
                 <Button
-                  onClick={() => setActiveTab("deposit")}
+                  onClick={() => {
+                     setActiveTab("deposit");
+                     setDepositStep(1);
+                  }}
                   className={cn(
                     "h-12 w-32 rounded-none text-xs font-bold uppercase tracking-widest transition-all",
                     activeTab === "deposit"
@@ -289,62 +334,294 @@ const Wallet = () => {
 
             {activeTab === "deposit" ? (
               <div className="relative z-10 space-y-8 animate-in slide-in-from-left duration-300">
-                <div>
-                  <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">
-                    Amount Configuration
-                  </label>
-                  <div className="relative group">
-                    <span className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-500 text-xl font-light">
-                      ₹
-                    </span>
-                    <Input
-                      type="number"
-                      value={depositAmount}
-                      onChange={(e) => setDepositAmount(e.target.value)}
-                      className="h-20 pl-12 text-5xl font-black bg-[#050b14] border-white/10 rounded-none focus:border-primary/50 focus:ring-0 text-white placeholder:text-gray-800 font-mono"
-                      placeholder="0"
-                    />
-                    {/* Tech corners */}
-                    <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-white/20" />
-                  </div>
-                  <div className="flex gap-2 mt-3 overflow-x-auto">
-                    {[500, 1000, 2000, 5000, 10000].map((amt) => (
-                      <button
-                        key={amt}
-                        onClick={() => setDepositAmount(amt.toString())}
-                        className="px-4 py-2 bg-[#050b14] border border-white/5 text-xs font-mono text-gray-400 hover:text-primary hover:border-primary/50 transition-all uppercase"
-                      >
-                        +{amt}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Payment method - Razorpay only */}
-                <div className="p-4 bg-[#050b14] border border-white/10 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <CreditCard className="w-5 h-5 text-primary" />
+                {/* STEP 1: AMOUNT INPUT */}
+                {!depositStep || depositStep === 1 ? (
+                  <div className="space-y-6">
                     <div>
-                      <p className="text-xs font-bold text-white uppercase tracking-wider">
-                        Razorpay
-                      </p>
-                      <p className="text-[10px] text-gray-500 font-mono">
-                        UPI, Cards, NetBanking
-                      </p>
+                      <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">
+                        Enter Amount to Deposit
+                      </label>
+                      <div className="relative group">
+                        <span className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-500 text-xl font-light">
+                          ₹
+                        </span>
+                        <Input
+                          type="number"
+                          value={depositAmount}
+                          onChange={(e) => setDepositAmount(e.target.value)}
+                          className="h-20 pl-12 text-5xl font-black bg-[#050b14] border-white/10 rounded-none focus:border-primary/50 focus:ring-0 text-white placeholder:text-gray-800 font-mono"
+                          placeholder="0"
+                          autoFocus
+                        />
+                      </div>
+                      {/* Quick Amount Chips */}
+                      <div className="flex gap-2 flex-wrap mt-2">
+                        {[500, 1000, 5000, 10000, 50000].map((amt) => (
+                          <button
+                            key={amt}
+                            onClick={() => setDepositAmount(amt.toString())}
+                            className="px-3 py-1 bg-white/5 hover:bg-white/10 border border-white/5 rounded-full text-xs text-gray-400 font-mono transition-colors"
+                          >
+                            +₹{amt}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                  <div className="w-2 h-2 bg-primary rounded-full" />
-                </div>
 
-                <Button
-                  className="w-full h-16 bg-primary hover:bg-white text-black font-black uppercase tracking-[0.2em] text-sm rounded-none transition-all"
-                  onClick={handleDeposit}
-                  disabled={loading}
-                >
-                  {loading ? "Processing Transaction..." : "Initiate Transfer"}
-                </Button>
+                    <Button
+                      className="w-full h-16 bg-primary hover:bg-white text-black font-black uppercase tracking-[0.2em] text-sm rounded-none transition-all"
+                      onClick={() => {
+                        if (!depositAmount || parseFloat(depositAmount) <= 0) {
+                          toast({
+                            description: "Please enter a valid amount",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+                        setDepositStep(2);
+                      }}
+                    >
+                      Make Payment <ArrowDownLeft className="ml-2 w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  /* STEP 2: PAYMENT METHOD & PROOF */
+                  <div className="space-y-6 animate-in slide-in-from-right duration-300">
+                    {/* Header with Back Button */}
+                    <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                      <div>
+                        <p className="text-[10px] text-gray-500 uppercase tracking-widest">
+                          Depositing
+                        </p>
+                        <h2 className="text-2xl font-black text-white font-mono">
+                          ₹{depositAmount}
+                        </h2>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-gray-500 hover:text-white"
+                        onClick={() => setDepositStep(1)}
+                      >
+                        Change Amount
+                      </Button>
+                    </div>
+
+                    {/* Payment Method Selector */}
+                    <div className="grid grid-cols-3 gap-2">
+                      <button
+                        onClick={() => setDepositMethod("bank")}
+                        className={cn(
+                          "p-3 text-xs font-bold uppercase tracking-wider border transition-all",
+                          depositMethod === "bank"
+                            ? "bg-primary text-black border-primary"
+                            : "bg-[#050b14] text-gray-400 border-white/10 hover:border-white/30",
+                        )}
+                      >
+                        Bank Transfer
+                      </button>
+                      <button
+                        onClick={() => setDepositMethod("upi")}
+                        className={cn(
+                          "p-3 text-xs font-bold uppercase tracking-wider border transition-all",
+                          depositMethod === "upi"
+                            ? "bg-primary text-black border-primary"
+                            : "bg-[#050b14] text-gray-400 border-white/10 hover:border-white/30",
+                        )}
+                      >
+                        UPI Apps
+                      </button>
+                      <button
+                        onClick={() => setDepositMethod("qr")}
+                        className={cn(
+                          "p-3 text-xs font-bold uppercase tracking-wider border transition-all",
+                          depositMethod === "qr"
+                            ? "bg-primary text-black border-primary"
+                            : "bg-[#050b14] text-gray-400 border-white/10 hover:border-white/30",
+                        )}
+                      >
+                        QR Code
+                      </button>
+                    </div>
+
+                    {/* DYNAMIC PAYMENT DETAILS SECTION */}
+                    {/* Bank Details */}
+                    {depositMethod === "bank" && (
+                      <div className="bg-[#050b14] p-6 border border-white/10 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="flex items-center gap-3 mb-4">
+                          <Landmark className="w-5 h-5 text-primary" />
+                          <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                            Bank Transfer Details
+                          </h3>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm font-mono text-gray-400">
+                          <div>
+                            <p className="text-[10px] text-gray-600 uppercase">
+                              Bank Name
+                            </p>
+                            <p className="text-white">
+                              {settings.bank.bankName}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-gray-600 uppercase">
+                              Account Holder
+                            </p>
+                            <p className="text-white">
+                              {settings.bank.accountHolder}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-gray-600 uppercase">
+                              Account Number
+                            </p>
+                            <p className="text-white select-all">
+                              {settings.bank.accountNumber}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-gray-600 uppercase">
+                              IFSC Code
+                            </p>
+                            <p className="text-white select-all">
+                              {settings.bank.ifsc}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* UPI Details */}
+                    {depositMethod === "upi" && (
+                      <div className="bg-[#050b14] p-6 border border-white/10 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="flex items-center gap-3 mb-4">
+                          <CreditCard className="w-5 h-5 text-primary" />
+                          <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                            UPI Payment
+                          </h3>
+                        </div>
+                        <div className="space-y-4">
+                          <div>
+                            <p className="text-[10px] text-gray-600 uppercase mb-1">
+                              Official UPI ID
+                            </p>
+                            <div className="flex items-center gap-2 bg-black/30 p-3 border border-white/10 rounded">
+                              <span className="text-white font-mono text-lg select-all">
+                                {settings.upi.upiId}
+                              </span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="ml-auto h-8 text-xs text-primary hover:text-white"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(
+                                    settings.upi.upiId,
+                                  );
+                                  toast({ description: "UPI ID Copied" });
+                                }}
+                              >
+                                COPY
+                              </Button>
+                            </div>
+                          </div>
+                          <p className="text-xs text-gray-500">
+                            Open any UPI app (GPay, PhonePe, Paytm) and pay to
+                            the VPA above.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* QR Code Details */}
+                    {depositMethod === "qr" && (
+                      <div className="bg-[#050b14] p-6 border border-white/10 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-5 h-5 bg-primary rounded-sm flex items-center justify-center">
+                            <div className="w-3 h-3 bg-black" />
+                          </div>
+                          <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                            Scan QR Code
+                          </h3>
+                        </div>
+
+                        <div className="flex flex-col md:flex-row gap-6 items-center">
+                          <div className="w-48 h-48 bg-white p-2 shrink-0">
+                            {settings.qr.url ? (
+                              <img
+                                src={settings.qr.url}
+                                alt="Pay via QR"
+                                className="w-full h-full object-contain"
+                              />
+                            ) : (
+                              <div className="w-full h-full border-2 border-dashed border-gray-900 flex items-center justify-center bg-gray-100">
+                                <p className="text-center text-xs font-bold text-gray-900 uppercase">
+                                  No QR Configured
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                          <div className="space-y-4 text-sm text-gray-400">
+                            <p>
+                              <strong className="text-white">Step 1:</strong>{" "}
+                              Open your payment app.
+                            </p>
+                            <p>
+                              <strong className="text-white">Step 2:</strong>{" "}
+                              Scan QR code.
+                            </p>
+                            <p>
+                              <strong className="text-white">Step 3:</strong>{" "}
+                              Pay exactly{" "}
+                              <span className="text-white font-bold">
+                                ₹{depositAmount}
+                              </span>
+                              .
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Transaction Proof Form */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-white/5">
+                      <div>
+                        <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">
+                          Transaction ID / UTR
+                        </label>
+                        <Input
+                          value={transactionId}
+                          onChange={(e) => setTransactionId(e.target.value)}
+                          className="bg-[#050b14] border-white/10 text-white font-mono"
+                          placeholder="e.g. 302041234567"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">
+                          Upload Screenshot
+                        </label>
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) =>
+                            setScreenshot(e.target.files?.[0] || null)
+                          }
+                          className="bg-[#050b14] border-white/10 text-white font-mono file:text-primary file:bg-transparent file:border-0 hover:file:underline"
+                        />
+                      </div>
+                    </div>
+
+                    <Button
+                      className="w-full h-16 bg-primary hover:bg-white text-black font-black uppercase tracking-[0.2em] text-sm rounded-none transition-all"
+                      onClick={handleManualDeposit}
+                      disabled={loading}
+                    >
+                      {loading ? "Submitting Proof..." : "Submit Payment Proof"}
+                    </Button>
+                  </div>
+                )}
               </div>
             ) : (
+              /* Withdrawal Section (unchanged block start) */
               <div className="relative z-10 space-y-8 animate-in slide-in-from-right duration-300">
                 <div className="p-4 bg-yellow-500/5 border-l-2 border-yellow-500">
                   <h4 className="flex items-center gap-2 text-xs font-bold text-yellow-500 uppercase tracking-wider mb-2">

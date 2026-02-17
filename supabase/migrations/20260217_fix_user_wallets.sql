@@ -1,6 +1,8 @@
--- Secure Bet Settlement System for Sports/Casino Betting
--- This function handles all bet settlements with proper locking and transaction safety
+-- Fix for "relation public.user_wallets does not exist" error
+-- This migration updates the settle_market function to use 'wallets' table instead of 'user_wallets'
+-- and cleans up any old or incorrect table references.
 
+-- 1. Create or Replace the settle_market function with CORRECT table references
 CREATE OR REPLACE FUNCTION public.settle_market(
   p_market_id uuid,
   p_result_code text,
@@ -164,7 +166,7 @@ BEGIN
 
     -- Credit user wallet if there's a payout
     IF v_payout > 0 THEN
-      -- Update wallet balance atomically
+      -- Update wallet balance atomically (USING wallets TABLE)
       UPDATE wallets
       SET balance = balance + v_payout
       WHERE user_id = v_bet_record.user_id;
@@ -215,17 +217,13 @@ BEGIN
 END;
 $$;
 
--- Grant execution only to service_role for security
-GRANT EXECUTE ON FUNCTION public.settle_market(uuid, text, text) TO service_role;
+-- 2. Drop the old table if it exists to avoid confusion
+DROP TABLE IF EXISTS public.user_wallets;
 
--- Add helpful indexes for performance
-CREATE INDEX IF NOT EXISTS idx_bets_market_status ON bets(market_id, status);
-CREATE INDEX IF NOT EXISTS idx_markets_status ON markets(status);
-CREATE INDEX IF NOT EXISTS idx_selections_market_id ON selections(market_id);
-
--- Add constraint to prevent negative wallet balances
-ALTER TABLE wallets
-ADD CONSTRAINT check_positive_balance
-CHECK (balance >= 0);
-
-COMMENT ON FUNCTION public.settle_market IS 'Secure bet settlement function - callable only by service role with proper locking to prevent double settlements';
+-- 3. Ensure wallets table has the correct constraint
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'check_positive_balance') THEN
+    ALTER TABLE wallets ADD CONSTRAINT check_positive_balance CHECK (balance >= 0);
+  END IF;
+END $$;
