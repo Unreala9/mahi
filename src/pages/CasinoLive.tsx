@@ -72,12 +72,12 @@ const GameCard = ({
 
   return (
     <div
-      className="group relative aspect-[3/4] bg-[#0a1120] border border-white/5 hover:border-primary/50 transition-all cursor-pointer overflow-hidden"
+      className="group relative aspect-[3/4] bg-white border border-gray-200 hover:border-[#1a472a] hover:shadow-lg transition-all cursor-pointer overflow-hidden rounded-sm"
       onClick={() => onClick(game)}
     >
       {/* Tech corners */}
-      <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/20 z-10" />
-      <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/20 z-10" />
+      <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-gray-300 z-10" />
+      <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-gray-300 z-10" />
 
       <img
         src={hasError ? "/placeholder-game.jpg" : imgSrc}
@@ -220,18 +220,18 @@ export default function CasinoLive() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050b14] text-white -m-4 p-6">
+    <div className="min-h-screen bg-[#f0f2f5] text-gray-900 -m-4 p-6">
       {/* Page Header */}
       <div className="flex items-center gap-4 mb-8">
-        <div className="w-12 h-12 bg-[#0a1120] border border-white/10 flex items-center justify-center relative">
+        <div className="w-12 h-12 bg-white border border-gray-200 flex items-center justify-center relative shadow-sm rounded-sm">
           <Video className="w-5 h-5 text-red-500" />
           <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
         </div>
         <div>
-          <h1 className="text-2xl font-black uppercase tracking-[0.2em] font-display text-white">
-            Live<span className="text-red-500">Stream</span>
+          <h1 className="text-2xl font-black uppercase tracking-[0.2em] font-display text-gray-900">
+            Live<span className="text-red-600">Stream</span>
           </h1>
-          <p className="text-[10px] text-gray-500 font-mono uppercase tracking-widest flex items-center gap-2">
+          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest flex items-center gap-2">
             <Radio className="w-3 h-3 text-red-500" />
             Real-time Dealer Feed
           </p>
@@ -251,11 +251,11 @@ export default function CasinoLive() {
       {isLoading ? (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {[...Array(12)].map((_, i) => (
-            <div key={i} className="aspect-[3/4] bg-[#0a1120] animate-pulse" />
+            <div key={i} className="aspect-[3/4] bg-gray-200 animate-pulse rounded-sm" />
           ))}
         </div>
       ) : filteredGames.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 text-gray-600 font-mono border border-dashed border-white/5 bg-[#0a1120]/50">
+        <div className="flex flex-col items-center justify-center py-24 text-gray-500 font-bold border border-dashed border-gray-300 bg-white rounded-md shadow-sm">
           <Terminal className="w-12 h-12 opacity-30 mb-4" />
           <p className="uppercase tracking-widest text-xs">
             No Signal Detected
@@ -274,7 +274,7 @@ export default function CasinoLive() {
               <Button
                 variant="outline"
                 onClick={() => setVisibleCount((c) => c + 24)}
-                className="bg-[#0a1120] border-red-500/30 text-red-500 hover:bg-red-500 hover:text-black rounded-none h-12 min-w-[200px] font-bold uppercase tracking-widest text-xs transition-all"
+                className="bg-white border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700 rounded-sm h-12 min-w-[200px] font-bold uppercase tracking-widest text-xs transition-all shadow-sm"
               >
                 Load More Streams
               </Button>

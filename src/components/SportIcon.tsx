@@ -60,24 +60,38 @@ export const SportIcon: React.FC<SportIconProps> = ({
   }
 
   return (
-    <img
-      src={iconPath}
-      alt={`Sport ${eventId} icon`}
-      width={size}
-      height={size}
-      className={`sport-icon ${className}`}
-      style={{
-        display: "inline-block",
-        verticalAlign: "middle",
-      }}
-      onError={() => {
-        console.warn(
-          `Failed to load sport icon for eventId ${eventId}, using emoji fallback`,
-        );
-        setImageError(true);
-      }}
-      loading="lazy"
-    />
+    <div
+      className={`relative inline-block ${className}`}
+      style={{ width: size, height: size, verticalAlign: "middle" }}
+    >
+      {!imageError && (
+        <span
+          className="absolute inset-0 bg-current transition-colors duration-200"
+          style={{
+            WebkitMaskImage: `url(${iconPath})`,
+            WebkitMaskSize: "contain",
+            WebkitMaskRepeat: "no-repeat",
+            WebkitMaskPosition: "center",
+            maskImage: `url(${iconPath})`,
+            maskSize: "contain",
+            maskRepeat: "no-repeat",
+            maskPosition: "center",
+          }}
+        />
+      )}
+      <img
+        src={iconPath}
+        alt={`Sport ${eventId} icon`}
+        className="absolute inset-0 w-full h-full opacity-0 pointer-events-none"
+        onError={() => {
+          console.warn(
+            `Failed to load sport icon for eventId ${eventId}, using emoji fallback`,
+          );
+          setImageError(true);
+        }}
+        loading="lazy"
+      />
+    </div>
   );
 };
 

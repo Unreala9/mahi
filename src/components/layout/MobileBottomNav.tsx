@@ -5,7 +5,6 @@ import {
   Wallet,
   Receipt,
   Settings,
-  Menu,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -15,161 +14,74 @@ export const MobileBottomNav = () => {
 
   const isActive = (path: string) => location.pathname === path;
 
+  const NavItem = ({ path, label, icon: Icon, isCustomIcon = false }: any) => {
+    const active = isActive(path);
+    return (
+      <button
+        onClick={() => navigate(path)}
+        className={`group flex flex-col items-center justify-end h-full pb-2 gap-1.5 flex-1 transition-all duration-300 relative ${
+          active ? "text-[#1a472a]" : "text-gray-500 hover:text-gray-800"
+        }`}
+      >
+        <div className={`relative transition-all duration-300`}>
+          {isCustomIcon ? (
+             <div className="w-[22px] h-[22px] rounded-full border-[2.5px] border-current flex items-center justify-center transition-transform duration-300">
+               <span className="text-[10px] font-black">C</span>
+             </div>
+          ) : (
+             <Icon size={22} strokeWidth={active ? 2.5 : 2} className="transition-transform duration-300" />
+          )}
+        </div>
+        <span className="text-[9px] font-bold tracking-wide">{label}</span>
+        {/* Active Line (optional for other items, but matching the glowing line request) */}
+        {active && (
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-[3px] bg-[#1a472a] rounded-b-full shadow-[0_1px_3px_rgba(26,71,42,0.3)]"></div>
+        )}
+      </button>
+    );
+  };
+
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
-      {/* Gradient Fade Overlay */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent pointer-events-none" />
-
       {/* Navigation Bar */}
-      <div className="relative bg-[#0a1120]/80 backdrop-blur-xl border-t border-white/10 px-2 py-2 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
-        <div className="flex items-center justify-between max-w-full mx-auto relative z-10">
-          {/* Sportsbook */}
-          <button
-            onClick={() => navigate("/sports")}
-            className={`group flex flex-col items-center gap-1 flex-1 transition-all duration-300 ${isActive("/sports") ? "text-blue-400" : "text-gray-500 hover:text-gray-300"}`}
-          >
-            <div
-              className={`relative p-1.5 rounded-xl transition-all duration-300 ${isActive("/sports") ? "bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.3)]" : ""}`}
-            >
-              <Trophy
-                size={18}
-                strokeWidth={isActive("/sports") ? 2.5 : 2}
-                className={`transition-transform duration-300 ${isActive("/sports") ? "scale-110" : "group-hover:scale-110"}`}
-              />
-            </div>
-            <span className="text-[10px] font-bold tracking-wide">Sports</span>
-          </button>
+      <div className="relative bg-white border-t border-gray-200 px-1 pb-safe shadow-[0_-5px_20px_rgba(0,0,0,0.08)]">
+        <div className="flex items-stretch justify-between w-full h-[64px] relative z-10">
 
-          {/* In-Play */}
-          <button
-            onClick={() => navigate("/in-play")}
-            className={`group flex flex-col items-center gap-1 flex-1 transition-all duration-300 ${isActive("/in-play") ? "text-blue-400" : "text-gray-500 hover:text-gray-300"}`}
-          >
-            <div
-              className={`relative p-1.5 rounded-xl transition-all duration-300 ${isActive("/in-play") ? "bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.3)]" : ""}`}
-            >
-              <Play
-                size={18}
-                strokeWidth={isActive("/in-play") ? 2.5 : 2}
-                className={`transition-transform duration-300 ${isActive("/in-play") ? "scale-110" : "group-hover:scale-110"}`}
-              />
-            </div>
-            <span className="text-[10px] font-bold tracking-wide">In-Play</span>
-          </button>
+          <NavItem path="/sports" label="Sports" icon={Trophy} />
+          <NavItem path="/in-play" label="In-Play" icon={Play} />
+          <NavItem path="/bets" label="Bets" icon={Receipt} />
 
-          {/* My Bets */}
-          <button
-            onClick={() => navigate("/bets")}
-            className={`group flex flex-col items-center gap-1 flex-1 transition-all duration-300 ${isActive("/bets") ? "text-blue-400" : "text-gray-500 hover:text-gray-300"}`}
-          >
-            <div
-              className={`relative p-1.5 rounded-xl transition-all duration-300 ${isActive("/bets") ? "bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.3)]" : ""}`}
-            >
-              <Receipt
-                size={18}
-                strokeWidth={isActive("/bets") ? 2.5 : 2}
-                className={`transition-transform duration-300 ${isActive("/bets") ? "scale-110" : "group-hover:scale-110"}`}
-              />
-            </div>
-            <span className="text-[10px] font-bold tracking-wide">Bets</span>
-          </button>
-
-          {/* Home - Reactor Switch Button */}
-          <div className="relative -top-8 group flex-1">
-            <button
-              onClick={() => navigate("/")}
-              className="relative w-14 h-14 flex items-center justify-center transition-all duration-300 mx-auto"
-            >
-              {/* Outer Glow Ring - Spins slow */}
-              <div
-                className={`absolute inset-0 rounded-full border-[3px] border-transparent border-t-blue-500/50 border-b-blue-500/10 ${isActive("/") ? "animate-[spin_3s_linear_infinite]" : ""}`}
-              />
-
-              {/* Inner Pulsing Core Container */}
-              <div
-                className={`absolute inset-1 rounded-full bg-[#0a1120] flex items-center justify-center border border-white/10 shadow-[0_0_20px_rgba(0,0,0,0.5)] z-10 overflow-hidden group-active:scale-95 transition-transform ${isActive("/") ? "border-blue-500/50" : ""}`}
+          {/* Home - Floating Center */}
+          <div className="relative group flex-[1.2] flex flex-col items-center justify-end h-full pb-2">
+            <div className="absolute bottom-[28px] left-1/2 -translate-x-1/2 z-20">
+              {/* Outer Cutout Ring Illusion */}
+              <button
+                onClick={() => navigate("/")}
+                className="w-[64px] h-[64px] flex items-center justify-center rounded-full bg-white transition-all duration-300 relative shadow-[0_-3px_12px_rgba(0,0,0,0.08)]"
               >
-                {/* Active Background Effect */}
+                {/* Glowing Inner Circle Base Effect behind */}
                 {isActive("/") && (
-                  <>
-                    <div className="absolute inset-0 bg-blue-600/20 animate-pulse" />
-                    <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.8)_0%,transparent_70%)] opacity-20" />
-                  </>
+                   <div className="absolute inset-0 rounded-full shadow-[0_0_15px_rgba(26,71,42,0.3)] pointer-events-none" />
                 )}
-
-                {/* Icon */}
-                <div className="relative z-20">
-                  <Home
-                    size={22}
-                    className={`transition-all duration-300 ${isActive("/") ? "text-blue-400 drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]" : "text-gray-400 group-hover:text-white"}`}
-                    fill={isActive("/") ? "currentColor" : "none"}
-                  />
+                <div className={`w-[52px] h-[52px] rounded-full flex items-center justify-center shadow-inner border-[2px] border-white z-10 transition-colors duration-300 ${isActive("/") ? "bg-[#1a472a]" : "bg-[#f28729]"}`}>
+                  <Home size={26} className="text-white fill-white drop-shadow-sm" strokeWidth={1.5} />
                 </div>
+              </button>
+            </div>
 
-                {/* Tech Decoration */}
-                <div className="absolute bottom-1 w-1 h-1 rounded-full bg-blue-500/50" />
-              </div>
-            </button>
-            <span
-              className={`absolute -bottom-3 left-1/2 -translate-x-1/2 text-[9px] font-black tracking-widest ${isActive("/") ? "text-blue-400 drop-shadow-[0_0_5px_rgba(59,130,246,0.5)]" : "text-gray-600"} transition-all`}
-            >
+            <span className={`text-[10px] font-bold tracking-widest ${isActive("/") ? "text-[#1a472a]" : "text-gray-600"} transition-all relative z-10`}>
               HOME
             </span>
-
-            {/* Active Indicator Line */}
+            {/* Active Indicator Line below HOME text */}
             {isActive("/") && (
-              <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-8 h-[2px] bg-blue-500 rounded-full shadow-[0_0_10px_#3b82f6]" />
+               <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-5 h-[3px] bg-[#1a472a] rounded-t-full shadow-[0_-1px_3px_rgba(26,71,42,0.3)]"></div>
             )}
           </div>
 
-          {/* Casino */}
-          <button
-            onClick={() => navigate("/casino")}
-            className={`group flex flex-col items-center gap-1 flex-1 transition-all duration-300 ${isActive("/casino") ? "text-blue-400" : "text-gray-500 hover:text-gray-300"}`}
-          >
-            <div
-              className={`relative p-1.5 rounded-xl transition-all duration-300 ${isActive("/casino") ? "bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.3)]" : ""}`}
-            >
-              <div className="w-5 h-5 rounded-full border-2 border-current flex items-center justify-center transition-transform duration-300 group-hover:rotate-180">
-                <span className="text-[9px] font-black">C</span>
-              </div>
-            </div>
-            <span className="text-[10px] font-bold tracking-wide">Casino</span>
-          </button>
+          <NavItem path="/casino" label="Casino" icon={null} isCustomIcon={true} />
+          <NavItem path="/wallet" label="Wallet" icon={Wallet} />
+          <NavItem path="/profile" label="Account" icon={Settings} />
 
-          {/* Wallet */}
-          <button
-            onClick={() => navigate("/wallet")}
-            className={`group flex flex-col items-center gap-1 flex-1 transition-all duration-300 ${isActive("/wallet") ? "text-blue-400" : "text-gray-500 hover:text-gray-300"}`}
-          >
-            <div
-              className={`relative p-1.5 rounded-xl transition-all duration-300 ${isActive("/wallet") ? "bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.3)]" : ""}`}
-            >
-              <Wallet
-                size={18}
-                strokeWidth={isActive("/wallet") ? 2.5 : 2}
-                className={`transition-transform duration-300 ${isActive("/wallet") ? "scale-110" : "group-hover:scale-110"}`}
-              />
-            </div>
-            <span className="text-[10px] font-bold tracking-wide">Wallet</span>
-          </button>
-
-          {/* Account */}
-          <button
-            onClick={() => navigate("/profile")}
-            className={`group flex flex-col items-center gap-1 flex-1 transition-all duration-300 ${isActive("/profile") ? "text-blue-400" : "text-gray-500 hover:text-gray-300"}`}
-          >
-            <div
-              className={`relative p-1.5 rounded-xl transition-all duration-300 ${isActive("/profile") ? "bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.3)]" : ""}`}
-            >
-              <Settings
-                size={18}
-                strokeWidth={isActive("/profile") ? 2.5 : 2}
-                className={`transition-transform duration-300 ${isActive("/profile") ? "scale-110 rotate-90" : "group-hover:rotate-90"}`}
-              />
-            </div>
-            <span className="text-[10px] font-bold tracking-wide">Account</span>
-          </button>
         </div>
       </div>
     </div>

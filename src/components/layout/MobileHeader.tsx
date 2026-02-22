@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Menu, Wallet } from "lucide-react";
@@ -109,116 +108,125 @@ export const MobileHeader = ({
   const isAuthed = isDemo || Boolean(session?.user);
 
   return (
-    <div className="md:hidden bg-[#050b14] sticky top-0 z-40 w-full border-b border-white/5 pb-2">
+    <div className="md:hidden bg-[#1a472a] sticky top-0 z-40 w-full shadow-sm">
       {/* Top Bar: Hamburger, Logo, Balance, User */}
-      <div className="flex items-center justify-between px-4 py-3">
-        {/* Left: Menu */}
-        <button onClick={onToggleSidebar} className="text-white p-1">
-          <Menu size={24} />
-        </button>
+      <div className="flex items-center justify-between px-3 py-2.5">
+        {/* Left: Menu & Logo */}
+        <div className="flex items-center gap-2">
+          <button onClick={onToggleSidebar} className="text-white p-1">
+            <Menu size={24} />
+          </button>
+
+          <div className="text-lg font-bold font-display text-white tracking-tight flex items-center" onClick={() => navigate("/")}>
+              <img src="./images/logo1.png" alt="Logo" className="h-24 w-auto" />
+          </div>
+        </div>
 
         {isAuthed ? (
           <>
-            {/* Center: Balance (Badge Style) */}
-            <div
-              className="flex items-center gap-2 bg-[#0a1120] border border-white/10 px-3 py-1.5 rounded-full cursor-pointer"
-              onClick={() => navigate("/wallet")}
-            >
-              <span className="text-primary font-mono font-bold text-xs">
-                <ChipAmount amount={balance} size="sm" />
-              </span>
-              <Wallet size={12} className="text-gray-400 ml-1" />
-            </div>
-
-            {/* Right: User Profile (Badge with Dropdown) */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <div className="flex items-center gap-2 cursor-pointer">
-                  <div className="bg-[#0a1120] border border-white/10 px-2 py-1.5 rounded flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
-                    <span className="text-[10px] font-bold text-white uppercase truncate max-w-[60px]">
-                      {userLabel}
-                    </span>
-                  </div>
-                </div>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                sideOffset={8}
-                className="w-64 bg-[#0a1120] border-white/10 text-gray-300 rounded-none p-0 backdrop-blur-xl z-50"
+            <div className="flex items-center gap-2">
+              {/* Center: Balance */}
+              <div
+                className="flex items-center gap-1.5 bg-white/10 border border-white/20 px-2 py-1 rounded cursor-pointer"
+                onClick={() => navigate("/wallet")}
               >
-                <div className="p-3 border-b border-white/5 bg-black/20">
-                  <p className="text-[10px] uppercase font-bold text-gray-500 tracking-widest mb-1">
-                    Logged In As
-                  </p>
-                  <p className="font-mono text-white text-xs truncate">
-                    {session?.user?.email || "Demo User"}
-                  </p>
-                </div>
-                <div className="p-1">
-                  <DropdownMenuItem
-                    onClick={() => navigate("/wallet")}
-                    className="rounded-none focus:bg-white/5 focus:text-primary text-[11px] font-bold uppercase tracking-wide py-2.5 cursor-pointer"
-                  >
-                    Account Statement
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => navigate("/bets")}
-                    className="rounded-none focus:bg-white/5 focus:text-primary text-[11px] font-bold uppercase tracking-wide py-2.5 cursor-pointer"
-                  >
-                    Current Bets
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => navigate("/casino-live")}
-                    className="rounded-none focus:bg-white/5 focus:text-primary text-[11px] font-bold uppercase tracking-wide py-2.5 cursor-pointer"
-                  >
-                    Casino Results
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => navigate("/profile")}
-                    className="rounded-none focus:bg-white/5 focus:text-primary text-[11px] font-bold uppercase tracking-wide py-2.5 cursor-pointer"
-                  >
-                    Settings
-                  </DropdownMenuItem>
-                  {isAdmin && (
+                <span className="text-white font-mono font-bold text-xs">
+                  <ChipAmount amount={balance} size="sm" />
+                </span>
+                <Wallet size={12} className="text-white/70 ml-0.5" />
+              </div>
+
+              {/* Right: User Profile Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <div className="flex items-center gap-2 cursor-pointer">
+                    <div className="bg-white/10 border border-white/20 px-2 py-1 rounded flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-400"></div>
+                      <span className="text-[10px] font-bold text-white uppercase truncate max-w-[60px]">
+                        {userLabel}
+                      </span>
+                    </div>
+                  </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  sideOffset={8}
+                  className="w-56 bg-white border border-gray-200 text-gray-800 rounded shadow-lg p-0 z-50"
+                >
+                  <div className="p-3 border-b border-gray-100 bg-gray-50 flex items-center gap-2 rounded-t">
+                     <div className="w-8 h-8 rounded-full bg-green-100 text-green-800 flex items-center justify-center font-bold">
+                       {userLabel.charAt(0).toUpperCase()}
+                     </div>
+                     <div className="flex flex-col overflow-hidden">
+                       <span className="text-xs font-semibold text-gray-900 truncate">{session?.user?.email || "Demo User"}</span>
+                       <span className="text-[10px] text-gray-500">ID: {session?.user?.id?.substring(0,8) || "demo"}</span>
+                     </div>
+                  </div>
+                  <div className="p-1">
                     <DropdownMenuItem
-                      onClick={() => navigate("/admin")}
-                      className="rounded-none focus:bg-white/5 focus:text-red-400 text-red-500 text-[11px] font-bold uppercase tracking-wide py-2.5 cursor-pointer"
+                      onClick={() => navigate("/wallet")}
+                      className="rounded hover:bg-gray-100 focus:bg-gray-100 text-xs font-medium py-2 cursor-pointer"
                     >
-                      Admin Control Panel
+                      Account Statement
                     </DropdownMenuItem>
-                  )}
-                </div>
-                <div className="h-px bg-white/5 my-1" />
-                <div className="p-1 pb-1.5">
-                  <DropdownMenuItem
-                    onClick={handleLogout}
-                    className="rounded-none focus:bg-red-500/10 focus:text-red-500 text-gray-500 text-[10px] font-bold uppercase tracking-wide py-2 cursor-pointer justify-center"
-                  >
-                    Terminate Session
-                  </DropdownMenuItem>
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                    <DropdownMenuItem
+                      onClick={() => navigate("/bets")}
+                      className="rounded hover:bg-gray-100 focus:bg-gray-100 text-xs font-medium py-2 cursor-pointer"
+                    >
+                      Current Bets
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => navigate("/profile")}
+                      className="rounded hover:bg-gray-100 focus:bg-gray-100 text-xs font-medium py-2 cursor-pointer"
+                    >
+                      Settings
+                    </DropdownMenuItem>
+                    {isAdmin && (
+                      <DropdownMenuItem
+                        onClick={() => navigate("/admin")}
+                        className="rounded hover:bg-red-50 focus:bg-red-50 text-red-600 text-xs font-bold py-2 cursor-pointer border-t border-gray-100 mt-1"
+                      >
+                        Admin Panel
+                      </DropdownMenuItem>
+                    )}
+                  </div>
+                  <div className="h-px bg-gray-100" />
+                  <div className="p-1 pb-1.5">
+                    <DropdownMenuItem
+                      onClick={handleLogout}
+                      className="rounded hover:bg-gray-100 focus:bg-gray-100 text-gray-600 text-xs font-medium py-2 cursor-pointer"
+                    >
+                      Logout
+                    </DropdownMenuItem>
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </>
         ) : (
           <div className="flex items-center gap-2">
             <Button
               size="sm"
-              className="h-8 text-[10px] font-bold uppercase tracking-wider bg-primary text-black hover:bg-white"
+              className="h-7 text-[10px] px-3 font-bold uppercase tracking-wider bg-[#f28729] text-white hover:bg-[#d6711c] border-none"
               onClick={() => navigate("/auth")}
             >
-              Login / Join
+              Login
+            </Button>
+            <Button
+              size="sm"
+              className="h-7 text-[10px] px-3 font-bold uppercase tracking-wider bg-white text-[#1a472a] hover:bg-gray-100 border-none"
+              onClick={() => navigate("/auth?mode=signup")}
+            >
+              Sign Up
             </Button>
           </div>
         )}
       </div>
 
-      {/* Secondary Bar: Highlights (Optional ticker or quick links) */}
-      <div className="bg-yellow-400/10 border-y border-yellow-400/20 py-1.5 px-4 overflow-hidden">
-        <div className="whitespace-nowrap animate-marquee text-[10px] font-bold text-yellow-400 uppercase tracking-wider">
-          Open & Close Market with Live Dealers • Exclusive 500% Bonus on First
-          Deposit • Live Cricket World Cup Odds
+      {/* Marquee Ticker */}
+      <div className="bg-gradient-to-r from-[#00b4db] to-[#0083b0] py-1 px-4 overflow-hidden h-6 flex items-center">
+        <div className="whitespace-nowrap animate-marquee text-[10px] font-medium text-white tracking-wide">
+          Welcome to Rana365 - The Next Generation Sports Betting & Casino Exchange! Bet on your favorite sports and play live casino games here.
         </div>
       </div>
     </div>

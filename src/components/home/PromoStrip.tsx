@@ -48,3 +48,6 @@ export const PromoStrip = () => {
     </div>
   );
 };
+
+export default PromoStrip;
+

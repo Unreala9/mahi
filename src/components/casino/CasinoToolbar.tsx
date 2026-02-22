@@ -19,23 +19,23 @@ export const CasinoToolbar = ({
   totalGames,
 }: CasinoToolbarProps) => {
   return (
-    <div className="sticky top-0 z-30 bg-[#050b14]/95 backdrop-blur-md border-b border-white/5 mb-6 shadow-2xl transition-all duration-300">
+    <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-200 mb-6 shadow-sm transition-all duration-300">
       <div className="p-4 md:px-6">
         {/* Search Input - Minimalist */}
         <div className="relative w-full group transition-all duration-300">
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-primary transition-colors">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#1a472a] transition-colors">
             <Search className="w-4 h-4" />
           </div>
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Find game..."
-            className="pl-10 bg-white/5 border-transparent text-white placeholder:text-gray-600 rounded-xl h-12 font-medium text-sm focus:border-primary/20 focus:bg-white/10 focus:ring-0 transition-all shadow-inner w-full"
+            className="pl-10 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 rounded-lg h-12 font-medium text-sm focus:border-[#1a472a] focus:bg-white focus:ring-0 transition-all shadow-inner w-full"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white bg-white/10 hover:bg-white/20 rounded-full p-1 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-full p-1 transition-colors"
             >
               <X className="w-3 h-3" />
             </button>
@@ -45,9 +45,9 @@ export const CasinoToolbar = ({
 
       {/* Categories Scroller */}
       {categories.length > 0 && (
-        <div className="bg-[#080c14] border-t border-white/5">
+        <div className="bg-gray-50 border-t border-gray-200">
           <div className="flex items-center">
-            <button className="p-3 text-gray-500 hover:text-white hover:bg-white/5 border-r border-white/5 transition-colors">
+            <button className="p-3 text-gray-400 hover:text-gray-700 hover:bg-gray-100 border-r border-gray-200 transition-colors">
               <List className="w-4 h-4" />
             </button>
             <div className="flex-1 overflow-x-auto scrollbar-hide">
@@ -59,11 +59,11 @@ export const CasinoToolbar = ({
                       key={cat.id}
                       onClick={() => setActiveCategory(cat.id)}
                       className={`
-                        relative px-6 py-4 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap transition-all border-r border-white/5
+                        relative px-6 py-4 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap transition-all border-r border-gray-200
                         ${
                           isActive
-                            ? "bg-red-500 text-black"
-                            : "text-gray-400 hover:text-white hover:bg-white/5"
+                            ? "bg-[#1a472a] text-white"
+                            : "text-gray-600 hover:text-[#1a472a] hover:bg-white"
                         }
                       `}
                     >
@@ -71,7 +71,7 @@ export const CasinoToolbar = ({
                         {cat.name}
                         {cat.id === "all" && (
                           <span
-                            className={`text-[9px] px-1.5 py-0.5 rounded ${isActive ? "bg-black/20 text-black" : "bg-white/10 text-gray-500"}`}
+                            className={`text-[9px] px-1.5 py-0.5 rounded-sm ${isActive ? "bg-white/20 text-white" : "bg-gray-200 text-gray-600"}`}
                           >
                             {totalGames}
                           </span>

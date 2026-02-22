@@ -275,26 +275,26 @@ const Wallet = () => {
   return (
     <div className="max-w-7xl mx-auto space-y-6 p-4 animate-in fade-in duration-500">
       {/* Header Block */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#0a1120] p-6 border border-white/5 relative overflow-hidden">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#1a472a] p-6 border-b border-gray-200 relative overflow-hidden rounded-t-sm shadow-sm">
         <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
           <Landmark className="w-48 h-48 text-white" />
         </div>
 
         <div className="flex items-center gap-6 relative z-10">
-          <div className="w-16 h-16 bg-[#050b14] border border-white/10 flex items-center justify-center relative group">
-            <Terminal className="w-8 h-8 text-primary group-hover:scale-110 transition-transform" />
-            <div className="absolute inset-0 border border-primary/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="w-16 h-16 bg-white/10 border border-white/20 flex items-center justify-center relative group rounded-sm backdrop-blur-sm">
+            <Terminal className="w-8 h-8 text-white group-hover:scale-110 transition-transform" />
+            <div className="absolute inset-0 border border-white/30 opacity-0 group-hover:opacity-100 transition-opacity rounded-sm" />
           </div>
           <div>
-            <h1 className="font-black text-3xl text-white uppercase tracking-[0.2em] font-display">
-              Cashier<span className="text-primary">.SYS</span>
+            <h1 className="font-black text-3xl text-white uppercase tracking-[0.2em] font-display drop-shadow-sm">
+              Cashier<span className="text-[#f28729]">.SYS</span>
             </h1>
-            <div className="flex items-center gap-3 text-xs text-gray-500 font-mono mt-1">
+            <div className="flex items-center gap-3 text-xs text-white/70 font-mono mt-1">
               <span className="flex items-center gap-1">
-                <ShieldCheck className="w-3 h-3 text-green-500" />{" "}
+                <ShieldCheck className="w-3 h-3 text-green-400" />{" "}
                 SECURE_CONNECTION
               </span>
-              <span className="w-1 h-1 bg-gray-600 rounded-full" />
+              <span className="w-1 h-1 bg-white/40 rounded-full" />
               <span>ID: {user?.id?.slice(0, 8).toUpperCase() || "DEMO"}</span>
             </div>
           </div>
@@ -305,47 +305,47 @@ const Wallet = () => {
         {/* Left Column: Actions */}
         <div className="lg:col-span-8 space-y-6">
           {/* Balance Display */}
-          <div className="bg-[#0a1120] border border-white/5 p-8 relative overflow-hidden group">
-            <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
+          <div className="bg-white border border-gray-200 p-8 relative overflow-hidden group shadow-sm rounded-b-sm">
+            <div className="absolute top-0 left-0 w-1 h-full bg-[#1a472a]" />
 
             <div className="flex flex-col md:flex-row justify-between items-end gap-6 relative z-10">
               <div>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-2">
+                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-2">
                   Available Balance
                 </p>
-                <h2 className="text-6xl font-black text-white font-mono tracking-tighter leading-none flex items-baseline gap-2">
-                  <span className="text-2xl text-gray-600">₹</span>
+                <h2 className="text-6xl font-black text-gray-900 font-mono tracking-tighter leading-none flex items-baseline gap-2">
+                  <span className="text-2xl text-gray-500">₹</span>
                   <ChipAmount
                     amount={walletData?.balance ?? 0}
                     size="lg"
-                    className="text-6xl text-white shadow-none"
+                    className="text-6xl text-gray-900 shadow-none font-black"
                   />
                 </h2>
               </div>
 
-              <div className="flex gap-px bg-[#050b14] border border-white/10 p-1">
+              <div className="flex gap-px bg-gray-100 border border-gray-200 p-1 rounded-sm shadow-inner">
                 <Button
                   onClick={() => {
                     setActiveTab("deposit");
                     setDepositStep(1);
                   }}
                   className={cn(
-                    "h-12 w-32 rounded-none text-xs font-bold uppercase tracking-widest transition-all",
+                    "h-12 w-32 rounded-sm text-xs font-bold uppercase tracking-widest transition-all",
                     activeTab === "deposit"
-                      ? "bg-primary text-black hover:bg-white"
-                      : "bg-transparent text-gray-500 hover:text-white",
+                      ? "bg-[#1a472a] text-white hover:bg-[#1a472a]/90 shadow-sm"
+                      : "bg-transparent text-gray-500 hover:text-gray-900",
                   )}
                 >
                   <ArrowDownLeft className="w-4 h-4 mr-2" /> Deposit
                 </Button>
-                <div className="w-px bg-white/10" />
+                <div className="w-px bg-gray-300" />
                 <Button
                   onClick={() => setActiveTab("withdraw")}
                   className={cn(
-                    "h-12 w-32 rounded-none text-xs font-bold uppercase tracking-widest transition-all",
+                    "h-12 w-32 rounded-sm text-xs font-bold uppercase tracking-widest transition-all",
                     activeTab === "withdraw"
-                      ? "bg-white text-black hover:bg-gray-200"
-                      : "bg-transparent text-gray-500 hover:text-white",
+                      ? "bg-[#1a472a] text-white hover:bg-[#1a472a]/90 shadow-sm"
+                      : "bg-transparent text-gray-500 hover:text-gray-900",
                   )}
                 >
                   <ArrowUpRight className="w-4 h-4 mr-2" /> Withdraw
@@ -355,9 +355,9 @@ const Wallet = () => {
           </div>
 
           {/* Transaction Form */}
-          <div className="bg-[#0a1120] border border-white/5 p-8 min-h-[400px] relative">
+          <div className="bg-white border border-gray-200 p-8 min-h-[400px] relative shadow-sm rounded-sm">
             {/* Grid Texture */}
-            <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:20px_20px] pointer-events-none" />
+            <div className="absolute inset-0 bg-gray-50 bg-[size:20px_20px] pointer-events-none opacity-50" />
 
             {activeTab === "deposit" ? (
               <div className="relative z-10 space-y-8 animate-in slide-in-from-left duration-300">
@@ -376,7 +376,7 @@ const Wallet = () => {
                           type="number"
                           value={depositAmount}
                           onChange={(e) => setDepositAmount(e.target.value)}
-                          className="h-20 pl-12 text-5xl font-black bg-[#050b14] border-white/10 rounded-none focus:border-primary/50 focus:ring-0 text-white placeholder:text-gray-800 font-mono"
+                          className="h-20 pl-12 text-5xl font-black bg-gray-50 border-gray-200 rounded-sm focus:border-[#1a472a] focus:ring-0 text-gray-900 placeholder:text-gray-400 font-mono shadow-inner"
                           placeholder="0"
                           autoFocus
                         />
@@ -387,7 +387,7 @@ const Wallet = () => {
                           <button
                             key={amt}
                             onClick={() => setDepositAmount(amt.toString())}
-                            className="px-3 py-1 bg-white/5 hover:bg-white/10 border border-white/5 rounded-full text-xs text-gray-400 font-mono transition-colors"
+                            className="px-3 py-1 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-full text-xs text-gray-600 font-mono transition-colors"
                           >
                             +₹{amt}
                           </button>
@@ -396,7 +396,7 @@ const Wallet = () => {
                     </div>
 
                     <Button
-                      className="w-full h-16 bg-primary hover:bg-white text-black font-black uppercase tracking-[0.2em] text-sm rounded-none transition-all"
+                      className="w-full h-16 bg-[#1a472a] hover:bg-[#1a472a]/90 text-white font-black uppercase tracking-[0.2em] text-sm rounded-sm transition-all shadow-md"
                       onClick={() => {
                         if (!depositAmount || parseFloat(depositAmount) <= 0) {
                           toast({
@@ -415,19 +415,19 @@ const Wallet = () => {
                   /* STEP 2: PAYMENT METHOD & PROOF */
                   <div className="space-y-6 animate-in slide-in-from-right duration-300">
                     {/* Header with Back Button */}
-                    <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                    <div className="flex items-center justify-between border-b border-gray-200 pb-4">
                       <div>
                         <p className="text-[10px] text-gray-500 uppercase tracking-widest">
                           Depositing
                         </p>
-                        <h2 className="text-2xl font-black text-white font-mono">
+                        <h2 className="text-2xl font-black text-gray-900 font-mono">
                           ₹{depositAmount}
                         </h2>
                       </div>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-gray-500 hover:text-white"
+                        className="text-gray-500 hover:text-gray-900"
                         onClick={() => setDepositStep(1)}
                       >
                         Change Amount
@@ -439,10 +439,10 @@ const Wallet = () => {
                       <button
                         onClick={() => setDepositMethod("bank")}
                         className={cn(
-                          "p-3 text-xs font-bold uppercase tracking-wider border transition-all",
+                          "p-3 text-xs font-bold uppercase tracking-wider border rounded-sm transition-all shadow-sm",
                           depositMethod === "bank"
-                            ? "bg-primary text-black border-primary"
-                            : "bg-[#050b14] text-gray-400 border-white/10 hover:border-white/30",
+                            ? "bg-[#1a472a] text-white border-[#1a472a]"
+                            : "bg-white text-gray-600 border-gray-200 hover:border-gray-400 hover:bg-gray-50",
                         )}
                       >
                         Bank Transfer
@@ -450,10 +450,10 @@ const Wallet = () => {
                       <button
                         onClick={() => setDepositMethod("upi")}
                         className={cn(
-                          "p-3 text-xs font-bold uppercase tracking-wider border transition-all",
+                          "p-3 text-xs font-bold uppercase tracking-wider border rounded-sm transition-all shadow-sm",
                           depositMethod === "upi"
-                            ? "bg-primary text-black border-primary"
-                            : "bg-[#050b14] text-gray-400 border-white/10 hover:border-white/30",
+                            ? "bg-[#1a472a] text-white border-[#1a472a]"
+                            : "bg-white text-gray-600 border-gray-200 hover:border-gray-400 hover:bg-gray-50",
                         )}
                       >
                         UPI Apps
@@ -461,10 +461,10 @@ const Wallet = () => {
                       <button
                         onClick={() => setDepositMethod("qr")}
                         className={cn(
-                          "p-3 text-xs font-bold uppercase tracking-wider border transition-all",
+                          "p-3 text-xs font-bold uppercase tracking-wider border rounded-sm transition-all shadow-sm",
                           depositMethod === "qr"
-                            ? "bg-primary text-black border-primary"
-                            : "bg-[#050b14] text-gray-400 border-white/10 hover:border-white/30",
+                            ? "bg-[#1a472a] text-white border-[#1a472a]"
+                            : "bg-white text-gray-600 border-gray-200 hover:border-gray-400 hover:bg-gray-50",
                         )}
                       >
                         QR Code
@@ -474,19 +474,19 @@ const Wallet = () => {
                     {/* DYNAMIC PAYMENT DETAILS SECTION */}
                     {/* Bank Details */}
                     {depositMethod === "bank" && (
-                      <div className="bg-[#050b14] p-6 border border-white/10 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                      <div className="bg-gray-50 p-6 border border-gray-200 rounded-sm space-y-4 animate-in fade-in zoom-in-95 duration-200">
                         <div className="flex items-center gap-3 mb-4">
-                          <Landmark className="w-5 h-5 text-primary" />
-                          <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                          <Landmark className="w-5 h-5 text-[#1a472a]" />
+                          <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
                             Bank Transfer Details
                           </h3>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm font-mono text-gray-400">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm font-mono text-gray-500">
                           <div>
                             <p className="text-[10px] text-gray-600 uppercase">
                               Bank Name
                             </p>
-                            <p className="text-white">
+                            <p className="text-gray-900 font-bold">
                               {settings.bank.bankName}
                             </p>
                           </div>
@@ -494,7 +494,7 @@ const Wallet = () => {
                             <p className="text-[10px] text-gray-600 uppercase">
                               Account Holder
                             </p>
-                            <p className="text-white">
+                            <p className="text-gray-900 font-bold">
                               {settings.bank.accountHolder}
                             </p>
                           </div>
@@ -502,7 +502,7 @@ const Wallet = () => {
                             <p className="text-[10px] text-gray-600 uppercase">
                               Account Number
                             </p>
-                            <p className="text-white select-all">
+                            <p className="text-gray-900 font-bold select-all">
                               {settings.bank.accountNumber}
                             </p>
                           </div>
@@ -510,7 +510,7 @@ const Wallet = () => {
                             <p className="text-[10px] text-gray-600 uppercase">
                               IFSC Code
                             </p>
-                            <p className="text-white select-all">
+                            <p className="text-gray-900 font-bold select-all">
                               {settings.bank.ifsc}
                             </p>
                           </div>
@@ -520,10 +520,10 @@ const Wallet = () => {
 
                     {/* UPI Details */}
                     {depositMethod === "upi" && (
-                      <div className="bg-[#050b14] p-6 border border-white/10 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                      <div className="bg-gray-50 p-6 border border-gray-200 rounded-sm space-y-4 animate-in fade-in zoom-in-95 duration-200">
                         <div className="flex items-center gap-3 mb-4">
-                          <CreditCard className="w-5 h-5 text-primary" />
-                          <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                          <CreditCard className="w-5 h-5 text-[#1a472a]" />
+                          <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
                             UPI Payment
                           </h3>
                         </div>
@@ -532,14 +532,14 @@ const Wallet = () => {
                             <p className="text-[10px] text-gray-600 uppercase mb-1">
                               Official UPI ID
                             </p>
-                            <div className="flex items-center gap-2 bg-black/30 p-3 border border-white/10 rounded">
-                              <span className="text-white font-mono text-lg select-all">
+                            <div className="flex items-center gap-2 bg-white p-3 border border-gray-200 rounded-sm shadow-inner">
+                              <span className="text-gray-900 font-bold font-mono text-lg select-all">
                                 {settings.upi.upiId}
                               </span>
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="ml-auto h-8 text-xs text-primary hover:text-white"
+                                className="ml-auto h-8 text-xs text-[#1a472a] hover:text-[#1a472a]/80"
                                 onClick={() => {
                                   navigator.clipboard.writeText(
                                     settings.upi.upiId,
@@ -561,18 +561,18 @@ const Wallet = () => {
 
                     {/* QR Code Details */}
                     {depositMethod === "qr" && (
-                      <div className="bg-[#050b14] p-6 border border-white/10 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                      <div className="bg-gray-50 p-6 border border-gray-200 rounded-sm space-y-4 animate-in fade-in zoom-in-95 duration-200">
                         <div className="flex items-center gap-3 mb-4">
-                          <div className="w-5 h-5 bg-primary rounded-sm flex items-center justify-center">
-                            <div className="w-3 h-3 bg-black" />
+                          <div className="w-5 h-5 bg-[#1a472a] rounded-sm flex items-center justify-center">
+                            <div className="w-3 h-3 bg-white" />
                           </div>
-                          <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                          <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
                             Scan QR Code
                           </h3>
                         </div>
 
                         <div className="flex flex-col md:flex-row gap-6 items-center">
-                          <div className="w-48 h-48 bg-white p-2 shrink-0">
+                          <div className="w-48 h-48 bg-white p-2 shrink-0 border border-gray-200 shadow-sm rounded-sm">
                             {settings.qr.url ? (
                               <img
                                 src={settings.qr.url}
@@ -580,26 +580,26 @@ const Wallet = () => {
                                 className="w-full h-full object-contain"
                               />
                             ) : (
-                              <div className="w-full h-full border-2 border-dashed border-gray-900 flex items-center justify-center bg-gray-100">
-                                <p className="text-center text-xs font-bold text-gray-900 uppercase">
+                              <div className="w-full h-full border-2 border-dashed border-gray-300 flex items-center justify-center bg-white">
+                                <p className="text-center text-xs font-bold text-gray-400 uppercase">
                                   No QR Configured
                                 </p>
                               </div>
                             )}
                           </div>
-                          <div className="space-y-4 text-sm text-gray-400">
+                          <div className="space-y-4 text-sm text-gray-600">
                             <p>
-                              <strong className="text-white">Step 1:</strong>{" "}
+                              <strong className="text-gray-900">Step 1:</strong>{" "}
                               Open your payment app.
                             </p>
                             <p>
-                              <strong className="text-white">Step 2:</strong>{" "}
+                              <strong className="text-gray-900">Step 2:</strong>{" "}
                               Scan QR code.
                             </p>
                             <p>
-                              <strong className="text-white">Step 3:</strong>{" "}
+                              <strong className="text-gray-900">Step 3:</strong>{" "}
                               Pay exactly{" "}
-                              <span className="text-white font-bold">
+                              <span className="text-gray-900 font-bold">
                                 ₹{depositAmount}
                               </span>
                               .
@@ -610,7 +610,7 @@ const Wallet = () => {
                     )}
 
                     {/* Transaction Proof Form */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-white/5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-200">
                       <div>
                         <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">
                           Transaction ID / UTR
@@ -618,7 +618,7 @@ const Wallet = () => {
                         <Input
                           value={transactionId}
                           onChange={(e) => setTransactionId(e.target.value)}
-                          className="bg-[#050b14] border-white/10 text-white font-mono"
+                          className="bg-white border-gray-200 text-gray-900 font-mono shadow-inner rounded-sm focus:border-[#1a472a]"
                           placeholder="e.g. 302041234567"
                         />
                       </div>
@@ -632,13 +632,13 @@ const Wallet = () => {
                           onChange={(e) =>
                             setScreenshot(e.target.files?.[0] || null)
                           }
-                          className="bg-[#050b14] border-white/10 text-white font-mono file:text-primary file:bg-transparent file:border-0 hover:file:underline"
+                          className="bg-white border-gray-200 text-gray-900 font-mono file:text-[#1a472a] file:bg-transparent file:border-0 hover:file:underline rounded-sm shadow-inner cursor-pointer"
                         />
                       </div>
                     </div>
 
                     <Button
-                      className="w-full h-16 bg-primary hover:bg-white text-black font-black uppercase tracking-[0.2em] text-sm rounded-none transition-all"
+                      className="w-full h-16 bg-[#1a472a] hover:bg-[#1a472a]/90 text-white font-black uppercase tracking-[0.2em] text-sm rounded-sm transition-all shadow-md"
                       onClick={handleManualDeposit}
                       disabled={loading}
                     >
@@ -650,11 +650,11 @@ const Wallet = () => {
             ) : (
               /* Withdrawal Section (unchanged block start) */
               <div className="relative z-10 space-y-8 animate-in slide-in-from-right duration-300">
-                <div className="p-4 bg-yellow-500/5 border-l-2 border-yellow-500">
-                  <h4 className="flex items-center gap-2 text-xs font-bold text-yellow-500 uppercase tracking-wider mb-2">
+                <div className="p-4 bg-orange-50 border-l-2 border-[#f28729]">
+                  <h4 className="flex items-center gap-2 text-xs font-bold text-[#f28729] uppercase tracking-wider mb-2">
                     <Info className="w-4 h-4" /> Withdrawal Protocol
                   </h4>
-                  <p className="text-[10px] text-gray-400 font-mono leading-relaxed">
+                  <p className="text-[10px] text-gray-600 font-mono leading-relaxed">
                     Requests are processed within 24 hours via IMPS/UPI. Ensure
                     beneficiary details match KYC records.
                   </p>
@@ -672,7 +672,7 @@ const Wallet = () => {
                       type="number"
                       value={withdrawAmount}
                       onChange={(e) => setWithdrawAmount(e.target.value)}
-                      className="h-20 pl-12 text-5xl font-black bg-[#050b14] border-white/10 rounded-none focus:border-white/50 focus:ring-0 text-white placeholder:text-gray-800 font-mono"
+                      className="h-20 pl-12 text-5xl font-black bg-gray-50 border-gray-200 rounded-sm focus:border-[#1a472a] focus:ring-0 text-gray-900 placeholder:text-gray-400 font-mono shadow-inner"
                       placeholder="0"
                     />
                   </div>
@@ -685,13 +685,13 @@ const Wallet = () => {
                   <Input
                     value={upiId}
                     onChange={(e) => setUpiId(e.target.value)}
-                    className="h-14 bg-[#050b14] border-white/10 rounded-none focus:border-white/50 text-white font-mono tracking-wide"
+                    className="h-14 bg-gray-50 border-gray-200 rounded-sm focus:border-[#1a472a] text-gray-900 font-mono tracking-wide shadow-inner"
                     placeholder="username@upi"
                   />
                 </div>
 
                 <Button
-                  className="w-full h-16 bg-white hover:bg-gray-200 text-black font-black uppercase tracking-[0.2em] text-sm rounded-none transition-all"
+                  className="w-full h-16 bg-[#1a472a] hover:bg-[#1a472a]/90 text-white font-black uppercase tracking-[0.2em] text-sm rounded-sm transition-all shadow-md"
                   onClick={handleWithdraw}
                   disabled={loading}
                 >
@@ -703,12 +703,12 @@ const Wallet = () => {
         </div>
 
         {/* Right Column: History */}
-        <div className="lg:col-span-4 bg-[#0a1120] border border-white/5 flex flex-col h-[800px]">
-          <div className="p-4 border-b border-white/5 bg-[#050b14] flex items-center justify-between">
-            <h3 className="text-xs font-bold text-white uppercase tracking-widest flex items-center gap-2">
-              <Activity className="w-4 h-4 text-primary" /> Ledger
+        <div className="lg:col-span-4 bg-white border border-gray-200 flex flex-col h-[800px] shadow-sm rounded-sm">
+          <div className="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between rounded-t-sm">
+            <h3 className="text-xs font-bold text-gray-900 uppercase tracking-widest flex items-center gap-2">
+              <Activity className="w-4 h-4 text-[#1a472a]" /> Ledger
             </h3>
-            <Download className="w-4 h-4 text-gray-500 hover:text-white cursor-pointer transition-colors" />
+            <Download className="w-4 h-4 text-gray-500 hover:text-gray-900 cursor-pointer transition-colors" />
           </div>
 
           <div className="flex-1 overflow-y-auto p-2 space-y-1 scrollbar-hide">
@@ -720,15 +720,15 @@ const Wallet = () => {
               return (
                 <div
                   key={i}
-                  className="p-3 bg-[#050b14] hover:bg-white/5 border border-transparent hover:border-white/10 transition-all group"
+                  className="p-3 bg-white hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-all group rounded-sm"
                 >
                   <div className="flex justify-between items-start mb-1">
                     <span
-                      className={`text-[10px] font-bold uppercase tracking-wider ${isPositive ? "text-green-500" : "text-red-500"}`}
+                      className={`text-[10px] font-bold uppercase tracking-wider ${isPositive ? "text-green-600" : "text-red-600"}`}
                     >
                       {tx.activity_type}
                     </span>
-                    <span className="text-[10px] text-gray-600 font-mono">
+                    <span className="text-[10px] text-gray-500 font-mono">
                       {new Date(tx.created_at).toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
@@ -736,20 +736,20 @@ const Wallet = () => {
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-400 font-mono truncate max-w-[150px]">
+                    <span className="text-xs text-gray-600 font-mono truncate max-w-[150px]">
                       {tx.description || "System Transaction"}
                     </span>
                     <div className="flex flex-col items-end">
                       <span
-                        className={`font-mono font-bold text-sm ${isPositive ? "text-white" : "text-gray-500"}`}
+                        className={`font-mono font-bold text-sm ${isPositive ? "text-gray-900" : "text-gray-500"}`}
                       >
                         {isPositive ? "+" : "-"}{" "}
-                        <ChipAmount amount={tx.display_amount} size="sm" />
+                        <ChipAmount amount={tx.display_amount} size="sm" className="text-gray-900" />
                       </span>
-                      <span className={`text-[9px] uppercase tracking-wider ${
-                        tx.status === 'completed' ? 'text-green-500' :
-                        tx.status === 'pending' ? 'text-yellow-500' :
-                        tx.status === 'cancelled' ? 'text-red-500' : 'text-gray-500'
+                      <span className={`text-[9px] uppercase tracking-wider font-bold ${
+                        tx.status === 'completed' ? 'text-green-600' :
+                        tx.status === 'pending' ? 'text-orange-500' :
+                        tx.status === 'cancelled' ? 'text-red-600' : 'text-gray-400'
                       }`}>
                         {tx.status}
                       </span>
@@ -759,9 +759,9 @@ const Wallet = () => {
               );
             })}
             {transactions.length === 0 && (
-              <div className="h-full flex flex-col items-center justify-center text-gray-600 space-y-4">
+              <div className="h-full flex flex-col items-center justify-center text-gray-400 space-y-4">
                 <History className="w-8 h-8 opacity-20" />
-                <p className="text-[10px] uppercase tracking-widest">
+                <p className="text-[10px] uppercase tracking-widest font-bold">
                   No Records Found
                 </p>
               </div>

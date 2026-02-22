@@ -1,137 +1,178 @@
-import { ShieldCheck, Lock, ChevronRight, MessageSquare } from "lucide-react";
+import { ShieldCheck, MessageSquare } from "lucide-react";
 
 export const FooterSection = () => {
-  const currentYear = new Date().getFullYear();
-
   return (
-    <div className="mt-24 w-full relative z-10 font-sans">
-      {/* 1. Support & Safety Bar - Cyberpunk / Terminal Style */}
-      <div className="bg-yellow-400 text-black py-3 px-4 relative overflow-hidden">
-        {/* Scrolling Stripes Pattern */}
-        <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(0,0,0,0.1)_25%,rgba(0,0,0,0.1)_50%,transparent_50%,transparent_75%,rgba(0,0,0,0.1)_75%,rgba(0,0,0,0.1)_100%)] bg-[length:20px_20px] opacity-20 animate-[slide_1s_linear_infinite]"></div>
-
-        <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4 relative z-10">
+    <div className="mt-16 w-full relative z-10 font-sans">
+      {/* 1. Support & Safety Bar - Flat Design */}
+      <div className="bg-[#f28729] text-white px-6 relative overflow-hidden py-3">
+        <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4 relative z-10 w-full pl-6 pr-6">
           {/* Left: Support Message */}
           <div className="flex items-center gap-3">
-            <div className="bg-black text-yellow-400 p-1.5 rounded-sm">
-              <MessageSquare size={18} fill="currentColor" />
+            <div className="text-white">
+              <MessageSquare size={20} fill="currentColor" strokeWidth={1} />
             </div>
-            <div className="flex flex-col">
-              <span className="text-xs font-black uppercase tracking-widest leading-none mb-0.5">
+            <div className="flex flex-col text-left">
+              <span className="text-[12px] font-black uppercase tracking-wider leading-none mb-0.5">
                 24/7 Live Support
               </span>
-              <span className="text-[10px] font-bold uppercase tracking-tight opacity-80">
+              <span className="text-[11px] font-semibold uppercase tracking-widest opacity-95">
                 Online & Ready to Assist
               </span>
             </div>
           </div>
 
           {/* Right: Security Trust */}
-          <div className="flex items-center gap-4 border-t md:border-t-0 md:border-l border-black/10 pt-2 md:pt-0 md:pl-4 w-full md:w-auto justify-center md:justify-end">
-            <div className="flex items-center gap-2">
-              <ShieldCheck size={16} className="text-black" />
-              <span className="text-[10px] font-bold uppercase tracking-wide">
+          <div className="flex flex-wrap items-center gap-6 pb-1 md:pb-0 w-full md:w-auto justify-center md:justify-end">
+            <div className="flex items-center gap-2 mr-4">
+              <ShieldCheck size={18} className="text-white" strokeWidth={1.5} />
+              <span className="text-[11px] font-black uppercase tracking-wider">
                 100% Secure & Regulated
               </span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <img src="/images/ssl.png" alt="SSL" className="h-[22px]" />
+              <img src="/images/chip.png" alt="Chip" className="h-[22px]" />
+              <img src="/images/imgi_4_ic_vir.png" alt="Verified" className="h-[22px]" />
             </div>
           </div>
         </div>
       </div>
 
-      {/* 2. Main Footer - Dark Financial Terminal Look */}
-      <div className="bg-[#050b14] border-t border-white/10 pt-12 pb-8 px-6 relative">
-        <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-12">
-          {/* Brand Column */}
-          <div className="md:col-span-5 space-y-6">
-            <div>
-              <h3 className="text-2xl font-display font-black text-white italic tracking-wider mb-2">
-                MAHI<span className="text-yellow-400">EXCHANGE</span>
-              </h3>
-              <div className="h-1 w-20 bg-yellow-400"></div>
-            </div>
-            <p className="text-gray-400 text-xs leading-relaxed max-w-md font-mono">
-              Experience the next generation of sports exchange and casino
-              gaming. Built for speed, security, and reliability.
-            </p>
-
-            {/* Credentials */}
-            <div className="flex items-center gap-4 pt-2">
-              <div className="">
-                <img src="/images/ssl.png" alt="" />
+      {/* 2. Main Footer - Light Theme */}
+      <div className="bg-white border-t border-gray-100 pt-8 pb-8 px-6 relative">
+        <div className="max-w-[1400px] mx-auto pl-6 pr-6">
+          {/* Partner / Payment Images Grid - Single Row */}
+          <div className="grid grid-cols-4 md:grid-cols-8 gap-4 pb-12 border-b border-gray-100 mb-12">
+            {[
+              "/images/ssl.png",
+              "/images/footer1.png",
+              "/images/footer2.png",
+              "/images/footer3.png",
+              "/images/footer4.png",
+              "/images/footer5.png",
+              "/images/footer6.png",
+              "/images/footer7.png",
+            ].map((src, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-center opacity-80 hover:opacity-100 transition-opacity"
+              >
+                <img
+                  src={src}
+                  alt={`Partner ${i + 1}`}
+                  className="w-full h-auto object-contain max-h-[50px] md:max-h-[60px]"
+                />
               </div>
-            </div>
+            ))}
           </div>
 
-          {/* Links Columns */}
-          <div className="md:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-8">
-            <div className="space-y-4">
-              <h4 className="text-yellow-400 text-xs font-black uppercase tracking-widest">
-                Platform
-              </h4>
-              <ul className="space-y-2 text-xs text-gray-500 font-medium">
-                <li className="hover:text-white cursor-pointer transition-colors flex items-center gap-2 group">
-                  <ChevronRight
-                    size={10}
-                    className="text-yellow-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                  />{" "}
-                  About Us
-                </li>
-                <li className="hover:text-white cursor-pointer transition-colors flex items-center gap-2 group">
-                  <ChevronRight
-                    size={10}
-                    className="text-yellow-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                  />{" "}
-                  Contact Us
-                </li>
-              </ul>
-            </div>
-
-            <div className="space-y-4">
-              <h4 className="text-yellow-400 text-xs font-black uppercase tracking-widest">
-                Policy
-              </h4>
-              <ul className="space-y-2 text-xs text-gray-500 font-medium">
-                <li className="hover:text-white cursor-pointer transition-colors group flex items-center gap-2">
-                  Privacy Policy
-                </li>
-                <li className="hover:text-white cursor-pointer transition-colors group flex items-center gap-2">
-                  Terms & Conditions
-                </li>
-                <li className="hover:text-white cursor-pointer transition-colors group flex items-center gap-2">
-                  Responsible Gaming
-                </li>
-              </ul>
-            </div>
-
-            <div className="space-y-4">
-              <h4 className="text-yellow-400 text-xs font-black uppercase tracking-widest">
-                Compliance
-              </h4>
-              <div className="flex gap-3">
-                <div className="w-10 h-10 bg-[#0a1120] border border-white/10 flex items-center justify-center rounded">
-                  <span className="font-serif italic font-black text-lg text-white">
-                    G
-                  </span>
-                </div>
-                <div className="w-10 h-10 bg-[#0a1120] border border-white/10 flex items-center justify-center rounded-full">
-                  <span className="font-bold text-xs text-red-500">18+</span>
-                </div>
-              </div>
-              <p className="text-[10px] text-gray-600 leading-tight">
-                Gambling involves risk. Please gamble responsibly.
+          {/* Main Footer Columns */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
+            {/* Description Column */}
+            <div className="md:col-span-4">
+              <p className="text-gray-500 text-[11px] tracking-wide leading-[1.8] max-w-sm font-mono mt-1">
+                Experience the next generation of sports exchange and casino
+                gaming. Built for speed, security, and reliability.
               </p>
             </div>
-          </div>
-        </div>
 
-        {/* Bottom Bar */}
-        <div className="max-w-[1400px] mx-auto mt-16 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-[10px] text-gray-600 font-mono uppercase">
-            © {currentYear} MahiExchange. All rights reserved.
-          </p>
-          <p className="text-[10px] text-gray-600 font-mono uppercase">
-            v2.4.0 <span className="text-green-500">● Systems Normal</span>
-          </p>
+            {/* Links & Info Columns */}
+            <div className="md:col-span-8 grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="space-y-5">
+                <h4 className="text-[#1a472a] text-xs font-black uppercase tracking-widest">
+                  Platform
+                </h4>
+                <ul className="space-y-3 text-[11px] text-gray-500 font-bold tracking-wide">
+                  <li className="hover:text-[#1a472a] cursor-pointer transition-colors">
+                    About Us
+                  </li>
+                  <li className="hover:text-[#1a472a] cursor-pointer transition-colors">
+                    Contact Us
+                  </li>
+                </ul>
+              </div>
+
+              <div className="space-y-5">
+                <h4 className="text-[#1a472a] text-xs font-black uppercase tracking-widest">
+                  Policy
+                </h4>
+                <ul className="space-y-3 text-[11px] text-gray-500 font-bold tracking-wide">
+                  <li className="hover:text-[#1a472a] cursor-pointer transition-colors">
+                    Privacy Policy
+                  </li>
+                  <li className="hover:text-[#1a472a] cursor-pointer transition-colors">
+                    Terms & Conditions
+                  </li>
+                  <li className="hover:text-[#1a472a] cursor-pointer transition-colors">
+                    Responsible Gaming
+                  </li>
+                </ul>
+              </div>
+
+              <div className="space-y-5">
+                <h4 className="text-[#1a472a] text-xs font-black uppercase tracking-widest">
+                  Compliance
+                </h4>
+                <div className="flex gap-2">
+                  <div className="w-9 h-9 bg-gray-50 border border-gray-100 flex items-center justify-center rounded">
+                    <span className="font-serif italic font-black text-sm text-gray-800">
+                      G
+                    </span>
+                  </div>
+                  <div className="w-9 h-9 bg-gray-50 border border-gray-100 flex items-center justify-center rounded-full">
+                    <span className="font-bold text-[10px] text-red-500">18+</span>
+                  </div>
+                </div>
+                <p className="text-[9px] text-gray-400 font-mono leading-tight tracking-wide max-w-[120px]">
+                  Gambling involves risk.<br />Please gamble responsibly.
+                </p>
+              </div>
+
+              {/* Social Connect Column */}
+              <div className="space-y-6">
+                <h4 className="text-[#1a472a] text-xs font-black uppercase tracking-widest">
+                  Connect
+                </h4>
+                <div className="flex flex-row flex-wrap gap-3 mt-3">
+                  <a href="#" className="block hover:-translate-y-1 transition-transform">
+                    <img
+                      src="/images/imgi_150_default.webp"
+                      alt="Instagram"
+                      className="h-[40px] w-auto object-contain rounded drop-shadow-sm"
+                    />
+                  </a>
+                  <a href="#" className="block hover:-translate-y-1 transition-transform">
+                    <img
+                      src="/images/imgi_149_default.webp"
+                      alt="WhatsApp"
+                      className="h-[40px] w-auto object-contain rounded drop-shadow-sm"
+                    />
+                  </a>
+                  <a href="#" className="block hover:-translate-y-1 transition-transform">
+                    <img
+                      src="/images/imgi_151_default.webp"
+                      alt="Telegram"
+                      className="h-[40px] w-auto object-contain rounded drop-shadow-sm"
+                    />
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* end md:grid-cols-12 */}
+
+          {/* Extreme bottom line separated by a clean top line */}
+          <div className="h-px bg-gray-100 mt-12 mb-8"></div>
+
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-[9px] tracking-[0.1em] text-gray-500 font-bold uppercase">
+              © 2026 RANA365. All rights reserved.
+            </p>
+            <p className="text-[9px] tracking-[0.1em] text-gray-400 font-black uppercase flex items-center">
+              V2.4.0 <span className="mx-1.5">•</span> <span className="text-[#1a472a]">SYSTEMS NORMAL</span>
+            </p>
+          </div>
         </div>
       </div>
     </div>

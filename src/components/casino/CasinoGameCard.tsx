@@ -48,13 +48,13 @@ export const CasinoGameCard = ({
 
   return (
     <div
-      className="group relative w-full h-auto bg-[#0a1120] border border-white/5 transition-all cursor-pointer overflow-hidden rounded-xl hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:-translate-y-1 duration-300"
+      className="group relative w-full h-auto bg-white border border-gray-200 transition-all cursor-pointer overflow-hidden rounded shadow-sm hover:shadow-lg hover:-translate-y-1 duration-300"
       onClick={() => onClick(game)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Image Container */}
-      <div className="w-full h-auto relative overflow-hidden bg-[#0d1626]">
+      <div className="w-full h-auto relative overflow-hidden bg-gray-100">
         {/* Main Image - Perfectly Fitted */}
         <img
           src={hasError ? "/placeholder-game.jpg" : imgSrc}

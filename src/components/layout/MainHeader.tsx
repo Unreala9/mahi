@@ -1,6 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, Wallet, Bell, Search, Terminal } from "lucide-react";
+import {
+  Menu,
+  Wallet,
+  Bell,
+  Search,
+  Terminal,
+  Download,
+  FileText,
+  Smartphone,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -87,7 +96,7 @@ export const MainHeader = ({
   const balance = isDemo ? demoBalance : (walletQuery.data ?? 0);
   const userLabel = isDemo
     ? "DEMO_USER"
-    : (session?.user?.email?.split("@")[0] || "ACCOUNT").toUpperCase();
+    : session?.user?.email?.split("@")[0] || "ACCOUNT";
 
   const isAuthed = isDemo || Boolean(session?.user);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -112,16 +121,17 @@ export const MainHeader = ({
     checkAdmin();
   }, [session?.user, isDemo]);
 
+  // Primary navigation for Header bottom bar
   const navItems = [
-    { label: "HOME", to: "/" },
     { label: "IN-PLAY", to: "/in-play" },
     { label: "SPORTSBOOK", to: "/sports" },
-    { label: "OUR CASINO", to: "/casino" },
     { label: "MY BETS", to: "/bets" },
+    { label: "LIVE CASINO", to: "/casino-live" },
+    { label: "CASINO GAMES", to: "/casino" },
   ];
 
   const marqueeText =
-    "NEWLY LAUNCHED CASINO GAME *MATKA MARKET* EVERY HOUR OPEN & CLOSE MARKET WITH LIVE DEALER /// LATEST ODDS UPDATED /// ";
+    "Welcome to Rana365 - The Next Generation Sports Betting & Casino Exchange! Bet on your favorite sports and play live casino games here.";
 
   const isActive = (to: string) => {
     const [path] = to.split("?");
@@ -129,165 +139,166 @@ export const MainHeader = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full font-sans">
-      {/* Top bar */}
-      <div className="bg-[#050b14] border-b border-white/5 relative overflow-hidden">
-        {/* Subtle grid pattern for texture */}
-        <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:20px_20px] pointer-events-none" />
+    <header className="sticky top-0 z-40 w-full font-sans shadow-sm">
+      {/* Top bar (Dark Green) */}
+      <div className="bg-[#1a472a] relative overflow-hidden">
+        <div className="h-[72px] px-4 md:px-6 flex items-center justify-between gap-4 relative z-10 mx-auto max-w-[1600px]">
+          <div className="flex items-center gap-6 min-w-0">
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-2">
+              <div className="flex items-center h-full py-1">
+                <img
+                  src="./images/logo1.png"
+                  alt="Mahi Exchange"
+                  className="h-15 md:h-24 w-auto object-contain drop-shadow-sm"
+                />
+              </div>
+            </Link>
 
-        <div className="h-20 px-4 md:px-6 flex items-center justify-between gap-4 relative z-10">
-          <div className="flex items-center gap-4 min-w-0">
-            {/* New Branding for Mobile/Header */}
-            <div className="flex items-center gap-2">
-              <img
-                src="/images/mahiexchange.png"
-                alt="MahiExchange"
-                className="h-40 w-auto object-contain"
+            {/* Search Bar - hidden on small screens */}
+            <div className="hidden lg:flex items-center bg-white/10 rounded-full px-3 py-1.5 w-64 border border-white/20 focus-within:border-white/50 focus-within:bg-white/15 transition-all">
+              <Search className="h-4 w-4 text-white/70" />
+              <input
+                type="text"
+                placeholder="Search Events..."
+                className="bg-transparent border-none outline-none text-white text-sm ml-2 w-full placeholder:text-white/50"
               />
             </div>
           </div>
 
           <div className="flex items-center gap-3 text-sm flex-shrink-0">
             {/* Utility Links */}
-            <div className="hidden lg:flex items-center gap-6 mr-6 text-[14px] font-bold uppercase tracking-widest text-gray-400">
-              <button className="hover:text-primary transition-colors flex items-center gap-1 group">
-                <span className="w-1 h-1 bg-gray-600 group-hover:bg-primary rounded-full transition-colors" />{" "}
+            <div className="hidden lg:flex items-center gap-4 mr-4 text-[13px] font-medium text-white/80">
+              <Link
+                to="/rules"
+                className="hover:text-white transition-colors flex items-center gap-1 group"
+              >
+                <FileText className="h-3.5 w-3.5" />
                 Rules
-              </button>
-              <button className="hover:text-primary transition-colors flex items-center gap-1 group">
-                <span className="w-1 h-1 bg-gray-600 group-hover:bg-primary rounded-full transition-colors" />{" "}
+              </Link>
+              <span className="w-px h-3 bg-white/20"></span>
+              <button className="hover:text-white transition-colors flex items-center gap-1 group">
+                <Smartphone className="h-3.5 w-3.5" />
                 Download App
               </button>
             </div>
 
-            {/* Balance Display - Terminal Style */}
-            <div className="flex items-center gap-px bg-[#0a1120] border border-white/10 h-10 group hover:border-primary/50 transition-colors">
-              <div className="px-3 h-full flex flex-col justify-center border-r border-white/5">
-                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider leading-none mb-1">
-                  Total Balance
-                </span>
-                <span className="font-mono text-primary font-bold text-sm leading-none tracking-tight">
-                  <ChipAmount amount={Number(balance)} size="sm" />
-                </span>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-full w-10 text-gray-400 hover:text-white hover:bg-white/5 rounded-none"
-                onClick={() => navigate("/wallet")}
-                aria-label="Wallet"
-              >
-                <Wallet className="h-4 w-4" />
-              </Button>
-            </div>
-
             {isAuthed ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
+              <>
+                {/* Balance Display */}
+                <div className="flex items-center bg-white/10 rounded overflow-hidden border border-white/20 h-9">
+                  <div className="px-3 h-full flex flex-col justify-center border-r border-white/20">
+                    <span className="text-[10px] text-white/70 font-medium leading-none mb-0.5">
+                      Credit
+                    </span>
+                    <span className="font-mono text-white font-bold text-xs leading-none">
+                      <ChipAmount amount={Number(balance)} size="sm" />
+                    </span>
+                  </div>
                   <Button
-                    variant="outline"
-                    className="h-10 px-4 bg-[#0a1120] border-white/10 text-white hover:bg-white/5 hover:text-primary hover:border-primary/50 text-[10px] font-bold uppercase tracking-wider rounded-none gap-2"
+                    variant="ghost"
+                    className="h-full w-9 px-0 text-white hover:bg-white/20 rounded-none"
+                    onClick={() => navigate("/wallet")}
+                    aria-label="Wallet"
                   >
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    {userLabel}
+                    <Wallet className="h-4 w-4" />
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  sideOffset={8}
-                  className="w-64 bg-[#0a1120] border-white/10 text-gray-300 rounded-none p-0 backdrop-blur-xl"
-                >
-                  <div className="p-3 border-b border-white/5 bg-black/20">
-                    <p className="text-[10px] uppercase font-bold text-gray-500 tracking-widest mb-1">
-                      Logged In As
-                    </p>
-                    <p className="font-mono text-white text-xs truncate">
-                      {session?.user?.email || "Demo User"}
-                    </p>
-                  </div>
-                  <div className="p-1">
-                    <DropdownMenuItem
-                      onClick={() => navigate("/wallet")}
-                      className="rounded-none focus:bg-white/5 focus:text-primary text-[11px] font-bold uppercase tracking-wide py-2.5 cursor-pointer"
+                </div>
+
+                {/* User Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="h-9 px-3 bg-white/10 border-white/20 text-white hover:bg-white/20 border-0 hover:text-white font-medium rounded"
                     >
-                      Account Statement
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => navigate("/bets")}
-                      className="rounded-none focus:bg-white/5 focus:text-primary text-[11px] font-bold uppercase tracking-wide py-2.5 cursor-pointer"
-                    >
-                      Current Bets
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => navigate("/casino-live")}
-                      className="rounded-none focus:bg-white/5 focus:text-primary text-[11px] font-bold uppercase tracking-wide py-2.5 cursor-pointer"
-                    >
-                      Casino Results
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => navigate("/profile")}
-                      className="rounded-none focus:bg-white/5 focus:text-primary text-[11px] font-bold uppercase tracking-wide py-2.5 cursor-pointer"
-                    >
-                      Settings
-                    </DropdownMenuItem>
-                    {isAdmin && (
+                      {userLabel}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    sideOffset={8}
+                    className="w-56 bg-white border border-gray-200 text-gray-800 rounded shadow-lg p-0"
+                  >
+                    <div className="p-3 border-b border-gray-100 bg-gray-50 flex items-center gap-2 rounded-t">
+                      <div className="w-8 h-8 rounded-full bg-green-100 text-green-800 flex items-center justify-center font-bold">
+                        {userLabel.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex flex-col overflow-hidden">
+                        <span className="text-xs font-semibold text-gray-900 truncate">
+                          {session?.user?.email || "Demo User"}
+                        </span>
+                        <span className="text-[10px] text-gray-500">
+                          ID: {session?.user?.id?.substring(0, 8) || "demo"}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="p-1">
                       <DropdownMenuItem
-                        onClick={() => navigate("/admin")}
-                        className="rounded-none focus:bg-white/5 focus:text-red-400 text-red-500 text-[11px] font-bold uppercase tracking-wide py-2.5 cursor-pointer"
+                        onClick={() => navigate("/wallet")}
+                        className="rounded hover:bg-gray-100 focus:bg-gray-100 text-xs font-medium py-2 cursor-pointer"
                       >
-                        Admin Control Panel
+                        Account Statement
                       </DropdownMenuItem>
-                    )}
-                  </div>
-                  <div className="h-px bg-white/5 my-1" />
-                  <div className="p-1 pb-1.5">
-                    <DropdownMenuItem
-                      onClick={async () => {
-                        await handleLogout?.();
-                      }}
-                      className="rounded-none focus:bg-red-500/10 focus:text-red-500 text-gray-500 text-[10px] font-bold uppercase tracking-wide py-2 cursor-pointer justify-center"
-                    >
-                      Terminate Session
-                    </DropdownMenuItem>
-                  </div>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                      <DropdownMenuItem
+                        onClick={() => navigate("/bets")}
+                        className="rounded hover:bg-gray-100 focus:bg-gray-100 text-xs font-medium py-2 cursor-pointer"
+                      >
+                        Current Bets
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => navigate("/profile")}
+                        className="rounded hover:bg-gray-100 focus:bg-gray-100 text-xs font-medium py-2 cursor-pointer"
+                      >
+                        Settings
+                      </DropdownMenuItem>
+                      {isAdmin && (
+                        <DropdownMenuItem
+                          onClick={() => navigate("/admin")}
+                          className="rounded hover:bg-red-50 focus:bg-red-50 text-red-600 text-xs font-bold py-2 cursor-pointer border-t border-gray-100 mt-1"
+                        >
+                          Admin Panel
+                        </DropdownMenuItem>
+                      )}
+                    </div>
+                    <div className="h-px bg-gray-100" />
+                    <div className="p-1">
+                      <DropdownMenuItem
+                        onClick={async () => {
+                          await handleLogout?.();
+                        }}
+                        className="rounded hover:bg-gray-100 focus:bg-gray-100 text-gray-600 text-xs font-medium py-2 cursor-pointer"
+                      >
+                        Logout
+                      </DropdownMenuItem>
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
             ) : (
-              <Button
-                className="h-10 px-6 bg-primary text-black font-black uppercase text-xs tracking-widest hover:bg-white hover:scale-105 transition-all rounded-none"
-                onClick={() => navigate("/auth")}
-              >
-                Access Terminal
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  className="h-9 px-5 bg-[#f28729] hover:bg-[#d6711c] text-white font-bold text-sm tracking-wide rounded-sm border-none shadow-sm"
+                  onClick={() => navigate("/auth")}
+                >
+                  Login
+                </Button>
+                <Button
+                  className="h-9 px-5 bg-white hover:bg-gray-100 text-[#1a472a] font-bold text-sm tracking-wide rounded-sm border border-gray-300 shadow-sm"
+                  onClick={() => navigate("/auth?mode=signup")}
+                >
+                  Sign up
+                </Button>
+              </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Marquee Bar - Terminal Tape Style */}
-      <div className="bg-primary text-black border-b border-primary/50 relative overflow-hidden h-8 flex items-center">
-        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-primary to-transparent z-10" />
-        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-primary to-transparent z-10" />
-
-        <div className="w-full overflow-hidden text-[12px]">
-          <div className="animate-marquee whitespace-nowrap flex items-center gap-8 ">
-            <span className=" font-mono font-bold uppercase tracking-widest flex items-center gap-4">
-              {marqueeText}
-            </span>
-            <span className=" font-mono font-bold uppercase tracking-widest flex items-center gap-4">
-              {marqueeText}
-            </span>
-            <span className=" font-mono font-bold uppercase tracking-widest flex items-center gap-4">
-              {marqueeText}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Navigation Tabs */}
-      <div className="bg-[#050b14] border-b border-white/5">
-        <div className="px-4 md:px-6 flex items-center justify-center overflow-x-auto scrollbar-hide">
-          <div className="flex items-center">
+      {/* Navigation Tabs - Light/White background as per Rana365 */}
+      <div className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="px-4 md:px-6 flex items-center justify-center lg:justify-start overflow-x-auto scrollbar-hide max-w-[1600px] mx-auto">
+          <div className="flex items-center gap-6">
             {navItems.map((item) => {
               const active = isActive(item.to);
               return (
@@ -295,22 +306,38 @@ export const MainHeader = ({
                   key={item.label}
                   to={item.to}
                   className={`
-                    px-6 py-3 text-[12px] font-bold tracking-[0.15em] relative group transition-colors min-w-max
-                    ${active ? "text-white" : "text-gray-500 hover:text-gray-300"}
+                    py-3 text-[13px] font-bold uppercase transition-colors relative whitespace-nowrap
+                    ${active ? "text-[#1a472a]" : "text-gray-600 hover:text-[#1a472a]"}
                   `}
                 >
                   {item.label}
-                  {/* Active Indicator */}
+                  {/* Active Indicator - Bullet or Dot like Rana365 */}
                   {active && (
-                    <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary shadow-[0_0_10px_rgba(34,211,238,0.5)]" />
+                    <div className="absolute top-1/2 -left-3 w-1.5 h-1.5 bg-[#f28729] rounded-full transform -translate-y-1/2"></div>
                   )}
-                  {/* Hover Indicator */}
-                  {!active && (
-                    <div className="absolute bottom-0 left-4 right-4 h-[1px] bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  {/* Active Bottom Border Line */}
+                  {active && (
+                    <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#1a472a] rounded-t-sm" />
                   )}
                 </Link>
               );
             })}
+          </div>
+        </div>
+      </div>
+
+      {/* Marquee Bar - Teal/Gradient */}
+      <div className="bg-gradient-to-r from-[#00b4db] to-[#0083b0] text-white overflow-hidden h-7 flex items-center shadow-inner">
+        <div className="w-full overflow-hidden text-[12px] h-full flex items-center">
+          <div className="animate-marquee pl-[100%] whitespace-nowrap flex items-center">
+            <span className="font-medium flex items-center mx-4 gap-2">
+              <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+              {marqueeText}
+            </span>
+            <span className="font-medium flex items-center mx-4 gap-2">
+              <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+              {marqueeText}
+            </span>
           </div>
         </div>
       </div>

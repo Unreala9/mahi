@@ -251,10 +251,10 @@ export default function Casino() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-[60vh] bg-[#050b14]">
+      <div className="flex items-center justify-center h-[60vh] bg-[#f0f2f5]">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-10 w-10 text-primary animate-spin" />
-          <p className="font-mono text-xs text-primary animate-pulse">
+          <Loader2 className="h-10 w-10 text-[#1a472a] animate-spin" />
+          <p className="font-mono text-xs text-[#1a472a] animate-pulse">
             Initializing Casino Protocol...
           </p>
         </div>
@@ -263,7 +263,7 @@ export default function Casino() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050b14] text-white -mt-4 -mx-4 pb-20 md:p-6 p-0 overflow-x-hidden">
+    <div className="min-h-screen bg-[#f0f2f5] text-gray-900 -mt-4 -mx-4 pb-20 md:p-6 p-0 overflow-x-hidden">
       {/* 1. Hero Section */}
       <CasinoHero />
 
@@ -280,9 +280,9 @@ export default function Casino() {
 
         {/* 3. Games Grid */}
         {filteredGames.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-32 text-gray-600 font-mono border border-dashed border-white/5 rounded-lg bg-[#0a1120]/50">
-            <Zap className="w-12 h-12 opacity-50 mb-4 animate-pulse text-yellow-500" />
-            <p className="tracking-widest uppercase text-sm">
+          <div className="flex flex-col items-center justify-center py-32 text-gray-500 font-mono border border-dashed border-gray-300 rounded-lg bg-white shadow-sm">
+            <Zap className="w-12 h-12 opacity-50 mb-4 animate-pulse text-[#f28729]" />
+            <p className="tracking-widest uppercase text-sm font-bold">
               No Active Protocols Found
             </p>
           </div>
@@ -309,10 +309,10 @@ export default function Casino() {
                 <Button
                   variant="outline"
                   onClick={() => setVisibleCount((c) => c + 30)}
-                  className="bg-[#0a1120] border-primary/30 text-primary hover:bg-primary hover:text-black rounded-full px-8 h-12 font-bold uppercase tracking-widest text-xs transition-all relative overflow-hidden group shadow-lg hover:shadow-primary/20"
+                  className="bg-white border-gray-300 text-[#1a472a] hover:bg-gray-50 hover:text-[#1a472a] rounded-full px-8 h-12 font-bold uppercase tracking-widest text-xs transition-all animate-pulse shadow-sm"
                 >
                   <span className="relative z-10 flex items-center gap-2">
-                    <Loader2 className="w-3 h-3 group-hover:animate-spin" />
+                    <Loader2 className="w-4 h-4" />
                     Load More
                   </span>
                 </Button>

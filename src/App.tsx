@@ -11,6 +11,8 @@ import { settlementMonitor } from "@/services/autoSettlementService";
 import { resultWebSocket } from "@/services/resultWebSocket";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Sportsbook from "./pages/Sportsbook";
 import CasinoLive from "./pages/CasinoLive";
 import Casino from "./pages/Casino";
@@ -108,6 +110,8 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
             <Route path="/api-test" element={<ApiTest />} />
             <Route path="/result-test" element={<ResultFetchingTest />} />
