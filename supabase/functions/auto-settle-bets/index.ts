@@ -3,12 +3,15 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const DIAMOND_API_BASE = "http://130.250.191.174:3009";
-const DIAMOND_API_KEY = "mahi4449839dbabkadbakwq1qqd";
+const DIAMOND_API_BASE =
+  Deno.env.get("DIAMOND_API_HOST") || "http://130.250.191.174:3009";
+const DIAMOND_API_KEY =
+  Deno.env.get("DIAMOND_API_KEY") || "mahi4449839dbabkadbakwq1qqd";
 
 interface SettlementRequest {
   bet_id?: string; // Settle specific bet
@@ -52,7 +55,10 @@ serve(async (req) => {
         .single();
 
       if (error || !data) {
-        return json(404, { success: false, error: "Bet not found or already settled" });
+        return json(404, {
+          success: false,
+          error: "Bet not found or already settled",
+        });
       }
       betsToSettle = [data];
     } else if (auto) {
@@ -63,11 +69,17 @@ serve(async (req) => {
         .eq("status", "pending");
 
       if (error) {
-        return json(500, { success: false, error: "Failed to fetch pending bets" });
+        return json(500, {
+          success: false,
+          error: "Failed to fetch pending bets",
+        });
       }
       betsToSettle = data || [];
     } else {
-      return json(400, { success: false, error: "Provide bet_id or auto=true" });
+      return json(400, {
+        success: false,
+        error: "Provide bet_id or auto=true",
+      });
     }
 
     console.log(`[AutoSettle] Found ${betsToSettle.length} bets to settle`);
@@ -101,7 +113,9 @@ serve(async (req) => {
         const status = isWin ? "won" : "lost";
         const payout = isWin ? bet.potential_payout : 0;
 
-        console.log(`[AutoSettle] Bet ${bet.id}: ${status} (payout: ${payout})`);
+        console.log(
+          `[AutoSettle] Bet ${bet.id}: ${status} (payout: ${payout})`,
+        );
 
         // Update bet status
         const { error: updateError } = await supabase
@@ -116,34 +130,33 @@ serve(async (req) => {
           .eq("id", bet.id);
 
         if (updateError) {
-          console.error(`[AutoSettle] Error updating bet ${bet.id}:`, updateError);
+          console.error(
+            `[AutoSettle] Error updating bet ${bet.id}:`,
+            updateError,
+          );
           continue;
         }
 
-        // Credit wallet if won
+        // Credit wallet if won - ATOMIC RPC handles transaction logging
         if (isWin) {
           const { data: walletData, error: walletError } = await supabase.rpc(
             "increment_balance",
             {
               p_user_id: bet.user_id,
               p_amount: payout,
-            }
+              p_type: "bet_win",
+              p_description: `Won bet on ${bet.selection_name} @ ${bet.odds}`,
+              p_reference_id: bet.id,
+            },
           );
 
           if (walletError || !walletData?.success) {
-            console.error(`[AutoSettle] Error crediting wallet:`, walletError || walletData);
+            console.error(
+              `[AutoSettle] Error crediting wallet (Bet ${bet.id}):`,
+              walletError || walletData,
+            );
             continue;
           }
-
-          // Create win transaction
-          await supabase.from("transactions").insert({
-            user_id: bet.user_id,
-            type: "win",
-            amount: payout,
-            status: "completed",
-            description: `Won bet on ${bet.selection_name} @ ${bet.odds}`,
-            provider_ref_id: bet.provider_bet_id,
-          });
 
           wonCount++;
           totalPayout += payout;
@@ -158,7 +171,7 @@ serve(async (req) => {
     }
 
     console.log(
-      `[AutoSettle] Complete: ${settledCount} settled (${wonCount} won, ${lostCount} lost, ₹${totalPayout} paid)`
+      `[AutoSettle] Complete: ${settledCount} settled (${wonCount} won, ${lostCount} lost, ₹${totalPayout} paid)`,
     );
 
     return json(200, {
@@ -188,31 +201,43 @@ async function fetchCasinoResult(bet: any): Promise<any> {
 
     if (bet.event_name) {
       const eventNameLower = bet.event_name.toLowerCase();
-      if (eventNameLower.includes('teen')) gameType = 'teen62';
-      else if (eventNameLower.includes('dolidana')) gameType = 'dolidana';
-      else if (eventNameLower.includes('dragon') || eventNameLower.includes('tiger')) gameType = 'dt20';
-      else if (eventNameLower.includes('andar') || eventNameLower.includes('bahar')) gameType = 'ab20';
-      else if (eventNameLower.includes('poker')) gameType = 'poker20';
-      else if (eventNameLower.includes('baccarat')) gameType = 'baccarat';
-      else if (eventNameLower.includes('teen20')) gameType = 'teen20';
-      else if (eventNameLower.includes('teen8')) gameType = 'teen8';
-      else if (eventNameLower.includes('3card')) gameType = '3cardjud';
+      if (eventNameLower.includes("teen")) gameType = "teen62";
+      else if (eventNameLower.includes("dolidana")) gameType = "dolidana";
+      else if (
+        eventNameLower.includes("dragon") ||
+        eventNameLower.includes("tiger")
+      )
+        gameType = "dt20";
+      else if (
+        eventNameLower.includes("andar") ||
+        eventNameLower.includes("bahar")
+      )
+        gameType = "ab20";
+      else if (eventNameLower.includes("poker")) gameType = "poker20";
+      else if (eventNameLower.includes("baccarat")) gameType = "baccarat";
+      else if (eventNameLower.includes("teen20")) gameType = "teen20";
+      else if (eventNameLower.includes("teen8")) gameType = "teen8";
+      else if (eventNameLower.includes("3card")) gameType = "3cardjud";
     }
 
     // Fallback: try provider_bet_id format (casino_teen62_1234567)
     if (!gameType && bet.provider_bet_id) {
-      const parts = bet.provider_bet_id.split('_');
-      if (parts.length >= 2 && parts[0] === 'casino') {
+      const parts = bet.provider_bet_id.split("_");
+      if (parts.length >= 2 && parts[0] === "casino") {
         gameType = parts[1];
       }
     }
 
     if (!gameType) {
-      console.error(`[Casino] Cannot determine game type for bet ${bet.id}. event_name="${bet.event_name}", provider_bet_id="${bet.provider_bet_id}"`);
+      console.error(
+        `[Casino] Cannot determine game type for bet ${bet.id}. event_name="${bet.event_name}", provider_bet_id="${bet.provider_bet_id}"`,
+      );
       return null;
     }
 
-    console.log(`[Casino] Determined game type: ${gameType} from event_name="${bet.event_name}"`);
+    console.log(
+      `[Casino] Determined game type: ${gameType} from event_name="${bet.event_name}"`,
+    );
 
     const roundId = bet.event; // Round ID from bet.event field
 
@@ -240,13 +265,21 @@ async function fetchCasinoResult(bet: any): Promise<any> {
       const data = await response.json();
       if (data && data.data && data.data.res && data.data.res.length > 0) {
         const latestResult = data.data.res[0];
-        console.log(`[Casino] Latest result: roundId=${latestResult.mid}, winner=${latestResult.win}`);
+        console.log(
+          `[Casino] Latest result: roundId=${latestResult.mid}, winner=${latestResult.win}`,
+        );
 
         // Only return if it matches the bet's round
-        if (roundId && latestResult.mid && latestResult.mid.toString() === roundId.toString()) {
+        if (
+          roundId &&
+          latestResult.mid &&
+          latestResult.mid.toString() === roundId.toString()
+        ) {
           return latestResult;
         } else {
-          console.log(`[Casino] Latest result round (${latestResult.mid}) doesn't match bet round (${roundId})`);
+          console.log(
+            `[Casino] Latest result round (${latestResult.mid}) doesn't match bet round (${roundId})`,
+          );
         }
       }
     }
@@ -307,42 +340,61 @@ function checkWin(bet: any, result: any): boolean {
     selectionName,
     betType,
     resultWinner: result.win || result.winner || result.result,
-    resultRoundId: result.mid || result.round_id
+    resultRoundId: result.mid || result.round_id,
   });
 
   // Casino games - check result.win field
-  if (bet.sport === "CASINO" || bet.sport === "casino" || result.win || result.winner) {
-    const winner = (result.win || result.winner || result.result || "").toString().toLowerCase();
+  if (
+    bet.sport === "CASINO" ||
+    bet.sport === "casino" ||
+    result.win ||
+    result.winner
+  ) {
+    const winner = (result.win || result.winner || result.result || "")
+      .toString()
+      .toLowerCase();
 
     // Normalize selection for comparison
-    const normalizedSelection = (selection || selectionName).replace(/[\s_-]/g, "");
+    const normalizedSelection = (selection || selectionName).replace(
+      /[\s_-]/g,
+      "",
+    );
     const normalizedWinner = winner.replace(/[\s_-]/g, "");
 
-    console.log(`[CheckWin] Casino comparison: "${normalizedSelection}" vs "${normalizedWinner}"`);
+    console.log(
+      `[CheckWin] Casino comparison: "${normalizedSelection}" vs "${normalizedWinner}"`,
+    );
 
     // For BACK bets - selection should match winner
     if (betType === "BACK") {
-      const isWin = normalizedSelection === normalizedWinner ||
-                    normalizedSelection.includes(normalizedWinner) ||
-                    normalizedWinner.includes(normalizedSelection);
-      console.log(`[CheckWin] BACK bet result: ${isWin ? 'WON' : 'LOST'}`);
+      const isWin =
+        normalizedSelection === normalizedWinner ||
+        normalizedSelection.includes(normalizedWinner) ||
+        normalizedWinner.includes(normalizedSelection);
+      console.log(`[CheckWin] BACK bet result: ${isWin ? "WON" : "LOST"}`);
       return isWin;
     }
 
     // For LAY bets - selection should NOT match winner
     if (betType === "LAY") {
-      const isWin = !(normalizedSelection === normalizedWinner ||
-                      normalizedSelection.includes(normalizedWinner) ||
-                      normalizedWinner.includes(normalizedSelection));
-      console.log(`[CheckWin] LAY bet result: ${isWin ? 'WON' : 'LOST'}`);
+      const isWin = !(
+        normalizedSelection === normalizedWinner ||
+        normalizedSelection.includes(normalizedWinner) ||
+        normalizedWinner.includes(normalizedSelection)
+      );
+      console.log(`[CheckWin] LAY bet result: ${isWin ? "WON" : "LOST"}`);
       return isWin;
     }
   }
 
   // Sports - Match Odds
-  if (bet.market_name?.toLowerCase().includes("match odds") ||
-      bet.market_name?.toLowerCase().includes("match winner")) {
-    const winner = (result.winner || result.result || "").toString().toLowerCase();
+  if (
+    bet.market_name?.toLowerCase().includes("match odds") ||
+    bet.market_name?.toLowerCase().includes("match winner")
+  ) {
+    const winner = (result.winner || result.result || "")
+      .toString()
+      .toLowerCase();
 
     if (betType === "BACK") {
       return selection === winner || selectionName.includes(winner);
@@ -354,10 +406,14 @@ function checkWin(bet: any, result: any): boolean {
   }
 
   // Sports - Fancy/Session markets
-  if (bet.market_name?.toLowerCase().includes("runs") ||
-      bet.market_name?.toLowerCase().includes("wickets") ||
-      bet.market_name?.toLowerCase().includes("over")) {
-    const resultValue = parseFloat(result.result || result.runs || result.score || "0");
+  if (
+    bet.market_name?.toLowerCase().includes("runs") ||
+    bet.market_name?.toLowerCase().includes("wickets") ||
+    bet.market_name?.toLowerCase().includes("over")
+  ) {
+    const resultValue = parseFloat(
+      result.result || result.runs || result.score || "0",
+    );
 
     // Parse selection (e.g., "Over 10.5" or "Under 10.5")
     if (selectionName.includes("over")) {

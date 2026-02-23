@@ -26,14 +26,6 @@ const ProtectedRoute = ({
       } = await supabase.auth.getSession();
 
       if (!session) {
-        // Fallback for Demo Mode
-        const isDemo = localStorage.getItem("demo_session");
-        if (isDemo === "true") {
-          setAuthorized(true);
-          setLoading(false);
-          return;
-        }
-
         setAuthorized(false);
         setLoading(false);
         return;
