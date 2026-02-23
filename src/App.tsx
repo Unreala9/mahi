@@ -54,6 +54,22 @@ import TestSportsResults from "./pages/TestSportsResults";
 const queryClient = new QueryClient();
 
 const App = () => {
+  // Prevent context menu (right-click) on all images to disable downloading
+  useEffect(() => {
+    const handleContextMenu = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target && target.tagName === "IMG") {
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener("contextmenu", handleContextMenu);
+
+    return () => {
+      document.removeEventListener("contextmenu", handleContextMenu);
+    };
+  }, []);
+
   // Initialize WebSocket polling service on app start
   useEffect(() => {
     let isActive = true;

@@ -27,7 +27,7 @@ import { useState } from "react";
 import { ChipAmount } from "@/components/ui/CasinoChip";
 import { useQueryClient } from "@tanstack/react-query";
 
-const Bets = () => {
+const Bets = ({ isSidebar = false }: { isSidebar?: boolean }) => {
   const { data: bets = [], isLoading, error, refetch } = useMyBets();
   const { toast } = useToast();
   const [isSettling, setIsSettling] = useState(false);
@@ -252,11 +252,20 @@ const Bets = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 animate-in fade-in duration-500 bg-[#f3f4f6] min-h-screen -m-4 md:p-6 p-4">
+    <div className={cn(
+      "mx-auto space-y-6 animate-in fade-in duration-500 bg-[#f3f4f6]",
+      isSidebar ? "max-w-full min-h-0 p-4" : "max-w-7xl min-h-screen -m-4 md:p-6 p-4"
+    )}>
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 border border-gray-200 shadow-sm rounded-xl relative overflow-hidden">
+      <div className={cn(
+        "flex justify-between items-start gap-4 bg-white p-6 border border-gray-200 shadow-sm rounded-xl relative overflow-hidden",
+        isSidebar ? "flex-col" : "flex-col md:flex-row md:items-center"
+      )}>
         <div className="relative z-10">
-          <h1 className="font-black text-2xl md:text-3xl text-gray-900 uppercase tracking-[0.2em] font-display flex items-center gap-3">
+          <h1 className={cn(
+            "font-black text-gray-900 uppercase tracking-[0.2em] font-display flex items-center gap-3",
+            isSidebar ? "text-xl" : "text-2xl md:text-3xl"
+          )}>
             <Activity className="w-8 h-8 text-[#1a472a]" />
             Open<span className="text-[#1a472a]">Positions</span>
           </h1>
@@ -265,7 +274,7 @@ const Bets = () => {
           </p>
         </div>
 
-        <div className="relative z-10 flex gap-2">
+        <div className={cn("relative z-10 flex gap-2", isSidebar && "flex-wrap w-full mt-2")}>
           <Button
             onClick={() => refetch()}
             className="bg-white border border-gray-200 hover:border-gray-300 shadow-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 h-10 px-4 rounded-none text-xs font-bold uppercase tracking-wider transition-all"
@@ -286,7 +295,7 @@ const Bets = () => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className={cn("grid gap-3", isSidebar ? "grid-cols-2" : "grid-cols-2 md:grid-cols-3 lg:grid-cols-6")}>
         <StatCard label="Total Volume" value={stats.total} />
         <StatCard
           label="Successful"
@@ -350,7 +359,7 @@ const Bets = () => {
             {bets.map((bet: any) => (
               <div
                 key={bet.id}
-                className="p-4 md:p-6 flex flex-col md:flex-row gap-6 hover:bg-gray-50 transition-colors group"
+                className={cn("p-4 flex gap-6 hover:bg-gray-50 transition-colors group", isSidebar ? "flex-col" : "md:p-6 flex-col md:flex-row")}
               >
                 {/* Status Indicator */}
                 <div className="w-1 bg-gray-200 group-hover:bg-[#1a472a] transition-colors self-stretch rounded-full" />
@@ -392,7 +401,10 @@ const Bets = () => {
                   </div>
                 </div>
 
-                <div className="flex flex-row md:flex-col justify-between md:justify-center items-end gap-2 md:gap-0 min-w-[120px] text-right">
+                <div className={cn(
+                  "flex justify-between items-end gap-2 text-right",
+                  isSidebar ? "flex-row w-full pt-3 mt-1 border-t border-gray-100" : "flex-row md:flex-col md:justify-center md:gap-0 min-w-[120px]"
+                )}>
                   <div className="mb-1">
                     <div className="text-[10px] text-gray-500 uppercase tracking-wider">
                       Stake
