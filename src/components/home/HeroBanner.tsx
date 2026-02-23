@@ -21,7 +21,7 @@ export const HeroBanner = () => {
   return (
     <div className="w-full mb-8 relative z-0">
       {/* Outer container must hide overflow to prevent horizontal scrollbar */}
-      <div className="overflow-hidden w-full md:w-[50vw] rounded-md" ref={emblaRef}>
+      <div className="overflow-hidden  rounded-md" ref={emblaRef}>
         {/* Negative left margin matches slide padding */}
         <div className="flex -ml-3 md:-ml-0">
           {mobileImages.map((src, idx) => (

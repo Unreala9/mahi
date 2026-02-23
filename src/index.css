@@ -46,16 +46,16 @@
     --radius: 0.5rem;
 
     /* Rana365 Betting Odds Colors */
-    --odds-back-color: #72bbef;   /* Light Blue - Back */
-    --odds-lay-color: #faa9ba;    /* Light Pink - Lay */
+    --odds-back-color: #72bbef; /* Light Blue - Back */
+    --odds-lay-color: #faa9ba; /* Light Pink - Lay */
     --odds-back-hover: #4fa3e0;
     --odds-lay-hover: #f77fa0;
 
     /* Section Colors */
-    --section-header-bg: #f28729;  /* Orange section headers */
-    --header-bg: #1a472a;          /* Dark green header */
-    --header-dark: #143d22;        /* Darker green nav */
-    --sidebar-bg: #ffffff;         /* White sidebar */
+    --section-header-bg: #f28729; /* Orange section headers */
+    --header-bg: #1a472a; /* Dark green header */
+    --header-dark: #143d22; /* Darker green nav */
+    --sidebar-bg: #ffffff; /* White sidebar */
 
     /* Data Visualization Accents */
     --success: 142 76% 36%;
@@ -74,8 +74,11 @@
     font-weight: 400;
     letter-spacing: 0.01em;
     background-color: #f0f2f5;
-    background-image:
-      radial-gradient(circle, rgba(0,0,0,0.04) 1px, transparent 1px);
+    background-image: radial-gradient(
+      circle,
+      rgba(0, 0, 0, 0.04) 1px,
+      transparent 1px
+    );
     background-size: 20px 20px;
     background-attachment: fixed;
     zoom: 0.8;
@@ -87,6 +90,22 @@
     width: 100%;
     max-width: 100%;
     overflow-x: hidden;
+  }
+
+  /* Prevent image dragging and downloading */
+  img {
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;
+
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
   }
 
   #root {
@@ -338,10 +357,18 @@
     opacity: 0;
   }
 
-  .delay-100 { animation-delay: 100ms; }
-  .delay-200 { animation-delay: 200ms; }
-  .delay-300 { animation-delay: 300ms; }
-  .delay-500 { animation-delay: 500ms; }
+  .delay-100 {
+    animation-delay: 100ms;
+  }
+  .delay-200 {
+    animation-delay: 200ms;
+  }
+  .delay-300 {
+    animation-delay: 300ms;
+  }
+  .delay-500 {
+    animation-delay: 500ms;
+  }
 }
 
 /* Custom Scrollbar - Light Theme */

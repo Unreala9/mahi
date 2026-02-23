@@ -92,6 +92,28 @@ export const LobbyScroller = () => {
       {/* Edge Fades for scroll affordance */}
       <div className="absolute top-0 left-0 bottom-0 w-8 bg-gradient-to-r from-gray-50 to-transparent pointer-events-none md:hidden" />
       <div className="absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-l from-gray-50 to-transparent pointer-events-none md:hidden" />
+      {/* Promotional Banner */}
+      <div
+        className="relative w-full rounded-xl overflow-hidden mt-6 cursor-pointer group shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
+        onClick={() => navigate('/promotions')}
+      >
+        <img
+          src="/images/imgi_181_promotionBanner-DsJ3B3xu.webp"
+          alt="Promotions"
+          className="w-full h-[100px] md:h-[140px] object-cover object-right md:object-center group-hover:scale-105 transition-transform duration-700"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-orange-950/90 via-orange-900/60 to-transparent flex items-center">
+          <div className="px-6 md:px-10 flex flex-col justify-center">
+            <div className="flex items-center gap-2 text-white/90 mb-1">
+              <Gift className="w-4 h-4 md:w-5 md:h-5" />
+              <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest drop-shadow-sm">Special Offers</span>
+            </div>
+            <h3 className="text-2xl md:text-4xl font-black text-white italic tracking-tight drop-shadow-lg uppercase">
+              Promotions
+            </h3>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

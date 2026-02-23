@@ -6,6 +6,8 @@ import { Sidebar } from "./Sidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { MobileHeader } from "./MobileHeader";
 
+import Bets from "@/pages/Bets";
+
 export const MainLayout = () => {
   const location = useLocation();
   const isAuthPage = location.pathname === "/auth";
@@ -49,8 +51,8 @@ export const MainLayout = () => {
     return (
       <div className="min-h-screen bg-[#f0f2f5] flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-[#1a472a] flex items-center justify-center shadow-[0_0_20px_rgba(26,71,42,0.3)]">
-            <span className="text-white font-black text-3xl italic">M</span>
+          <div className="w-36 h-36 rounded-2xl overflow-hidden flex items-center rounded-full justify-center shadow-[0_0_20px_rgba(26,71,42,0.3)]">
+            <img src="/images/logo.png" alt="" />
           </div>
           <div className="h-1 w-32 bg-gray-200 rounded-full overflow-hidden">
             <div className="h-full bg-[#1a472a] w-1/2 animate-[loading_2s_ease-in-out_infinite]" />
@@ -115,6 +117,13 @@ export const MainLayout = () => {
             <Outlet />
           </div>
         </main>
+
+        {/* Right Side Section - Bets */}
+        <aside className="hidden xl:block w-[350px] 2xl:w-[400px] border-l border-gray-200 bg-white overflow-y-auto shrink-0 shadow-[-4px_0_15px_rgba(0,0,0,0.05)] z-40">
+          <div className="h-full bg-[#f3f4f6] overflow-x-hidden">
+            <Bets isSidebar={true} />
+          </div>
+        </aside>
       </div>
 
       {/* Mobile Bottom Navigation */}

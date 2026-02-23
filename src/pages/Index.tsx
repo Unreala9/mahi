@@ -11,9 +11,6 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import CTASection from "@/components/home/CTASection";
 import Promostrip from "@/components/home/PromoStrip";
-import HeroSection from "@/components/home/HeroSection";
-
-
 
 const casinoBannerImages = [
   "/images/imgi_174_Aviator-1766070541485.jpg",
@@ -67,21 +64,17 @@ const Index = () => {
 
       <div className="px-2 md:px-10">
         {/* Hero Promotional Banners */}
-         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
         <HeroBanner />
-        <HeroSection />
-         </div>
 
         {/* Dash Promos */}
         <PromoSpotlight />
-
-        <TopMatches />
 
         {/* Lobby Scroller */}
         <div className="mt-4 mb-2">
           <LobbyScroller />
         </div>
+
+        <TopMatches />
 
         {/* Casino Games Showcase */}
         <CasinoShowcase />
@@ -92,7 +85,6 @@ const Index = () => {
         <VisualSportsGrid />
 
         <Promostrip />
-
 
         <CTASection />
 
