@@ -8,14 +8,13 @@ const BASE_URL = API_HOST.startsWith("/")
     ? `${API_PROTOCOL}://${API_HOST}`
     : `http://${API_HOST}`;
 export const CASINO_IMG_BASE_URL = "/game-image";
-const API_KEY =
-  import.meta.env.VITE_DIAMOND_API_KEY || "mahi4449839dbabkadbakwq1qqd";
+const API_KEY = import.meta.env.VITE_DIAMOND_API_KEY;
 
 // Results API Configuration
 const RESULTS_API_URL =
   import.meta.env.VITE_RESULTS_API_URL ||
   "https://dia-results.cricketid.xyz/api";
-const RESULTS_API_KEY = import.meta.env.VITE_RESULTS_API_KEY || "knqkdkqndkqn";
+const RESULTS_API_KEY = import.meta.env.VITE_RESULTS_API_KEY;
 const RESULTS_CLIENT_REF =
   import.meta.env.VITE_RESULTS_CLIENT_REF || "mahi_client";
 // Tunables for performance

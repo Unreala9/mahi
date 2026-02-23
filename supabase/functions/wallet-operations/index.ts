@@ -69,31 +69,8 @@ serve(async (req) => {
         console.error("Error fetching wallet:", walletError);
       }
 
-      // Start with wallet balance or 0
-      let balance = wallet?.balance ? Number(wallet.balance) : 0;
-
-      // Get all completed transactions
-      const { data: transactions, error: txError } = await serviceClient
-        .from("transactions")
-        .select("amount, type")
-        .eq("user_id", user.id)
-        .eq("status", "completed");
-
-      if (txError) {
-        console.error("Error fetching transactions:", txError);
-      }
-
-      // Calculate final balance
-      if (transactions) {
-        transactions.forEach((tx) => {
-          const amount = Number(tx.amount);
-          if (["deposit", "win", "bonus"].includes(tx.type)) {
-            balance += amount;
-          } else if (["withdraw", "bet"].includes(tx.type)) {
-            balance -= amount;
-          }
-        });
-      }
+      // Use wallet balance from DB as source of truth
+      const balance = wallet?.balance ? Number(wallet.balance) : 0;
 
       return new Response(
         JSON.stringify({ success: true, balance, userId: user.id }),
@@ -115,39 +92,23 @@ serve(async (req) => {
         });
       }
 
-      // Check current balance first
-      const { data: wallet } = await serviceClient
-        .from("wallets")
-        .select("balance")
-        .eq("user_id", user.id)
-        .maybeSingle();
+      // Use atomic RPC for deduction and transaction creation
+      const { data, error: rpcError } = await serviceClient.rpc(
+        "deduct_balance",
+        {
+          p_user_id: user.id,
+          p_amount: amount,
+          p_type: "bet_place",
+          p_description: description || "Bet placed",
+          p_reference_id: reference || `bet_${Date.now()}`,
+        },
+      );
 
-      let balance = wallet?.balance ? Number(wallet.balance) : 0;
-
-      const { data: transactions } = await serviceClient
-        .from("transactions")
-        .select("amount, type")
-        .eq("user_id", user.id)
-        .eq("status", "completed");
-
-      if (transactions) {
-        transactions.forEach((tx) => {
-          const amt = Number(tx.amount);
-          if (["deposit", "win", "bonus"].includes(tx.type)) {
-            balance += amt;
-          } else if (["withdraw", "bet"].includes(tx.type)) {
-            balance -= amt;
-          }
-        });
-      }
-
-      if (balance < amount) {
+      if (rpcError || !data?.success) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: "Insufficient balance",
-            balance,
-            required: amount,
+            error: data?.message || rpcError?.message || "Deduction failed",
           }),
           {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -156,32 +117,11 @@ serve(async (req) => {
         );
       }
 
-      // Create deduction transaction
-      const { data: transaction, error: txError } = await serviceClient
-        .from("transactions")
-        .insert({
-          user_id: user.id,
-          type: "bet",
-          amount: amount,
-          status: "completed",
-          provider: "internal",
-          provider_ref_id: reference || `bet_${Date.now()}`,
-          description: description || "Bet placed",
-        })
-        .select()
-        .single();
-
-      if (txError) {
-        throw new Error(`Transaction failed: ${txError.message}`);
-      }
-
-      const newBalance = balance - amount;
-
       return new Response(
         JSON.stringify({
           success: true,
-          balance: newBalance,
-          transaction,
+          balance: data.new_balance,
+          transactionId: data.transaction_id,
         }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -201,7 +141,7 @@ serve(async (req) => {
         });
       }
 
-      const validTypes = ["deposit", "win", "bonus"];
+      const validTypes = ["deposit", "bet_win", "bonus"];
       if (!validTypes.includes(type)) {
         return new Response(
           JSON.stringify({ error: "Invalid transaction type" }),
@@ -212,56 +152,43 @@ serve(async (req) => {
         );
       }
 
-      // Create addition transaction
-      const { data: transaction, error: txError } = await serviceClient
-        .from("transactions")
-        .insert({
-          user_id: user.id,
-          type: type,
-          amount: amount,
-          status: "completed",
-          provider: "internal",
-          provider_ref_id: reference || `${type}_${Date.now()}`,
-          description: description || `${type} transaction`,
-        })
-        .select()
-        .single();
+      // Use atomic RPC for addition and transaction creation
+      const { data, error: rpcError } = await serviceClient.rpc(
+        "increment_balance",
+        {
+          p_user_id: user.id,
+          p_amount: amount,
+          p_type: type,
+          p_description: description || `${type} transaction`,
+          p_reference_id: reference || `${type}_${Date.now()}`,
+        },
+      );
 
-      if (txError) {
-        throw new Error(`Transaction failed: ${txError.message}`);
+      if (rpcError || !data?.success) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: rpcError?.message || "Increment failed",
+          }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 400,
+          },
+        );
       }
 
-      // Get new balance
+      // Fetch final balance to return
       const { data: wallet } = await serviceClient
         .from("wallets")
         .select("balance")
         .eq("user_id", user.id)
-        .maybeSingle();
-
-      let balance = wallet?.balance ? Number(wallet.balance) : 0;
-
-      const { data: transactions } = await serviceClient
-        .from("transactions")
-        .select("amount, type")
-        .eq("user_id", user.id)
-        .eq("status", "completed");
-
-      if (transactions) {
-        transactions.forEach((tx) => {
-          const amt = Number(tx.amount);
-          if (["deposit", "win", "bonus"].includes(tx.type)) {
-            balance += amt;
-          } else if (["withdraw", "bet"].includes(tx.type)) {
-            balance -= amt;
-          }
-        });
-      }
+        .single();
 
       return new Response(
         JSON.stringify({
           success: true,
-          balance,
-          transaction,
+          balance: wallet?.balance ? Number(wallet.balance) : 0,
+          transactionId: data.transaction_id,
         }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
