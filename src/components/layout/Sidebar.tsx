@@ -175,8 +175,8 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps = {}) => {
     return <SportIcon eventId={sid} size={18} />;
   };
 
-  // Use the fetched sports list directly
-  const displaySports = allSportsList;
+  // Use the fetched sports list directly, fallback to ws data
+  const displaySports = allSportsList.length > 0 ? allSportsList : sportsData.sports;
 
   const SectionHeader = ({
     title,
@@ -263,7 +263,17 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps = {}) => {
 
           {isAllSportsOpen && (
             <div className="animate-in slide-in-from-top-2 duration-200">
-              {displaySports.map((sport) => {
+              {isSportsLoading && displaySports.length === 0 ? (
+                <div className="px-6 py-4 flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#1a472a] animate-pulse"></div>
+                  <span className="text-xs font-mono text-gray-500">Loading sports...</span>
+                </div>
+              ) : displaySports.length === 0 ? (
+                <div className="px-6 py-4 text-xs font-mono text-gray-400">
+                  No sports available
+                </div>
+              ) : (
+                displaySports.map((sport) => {
                 const isSportExpanded = expandedSports.includes(sport.sid);
                 const competitions = getCompetitionsBySport(sport.sid);
 
@@ -355,7 +365,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps = {}) => {
                     </div>
                   </div>
                 );
-              })}
+              }))}
             </div>
           )}
 

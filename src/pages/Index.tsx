@@ -11,6 +11,7 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import CTASection from "@/components/home/CTASection";
 import Promostrip from "@/components/home/PromoStrip";
+import { MahiImageScroller } from "@/components/home/MahiImageScroller";
 
 const casinoBannerImages = [
   "/images/imgi_174_Aviator-1766070541485.jpg",
@@ -41,7 +42,7 @@ const Index = () => {
   return (
     <div className="w-full  md:pb-0 font-sans">
       {/* Mobile Action Buttons (Deposit/Withdraw) */}
-      <div className="grid grid-cols-2 gap-3 px-4 py-4 ">
+      <div className="grid grid-cols-2 gap-3 px-4 py-2 ">
         <Link
           to="/wallet?tab=deposit"
           className="flex items-center justify-center gap-2 bg-[#1a472a] text-white font-bold uppercase tracking-wider  rounded shadow-sm active:scale-95 transition-all"
@@ -70,22 +71,29 @@ const Index = () => {
         <PromoSpotlight />
 
         {/* Lobby Scroller */}
-        <div className="mt-4 mb-2">
+        <div className="mt-2 mb-0">
           <LobbyScroller />
         </div>
 
-        <TopMatches />
-
         {/* Casino Games Showcase */}
         <CasinoShowcase />
+
+        {/* Mahi Image Scroller */}
+        <MahiImageScroller />
+
         {/* Animated Games */}
         <MiniGamesGrid />
 
         {/* Visual Grids */}
         <VisualSportsGrid />
 
+        {/* Top Matches */}
+        <TopMatches />
+
+        {/* Promostrip */}
         <Promostrip />
 
+        {/* CTA Section */}
         <CTASection />
 
         {/* Footer Section */}

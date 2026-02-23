@@ -16,12 +16,17 @@ export const HeroBanner = () => {
     "/images/home4.png",
     "/images/home5.png",
     "/images/home6.png",
+    "/images/home7.png",
+    "/images/home8.png",
+    "/images/home9.png",
+    "/images/home10.png",
+    "/images/home11.png",
   ];
 
   return (
-    <div className="w-full mb-8 relative z-0">
+    <div className="w-full mb-0 relative z-0">
       {/* Outer container must hide overflow to prevent horizontal scrollbar */}
-      <div className="overflow-hidden  rounded-md" ref={emblaRef}>
+      <div className="overflow-hidden  md:h-[75vh] rounded-md" ref={emblaRef}>
         {/* Negative left margin matches slide padding */}
         <div className="flex -ml-3 md:-ml-0">
           {mobileImages.map((src, idx) => (

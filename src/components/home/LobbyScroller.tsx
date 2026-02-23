@@ -38,7 +38,7 @@ export const LobbyScroller = () => {
   const loopedItems = [...lobbyItems, ...lobbyItems];
 
   return (
-    <div className="w-full mb-8 relative z-10 px-0 md:px-0">
+    <div className="w-full mb-4 relative z-10 px-0 md:px-0">
       <style>{`
         @keyframes lobby-scroll {
           0% { transform: translateX(0); }
@@ -94,7 +94,7 @@ export const LobbyScroller = () => {
       <div className="absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-l from-gray-50 to-transparent pointer-events-none md:hidden" />
       {/* Promotional Banner */}
       <div
-        className="relative w-full rounded-xl overflow-hidden mt-6 cursor-pointer group shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
+        className="relative w-full rounded-xl overflow-hidden mt-2 cursor-pointer group shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
         onClick={() => navigate('/promotions')}
       >
         <img
