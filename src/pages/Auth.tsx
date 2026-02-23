@@ -69,7 +69,7 @@ const Auth = () => {
             email,
             password,
             options: {
-              emailRedirectTo: window.location.origin,
+              emailRedirectTo: import.meta.env.VITE_APP_URL || window.location.origin,
               data: {
                 email: email,
                 full_name: email.split("@")[0],
@@ -256,6 +256,7 @@ const Auth = () => {
                 <button
                   type="button"
                   className="text-primary hover:text-primary/80 transition-colors"
+                  onClick={() => navigate("/forgot-password")}
                 >
                   Reset Key?
                 </button>

@@ -3,8 +3,7 @@
  * Supports match data, odds, live scores, and betting operations
  */
 
-const API_HOST =
-  import.meta.env.VITE_DIAMOND_API_HOST || "130.250.191.174:3009";
+const API_HOST = import.meta.env.VITE_DIAMOND_API_HOST || "/api/diamond";
 const API_PROTOCOL = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "http";
 const BASE_URL = API_HOST.startsWith("/")
   ? API_HOST
@@ -362,7 +361,9 @@ class EnhancedSportsService {
     try {
       // Get match details which has basic match info
       const detailsUrl = `${BASE_URL}/getDetailsData?gmid=${gmid}&key=${API_KEY}`;
-      console.log(`[Enhanced Sports] Fetching match details for score: ${gmid}`);
+      console.log(
+        `[Enhanced Sports] Fetching match details for score: ${gmid}`,
+      );
 
       const detailsResponse = await fetch(detailsUrl, {
         headers: {
@@ -371,7 +372,9 @@ class EnhancedSportsService {
       });
 
       if (!detailsResponse.ok) {
-        console.warn(`[Enhanced Sports] Could not fetch match details for score`);
+        console.warn(
+          `[Enhanced Sports] Could not fetch match details for score`,
+        );
         return null;
       }
 

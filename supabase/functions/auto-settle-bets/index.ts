@@ -183,9 +183,38 @@ serve(async (req) => {
  */
 async function fetchCasinoResult(bet: any): Promise<any> {
   try {
-    // Extract game type from market_id or event
-    const gameType = bet.market_id || bet.event || "dt20";
-    const roundId = bet.provider_bet_id || bet.event;
+    // Extract game type from event_name (e.g., "teen62 - Round 195260212134756")
+    let gameType = null;
+
+    if (bet.event_name) {
+      const eventNameLower = bet.event_name.toLowerCase();
+      if (eventNameLower.includes('teen')) gameType = 'teen62';
+      else if (eventNameLower.includes('dolidana')) gameType = 'dolidana';
+      else if (eventNameLower.includes('dragon') || eventNameLower.includes('tiger')) gameType = 'dt20';
+      else if (eventNameLower.includes('andar') || eventNameLower.includes('bahar')) gameType = 'ab20';
+      else if (eventNameLower.includes('poker')) gameType = 'poker20';
+      else if (eventNameLower.includes('baccarat')) gameType = 'baccarat';
+      else if (eventNameLower.includes('teen20')) gameType = 'teen20';
+      else if (eventNameLower.includes('teen8')) gameType = 'teen8';
+      else if (eventNameLower.includes('3card')) gameType = '3cardjud';
+    }
+
+    // Fallback: try provider_bet_id format (casino_teen62_1234567)
+    if (!gameType && bet.provider_bet_id) {
+      const parts = bet.provider_bet_id.split('_');
+      if (parts.length >= 2 && parts[0] === 'casino') {
+        gameType = parts[1];
+      }
+    }
+
+    if (!gameType) {
+      console.error(`[Casino] Cannot determine game type for bet ${bet.id}. event_name="${bet.event_name}", provider_bet_id="${bet.provider_bet_id}"`);
+      return null;
+    }
+
+    console.log(`[Casino] Determined game type: ${gameType} from event_name="${bet.event_name}"`);
+
+    const roundId = bet.event; // Round ID from bet.event field
 
     // Try detail_result first (for specific round)
     if (roundId) {
@@ -196,6 +225,7 @@ async function fetchCasinoResult(bet: any): Promise<any> {
       if (response.ok) {
         const data = await response.json();
         if (data && data.data) {
+          console.log(`[Casino] Found detail result for round ${roundId}`);
           return data.data;
         }
       }
@@ -208,8 +238,16 @@ async function fetchCasinoResult(bet: any): Promise<any> {
     const response = await fetch(resultUrl);
     if (response.ok) {
       const data = await response.json();
-      if (data && data.data && data.data.length > 0) {
-        return data.data[0]; // Latest result
+      if (data && data.data && data.data.res && data.data.res.length > 0) {
+        const latestResult = data.data.res[0];
+        console.log(`[Casino] Latest result: roundId=${latestResult.mid}, winner=${latestResult.win}`);
+
+        // Only return if it matches the bet's round
+        if (roundId && latestResult.mid && latestResult.mid.toString() === roundId.toString()) {
+          return latestResult;
+        } else {
+          console.log(`[Casino] Latest result round (${latestResult.mid}) doesn't match bet round (${roundId})`);
+        }
       }
     }
 
@@ -264,20 +302,40 @@ function checkWin(bet: any, result: any): boolean {
   const selection = bet.selection?.toLowerCase() || "";
   const selectionName = bet.selection_name?.toLowerCase() || "";
 
-  console.log(`[CheckWin] Bet:`, { selection, selectionName, betType, result });
+  console.log(`[CheckWin] Bet:`, {
+    selection,
+    selectionName,
+    betType,
+    resultWinner: result.win || result.winner || result.result,
+    resultRoundId: result.mid || result.round_id
+  });
 
-  // Casino games
-  if (bet.sport === "CASINO" || result.result || result.winner) {
-    const winner = (result.result || result.winner || "").toString().toLowerCase();
+  // Casino games - check result.win field
+  if (bet.sport === "CASINO" || bet.sport === "casino" || result.win || result.winner) {
+    const winner = (result.win || result.winner || result.result || "").toString().toLowerCase();
+
+    // Normalize selection for comparison
+    const normalizedSelection = (selection || selectionName).replace(/[\s_-]/g, "");
+    const normalizedWinner = winner.replace(/[\s_-]/g, "");
+
+    console.log(`[CheckWin] Casino comparison: "${normalizedSelection}" vs "${normalizedWinner}"`);
 
     // For BACK bets - selection should match winner
     if (betType === "BACK") {
-      return selection === winner || selectionName.includes(winner) || winner.includes(selection);
+      const isWin = normalizedSelection === normalizedWinner ||
+                    normalizedSelection.includes(normalizedWinner) ||
+                    normalizedWinner.includes(normalizedSelection);
+      console.log(`[CheckWin] BACK bet result: ${isWin ? 'WON' : 'LOST'}`);
+      return isWin;
     }
 
     // For LAY bets - selection should NOT match winner
     if (betType === "LAY") {
-      return !(selection === winner || selectionName.includes(winner) || winner.includes(selection));
+      const isWin = !(normalizedSelection === normalizedWinner ||
+                      normalizedSelection.includes(normalizedWinner) ||
+                      normalizedWinner.includes(normalizedSelection));
+      console.log(`[CheckWin] LAY bet result: ${isWin ? 'WON' : 'LOST'}`);
+      return isWin;
     }
   }
 

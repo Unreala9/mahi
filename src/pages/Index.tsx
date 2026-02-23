@@ -2,113 +2,99 @@ import { HeroBanner } from "@/components/home/HeroBanner";
 import { TopMatches } from "@/components/home/TopMatches";
 import { CasinoShowcase } from "@/components/home/CasinoShowcase";
 import { FooterSection } from "@/components/home/FooterSection";
+import { PromoSpotlight } from "@/components/home/PromoSpotlight";
+import { LobbyScroller } from "@/components/home/LobbyScroller";
+import { MiniGamesGrid } from "@/components/home/MiniGamesGrid";
+import { VisualSportsGrid } from "@/components/home/VisualSportsGrid";
 import { Wallet, ArrowDownCircle, ArrowUpCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import CTASection from "@/components/home/CTASection";
+import Promostrip from "@/components/home/PromoStrip";
+import HeroSection from "@/components/home/HeroSection";
+
+
+
+const casinoBannerImages = [
+  "/images/imgi_174_Aviator-1766070541485.jpg",
+  "/images/imgi_173_Evolution-1766067973985.jpg",
+  "/images/imgi_175_Aura-1766067418600.jpg",
+  "/images/imgi_176_Casino-1766067481768.jpg",
+  "/images/imgi_178_LIMBO-1766070421382.webp",
+  "/images/imgi_181_promotionBanner-DsJ3B3xu.webp",
+];
 
 const Index = () => {
+  const [currentCasinoBanner, setCurrentCasinoBanner] = useState(0);
+  const [casinoFade, setCasinoFade] = useState(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCasinoFade(false);
+      setTimeout(() => {
+        setCurrentCasinoBanner(
+          (prev) => (prev + 1) % casinoBannerImages.length,
+        );
+        setCasinoFade(true);
+      }, 400);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <div className="w-full pb-20 md:pb-0">
+    <div className="w-full  md:pb-0 font-sans">
       {/* Mobile Action Buttons (Deposit/Withdraw) */}
-      <div className="grid grid-cols-2 gap-3 px-4 py-4 md:hidden">
+      <div className="grid grid-cols-2 gap-3 px-4 py-4 ">
         <Link
           to="/wallet?tab=deposit"
-          className="flex items-center justify-center gap-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white font-black uppercase italic tracking-wider py-3 rounded-lg shadow-lg active:scale-95 transition-all skew-x-[-10deg]"
+          className="flex items-center justify-center gap-2 bg-[#1a472a] text-white font-bold uppercase tracking-wider  rounded shadow-sm active:scale-95 transition-all"
         >
-          <div className="skew-x-[10deg] flex items-center gap-2">
-            <ArrowDownCircle size={20} className="animate-bounce" />
-            <span>DEPOSIT</span>
+          <div className="flex items-center gap-2">
+            <ArrowDownCircle size={18} />
+            <span className="text-sm">DEPOSIT</span>
           </div>
         </Link>
         <Link
           to="/wallet?tab=withdraw"
-          className="flex items-center justify-center gap-2 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white font-black uppercase italic tracking-wider py-3 rounded-lg shadow-lg active:scale-95 transition-all skew-x-[-10deg]"
+          className="flex items-center justify-center gap-2 bg-white border border-gray-300 text-[#1a472a] font-bold uppercase tracking-wider py-2.5 rounded shadow-sm active:scale-95 transition-all"
         >
-          <div className="skew-x-[10deg] flex items-center gap-2">
-            <ArrowUpCircle size={20} />
-            <span>WITHDRAW</span>
+          <div className="flex items-center gap-2">
+            <ArrowUpCircle size={18} />
+            <span className="text-sm">WITHDRAW</span>
           </div>
         </Link>
       </div>
 
-      <div className="max-w-[1400px] mx-auto px-0 md:px-6 space-y-2 md:space-y-6">
+      <div className="px-2 md:px-10">
         {/* Hero Promotional Banners */}
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
         <HeroBanner />
+        <HeroSection />
+         </div>
 
-        {/* Cricket Battle Promotional Banner */}
-        <div className="px-4 md:px-0">
-          <Link
-            to="/sports/4"
-            className="block w-full overflow-hidden rounded-xl border border-white/10 shadow-lg active:scale-[0.98] transition-transform"
-          >
-            <img
-              src="/cricket_battle.9a44e4b8.webp"
-              alt="Cricket Battle"
-              className="w-full h-auto object-cover min-h-[120px]"
-            />
-          </Link>
-        </div>
+        {/* Dash Promos */}
+        <PromoSpotlight />
 
-        {/* Top Live Matches from All Sports */}
         <TopMatches />
 
-        {/* Mobile: New Launch / Mini Games Sections (Placeholder for now) */}
-        {/* Mobile: New Launch / Mini Games Sections */}
-        <div className="md:hidden space-y-8 mt-4">
-          {/* New Launch - Horizontal Scroll */}
-          <div className="pl-4">
-            <div className="flex items-center justify-between pr-4 mb-3">
-              <h3 className="text-white font-display font-black italic text-lg tracking-wider">
-                NEW LAUNCH
-              </h3>
-              <span className="text-[10px] text-blue-500 font-bold uppercase tracking-widest">
-                View All
-              </span>
-            </div>
-            <div className="flex gap-3 overflow-x-auto pb-4 pr-4 snap-x scrollbar-hide">
-              {[1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className="min-w-[120px] aspect-[3/4] bg-[#0a1120] rounded-xl border border-white/10 flex flex-col items-center justify-center relative overflow-hidden group snap-start shadow-lg"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/80"></div>
-                  <div className="absolute top-2 right-2 bg-red-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full z-10 animate-pulse">
-                    NEW
-                  </div>
-                  <span className="text-xs font-black text-white z-10 mt-auto mb-4 uppercase italic">
-                    Game {i}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Mini Games Banner */}
-          <div className="px-4">
-            <div className="relative h-24 bg-gradient-to-r from-blue-900/40 to-indigo-900/40 rounded-2xl border border-blue-500/20 overflow-hidden flex items-center justify-between px-6 shadow-[0_0_30px_rgba(59,130,246,0.15)]">
-              <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10"></div>
-              <div className="relative z-10">
-                <h3 className="text-xl font-black italic text-white leading-none">
-                  MINI
-                  <br />
-                  <span className="text-blue-400">GAMES</span>
-                </h3>
-                <span className="text-[10px] text-gray-400 font-mono mt-1 block">
-                  Quick play, instant wins
-                </span>
-              </div>
-              <div className="relative z-10">
-                <button className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-lg shadow-lg">
-                  Play Now
-                </button>
-              </div>
-              {/* Decorative Circle */}
-              <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-blue-500/20 rounded-full blur-xl"></div>
-            </div>
-          </div>
+        {/* Lobby Scroller */}
+        <div className="mt-4 mb-2">
+          <LobbyScroller />
         </div>
 
         {/* Casino Games Showcase */}
         <CasinoShowcase />
+        {/* Animated Games */}
+        <MiniGamesGrid />
+
+        {/* Visual Grids */}
+        <VisualSportsGrid />
+
+        <Promostrip />
+
+
+        <CTASection />
 
         {/* Footer Section */}
         <FooterSection />

@@ -8,8 +8,15 @@ import {
 import { fetchCasinoGames, getImageCandidates } from "@/services/casino";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { Search, X, ChevronRight, Tv, Trophy } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import {
+  Search,
+  X,
+  ChevronRight,
+  Tv,
+  Trophy,
+  ChevronDown,
+  Lock,
+} from "lucide-react";
 
 // --- Sub-components ---
 
@@ -35,7 +42,7 @@ const MatchChips = ({ matches }: { matches: any[] }) => {
       {popularMatches.map((m, idx) => (
         <div
           key={idx}
-          className="flex-shrink-0 bg-slate-800 hover:bg-slate-700 text-gray-300 text-xs px-3 py-1.5 rounded-full border border-slate-700 cursor-pointer transition-colors whitespace-nowrap"
+          className="flex-shrink-0 bg-white hover:bg-gray-50 text-gray-700 text-[11px] px-4 py-2 rounded-full border border-gray-200 cursor-pointer transition-colors whitespace-nowrap shadow-sm font-medium"
         >
           {m.name}
         </div>
@@ -56,11 +63,11 @@ const SportTabs = ({
     { id: 4, name: "Cricket", icon: "🏏" },
     { id: 1, name: "Football", icon: "⚽" },
     { id: 2, name: "Tennis", icon: "🎾" },
-    { id: 7, name: "Kabaddi", icon: "🤼" }, // Placeholder ID
-    { id: 75, name: "Basketball", icon: "🏀" }, // Placeholder ID
-    { id: 8, name: "Baseball", icon: "⚾" }, // Placeholder ID
-    { id: 4339, name: "Greyhound", icon: "🐕" }, // Placeholder ID
-    { id: 7, name: "Horse Race", icon: "🐎" },
+    { id: 7, name: "Kabaddi", icon: "🤼" },
+    { id: 75, name: "Basketball", icon: "🏀" },
+    { id: 8, name: "Baseball", icon: "⚾" },
+    { id: 4339, name: "Greyhound", icon: "🐕" },
+    { id: 77, name: "Horse Race", icon: "🐎" },
     { id: 999, name: "Volleyball", icon: "🏐" },
   ];
 
@@ -70,16 +77,164 @@ const SportTabs = ({
         <button
           key={sport.id}
           onClick={() => onSelect(sport.id)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all border ${
+          className={`flex items-center gap-2 px-5 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all border shadow-sm ${
             activeSport === sport.id
-              ? "bg-white text-black border-white"
-              : "bg-[#1e2837] text-gray-400 border-gray-700 hover:bg-[#2a374a]"
+              ? "bg-[#1a472a] text-white border-[#1a472a]"
+              : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
           }`}
         >
           <span>{sport.icon}</span>
           {sport.name}
         </button>
       ))}
+    </div>
+  );
+};
+
+const InPlayMatchRow = ({ match }: { match: any }) => {
+  const hasOdds = !!match.start_date && Math.random() > 0.3; // 70% chance to show odds
+  const isCricket = match.sid === 4 || match.sid === "4"; // Determine if Draw (X) is missing
+
+  // Random odds generator for demo purposes
+  const generateOdds = () => {
+    return {
+      back: (Math.random() * 3 + 1.2).toFixed(2),
+      backSize: Math.floor(Math.random() * 1000 + 100).toString(),
+      lay: (Math.random() * 3 + 1.3).toFixed(2),
+      laySize: Math.floor(Math.random() * 100 + 10).toString(),
+    };
+  };
+
+  const odds1 = hasOdds ? generateOdds() : null;
+  const oddsX = hasOdds && !isCricket ? generateOdds() : null;
+  const odds2 = hasOdds ? generateOdds() : null;
+
+  return (
+    <div className="grid grid-cols-12 items-center border-b border-gray-200 py-2 hover:bg-gray-50 transition-colors group cursor-pointer bg-white">
+      {/* Match Info Column */}
+      <div className="col-span-12 md:col-span-7 flex justify-between items-center px-4">
+        <div className="flex-1 min-w-0 pr-4">
+          <div className="text-[13px] text-gray-900 font-bold truncate mb-0.5">
+            {match.name || "Match Name"}
+          </div>
+          <div className="text-[11px] text-gray-500 truncate font-mono">
+            {match.cname || "Tournament"} /{" "}
+            {match.start_date
+              ? new Date(match.start_date).toLocaleString("en-US", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : "Time TBD"}
+          </div>
+        </div>
+        <div className="flex gap-2 items-center text-gray-400 flex-shrink-0">
+          <span className="text-[11px] font-bold">f</span>
+          <span className="text-[11px] font-bold">BM</span>
+          <ChevronDown className="h-4 w-4" />
+        </div>
+      </div>
+
+      {/* Odds Columns */}
+      <div className="hidden md:grid col-span-5 grid-cols-3 gap-1 px-4">
+        {/* Column 1 */}
+        <div className="flex justify-center items-center gap-0.5">
+          {hasOdds ? (
+            <>
+              <div className="flex-1 bg-[#72bbef] rounded-[3px] py-1 px-1 text-center flex flex-col justify-center items-center h-[34px]">
+                <span className="text-[14px] font-bold text-gray-900 leading-none">
+                  {odds1?.back}
+                </span>
+                <span className="text-[10px] text-gray-800 leading-none mt-0.5">
+                  {odds1?.backSize}
+                </span>
+              </div>
+              <div className="flex-1 bg-[#faa9ba] rounded-[3px] py-1 px-1 text-center flex flex-col justify-center items-center h-[34px]">
+                <span className="text-[14px] font-bold text-gray-900 leading-none">
+                  {odds1?.lay}
+                </span>
+                <span className="text-[10px] text-gray-800 leading-none mt-0.5">
+                  {odds1?.laySize}
+                </span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex-1 bg-gray-100 rounded-[3px] py-2 flex justify-center items-center h-full">
+                <Lock size={12} className="text-gray-400" />
+              </div>
+              <div className="flex-1 bg-gray-100 rounded-[3px] py-2 flex justify-center items-center h-full">
+                <Lock size={12} className="text-gray-400" />
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Column X */}
+        <div className="flex justify-center items-center gap-0.5">
+          {hasOdds && !isCricket ? (
+            <>
+              <div className="flex-1 bg-[#72bbef] rounded-[3px] py-1 px-1 text-center flex flex-col justify-center items-center h-[34px]">
+                <span className="text-[14px] font-bold text-gray-900 leading-none">
+                  {oddsX?.back}
+                </span>
+                <span className="text-[10px] text-gray-800 leading-none mt-0.5">
+                  {oddsX?.backSize}
+                </span>
+              </div>
+              <div className="flex-1 bg-[#faa9ba] rounded-[3px] py-1 px-1 text-center flex flex-col justify-center items-center h-[34px]">
+                <span className="text-[14px] font-bold text-gray-900 leading-none">
+                  {oddsX?.lay}
+                </span>
+                <span className="text-[10px] text-gray-800 leading-none mt-0.5">
+                  {oddsX?.laySize}
+                </span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex-1 bg-gray-100 rounded-[3px] py-2 flex justify-center items-center h-[34px]">
+                <span className="text-gray-400 text-sm font-black">-</span>
+              </div>
+              <div className="flex-1 bg-gray-100 rounded-[3px] py-2 flex justify-center items-center h-[34px]">
+                <span className="text-gray-400 text-sm font-black">-</span>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Column 2 */}
+        <div className="flex justify-center items-center gap-0.5">
+          {hasOdds ? (
+            <>
+              <div className="flex-1 bg-[#72bbef] rounded-[3px] py-1 px-1 text-center flex flex-col justify-center items-center h-[34px]">
+                <span className="text-[14px] font-bold text-gray-900 leading-none">
+                  {odds2?.back}
+                </span>
+                <span className="text-[10px] text-gray-800 leading-none mt-0.5">
+                  {odds2?.backSize}
+                </span>
+              </div>
+              <div className="flex-1 bg-[#faa9ba] rounded-[3px] py-1 px-1 text-center flex flex-col justify-center items-center h-[34px]">
+                <span className="text-[14px] font-bold text-gray-900 leading-none">
+                  {odds2?.lay}
+                </span>
+                <span className="text-[10px] text-gray-800 leading-none mt-0.5">
+                  {odds2?.laySize}
+                </span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex-1 bg-gray-100 rounded-[3px] py-2 flex justify-center items-center h-full">
+                <Lock size={12} className="text-gray-400" />
+              </div>
+              <div className="flex-1 bg-gray-100 rounded-[3px] py-2 flex justify-center items-center h-full">
+                <Lock size={12} className="text-gray-400" />
+              </div>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
@@ -99,12 +254,12 @@ const TrendingSidebar = () => {
   }, [games]);
 
   return (
-    <div className="bg-[#0f1724] rounded-xl overflow-hidden border border-gray-800 h-fit">
-      <div className="bg-[#162032] p-3 text-sm font-bold flex justify-between items-center border-b border-gray-800">
-        <span>Trending Games</span>
+    <div className="bg-white rounded-xl overflow-hidden border border-gray-200 h-fit shadow-md">
+      <div className="bg-gray-50 p-3 text-sm font-bold flex justify-between items-center border-b border-gray-200">
+        <span className="text-[#1a472a] font-black">Trending Games</span>
         <button
           onClick={() => navigate("/casino-live")}
-          className="text-primary text-xs flex items-center hover:underline"
+          className="text-[#1a472a] opacity-80 text-xs flex items-center hover:opacity-100 transition-opacity"
         >
           See more <ChevronRight size={12} />
         </button>
@@ -115,7 +270,7 @@ const TrendingSidebar = () => {
           return (
             <div
               key={game.gmid}
-              className="relative aspect-[3/4] rounded-lg overflow-hidden cursor-pointer hover:ring-1 hover:ring-primary"
+              className="relative aspect-[3/4] rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-[#1a472a] shadow-sm"
               onClick={() => navigate(`/casino/${game.gmid}`)}
             >
               <img
@@ -142,27 +297,12 @@ const InPlay = () => {
   const [activeSport, setActiveSport] = useState<string | number>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch live matches
-  // Using useLiveSportsData to get all sports first in case activeSport is 'all'
   const { sports } = useLiveSportsData();
-
-  // This is a bit tricky since existing hooks are per-sport or all sports
-  // We will fetch specific sport matches if an ID is selected, or aggregate all if 'all'
-
-  // For simplicity in this demo, let's use the 'all' hook (often sid=4 in existing code was default but let's check)
-  // Actually the sidebar logic fetches recursively. here we want "Live" specifically.
-  // The useLiveSportMatches hook takes a sport ID. If we want ALL, we might need a custom approach or just fetch Cricket for now as default/demo
-  // Let's assume activeSport = 4 (Cricket) if 'all' for the data hook for now to ensure data shows, or verify how to get ALL live.
-
   const targetSid = activeSport === "all" ? 4 : (activeSport as number);
   const { liveMatches, matches: allMatches } = useLiveSportMatches(targetSid);
 
-  // If 'all', ideally we merge multiple sport hooks. For this specific task, let's focus on showcasing the layout with data.
-  // Using the `matches` (all matches) but filtering for IS_LIVE for the top "In-Play" feel?
-  // The prompt implies "In-Play" page. So mainly live matches.
-
   const displayMatches = useMemo(() => {
-    let list = liveMatches.length > 0 ? liveMatches : allMatches; // Fallback to all matches if no live (for demo)
+    let list = liveMatches.length > 0 ? liveMatches : allMatches; // Fallback to all matches if no live
 
     if (searchQuery) {
       list = list.filter((m) =>
@@ -173,26 +313,26 @@ const InPlay = () => {
   }, [liveMatches, allMatches, searchQuery]);
 
   return (
-    <div className="min-h-screen bg-[#0b121e]">
+    <div className="min-h-screen bg-[#f3f4f6]">
       {/* Marquee */}
       <MarqueeHeader />
 
-      <div className="max-w-[1600px] mx-auto px-2 md:px-4 py-4">
+      <div className="max-w-[1600px] mx-auto px-2 md:px-4 py-4 md:py-6">
         {/* Search */}
-        <div className="relative mb-2">
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-            <Search size={16} />
+        <div className="relative mb-4 shadow-sm">
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+            <Search size={18} />
           </div>
           <input
             type="text"
-            placeholder="search events"
-            className="w-full bg-[#1e2837] border border-gray-700 rounded-full py-2 pl-10 pr-10 text-sm text-white focus:outline-none focus:border-primary"
+            placeholder="Search events"
+            className="w-full bg-white border border-gray-200 rounded-full py-2.5 pl-12 pr-10 text-sm text-gray-900 focus:outline-none focus:border-[#1a472a] focus:ring-1 focus:ring-[#1a472a] transition-all"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           {searchQuery && (
             <button
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               onClick={() => setSearchQuery("")}
             >
               <X size={16} />
@@ -207,19 +347,20 @@ const InPlay = () => {
         <SportTabs activeSport={activeSport} onSelect={setActiveSport} />
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-12 gap-6">
+        <div className="grid grid-cols-12 gap-6 pt-2">
           {/* Match List Column */}
-          <div className="col-span-12 lg:col-span-9 space-y-2">
+          <div className="col-span-12 lg:col-span-9 space-y-[1px]">
             {/* Header for List */}
-            <div className="flex items-center justify-between bg-[#1e2837] p-3 rounded-t-lg border-b border-gray-700">
-              <div className="flex items-center gap-2 text-white font-bold uppercase">
-                <Trophy className="text-primary w-5 h-5" />
+            <div className="flex items-center justify-between bg-white p-3.5 rounded-t-lg border border-gray-200 border-b-0 shadow-sm">
+              <div className="flex items-center gap-2 text-gray-900 font-bold uppercase text-[13px] tracking-wide">
+                <Trophy className="text-[#1a472a] opacity-90 w-5 h-5 fill-[#1a472a]" />
                 {activeSport === "all"
-                  ? "In-Play Matches"
-                  : sports.find((s) => s.sid === activeSport)?.name ||
-                    "Matches"}
+                  ? "IN-PLAY MATCHES"
+                  : sports
+                      .find((s) => s.sid === activeSport)
+                      ?.name?.toUpperCase() || "MATCHES"}
               </div>
-              <div className="hidden md:grid grid-cols-3 gap-8 w-[350px] pr-4 text-center text-xs text-gray-400 font-bold">
+              <div className="hidden md:grid grid-cols-3 gap-0 w-[420px] text-center text-[11px] text-gray-500 font-bold uppercase tracking-widest pr-4">
                 <div>1</div>
                 <div>X</div>
                 <div>2</div>
@@ -227,13 +368,13 @@ const InPlay = () => {
             </div>
 
             {/* List */}
-            <div className="space-y-1">
+            <div className="space-y-[1px] bg-gray-200 rounded-b-lg overflow-hidden border border-gray-200 shadow-sm">
               {displayMatches.length > 0 ? (
                 displayMatches.map((match) => (
-                  <BettingMatchRow key={match.gmid} match={match} />
+                  <InPlayMatchRow key={match.gmid} match={match} />
                 ))
               ) : (
-                <div className="p-8 text-center bg-[#1e2837] text-gray-400 rounded-b-lg">
+                <div className="p-8 text-center bg-white text-gray-500 border-b border-gray-200">
                   No in-Play matches available for this category right now.
                 </div>
               )}

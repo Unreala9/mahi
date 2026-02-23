@@ -33,7 +33,7 @@ export const TopMatches = () => {
     return (
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl md:text-2xl font-bold text-white italic">
+          <h2 className="text-xl md:text-2xl font-bold text-[#1a472a] italic">
             TOP MATCHES
           </h2>
         </div>
@@ -41,7 +41,7 @@ export const TopMatches = () => {
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="bg-[#1e2837] rounded-lg p-4 min-w-[280px] h-[200px] animate-pulse"
+              className="bg-gray-200 rounded-lg p-4 min-w-[280px] h-[200px] animate-pulse"
             />
           ))}
         </div>
@@ -53,15 +53,15 @@ export const TopMatches = () => {
     return (
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl md:text-2xl font-bold text-white italic">
+          <h2 className="text-xl md:text-2xl font-bold text-[#1a472a] italic">
             TOP MATCHES
           </h2>
         </div>
-        <div className="bg-[#1e2837] rounded-lg p-8 text-center">
-          <p className="text-gray-400">No matches available at the moment</p>
+        <div className="bg-white rounded-lg p-8 text-center border border-gray-200 shadow-sm">
+          <p className="text-gray-500">No matches available at the moment</p>
           <button
             onClick={() => navigate("/sports")}
-            className="mt-4 bg-primary text-black px-6 py-2 rounded-lg font-bold hover:bg-primary/90 transition-colors"
+            className="mt-4 bg-[#1a472a] text-white px-6 py-2 rounded-lg font-bold hover:bg-[#2d6a4f] transition-colors"
           >
             View All Matches
           </button>
@@ -73,21 +73,21 @@ export const TopMatches = () => {
   return (
     <div className="mb-8 animate-fade-in-up delay-200">
       {/* Section Header */}
-      <div className="flex items-center justify-between mb-6 border-b border-white/10 pb-2">
+      <div className="flex items-center justify-between mb-6 border-b border-gray-200 pb-2">
         <div className="flex items-center gap-3">
-          <div className="w-1.5 h-6 bg-gradient-to-b from-primary to-transparent"></div>
-          <h2 className="text-2xl font-display font-black text-white uppercase tracking-wider">
+          <div className="w-1.5 h-6 bg-[#1a472a]"></div>
+          <h2 className="text-2xl font-display font-black text-gray-800 uppercase tracking-wider">
             {liveMatches.length > 0 ? (
               <>
                 LIVE{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-400">
+                <span className="text-red-600">
                   MATCHES
                 </span>
               </>
             ) : (
               <>
                 TOP{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-white">
+                <span className="text-[#1a472a]">
                   MATCHES
                 </span>
               </>
@@ -96,7 +96,7 @@ export const TopMatches = () => {
         </div>
         <button
           onClick={() => navigate("/sports")}
-          className="flex items-center gap-2 text-primary hover:text-white transition-colors text-xs font-mono font-bold uppercase tracking-widest border border-primary/30 hover:bg-primary/10 px-4 py-1.5"
+          className="flex items-center gap-2 text-[#1a472a] hover:bg-green-50 transition-colors text-xs font-mono font-bold uppercase tracking-widest border border-gray-200 bg-white shadow-sm px-4 py-1.5 rounded"
         >
           View All
           <ChevronRight size={14} />

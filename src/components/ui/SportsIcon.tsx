@@ -11,56 +11,51 @@ interface SportsIconProps {
  * Maps sport names to emoji/unicode sports symbols
  * Using Unicode sports symbols that work across all browsers
  */
-const getSportEmoji = (sportName: string, sportId?: number): string => {
+const getSportIconClass = (sportName: string, sportId?: number): string => {
   const name = sportName.toLowerCase();
 
-  // Map by sport name to emoji
-  if (name.includes("cricket")) return "🏏";
-  if (name.includes("football") && !name.includes("american")) return "⚽";
-  if (name.includes("american football")) return "🏈";
-  if (name.includes("soccer")) return "⚽";
-  if (name.includes("tennis") && !name.includes("table")) return "🎾";
-  if (name.includes("table tennis")) return "🏓";
-  if (name.includes("basketball")) return "🏀";
-  if (name.includes("volleyball")) return "🏐";
-  if (name.includes("badminton")) return "🏸";
-  if (name.includes("baseball")) return "⚾";
-  if (name.includes("hockey")) return "🏒";
-  if (name.includes("golf")) return "⛳";
-  if (name.includes("rugby")) return "🏉";
-  if (name.includes("horse racing") || name.includes("racing")) return "🏇";
-  if (name.includes("greyhound")) return "🐕";
+  // Map by sport name to Sidearm icon class
+  if (name.includes("cricket")) return "s-icon s-icon-sport-cricket";
+  if (name.includes("football") && !name.includes("american"))
+    return "s-icon s-icon-sport-soccer";
+  if (name.includes("american football")) return "s-icon s-icon-sport-football";
+  if (name.includes("soccer")) return "s-icon s-icon-sport-soccer";
+  if (name.includes("tennis") && !name.includes("table"))
+    return "s-icon s-icon-sport-tennis";
+  if (name.includes("table tennis")) return "s-icon s-icon-sport-table-tennis";
+  if (name.includes("basketball")) return "s-icon s-icon-sport-basketball";
+  if (name.includes("volleyball")) return "s-icon s-icon-sport-volleyball";
+  if (name.includes("badminton")) return "s-icon s-icon-sport-badminton";
+  if (name.includes("baseball")) return "s-icon s-icon-sport-baseball";
+  if (name.includes("hockey")) return "s-icon s-icon-sport-ice-hockey";
+  if (name.includes("golf")) return "s-icon s-icon-sport-golf";
+  if (name.includes("rugby")) return "s-icon s-icon-sport-rugby";
+  if (name.includes("horse")) return "s-icon s-icon-sport-horse-racing";
+  if (name.includes("greyhound")) return "s-icon s-icon-sport-greyhound";
   if (
     name.includes("esoccer") ||
     name.includes("e-sports") ||
     name.includes("esports") ||
     name.includes("e games")
   )
-    return "🎮";
-  if (name.includes("swimming") || name.includes("swim")) return "🏊";
-  if (name.includes("boxing")) return "🥊";
-  if (name.includes("wrestling")) return "🤼";
-  if (name.includes("gymnastics")) return "🤸";
-  if (name.includes("softball")) return "🥎";
-  if (name.includes("bowling")) return "🎳";
-  if (name.includes("cycling")) return "🚴";
-  if (name.includes("fencing")) return "🤺";
-  if (name.includes("rowing")) return "🚣";
-  if (name.includes("sailing")) return "⛵";
-  if (name.includes("water polo")) return "🤽";
-  if (name.includes("squash")) return "🎾";
-  if (name.includes("athletics") || name.includes("track")) return "🏃";
-  if (name.includes("chess")) return "♟️";
-  if (name.includes("darts")) return "🎯";
-  if (name.includes("snooker")) return "🎱";
-  if (name.includes("beach volleyball")) return "🏖️";
+    return "s-icon s-icon-sport-esports";
+  if (name.includes("boxing")) return "s-icon s-icon-sport-boxing";
+  if (name.includes("mma") || name.includes("martial"))
+    return "s-icon s-icon-sport-mma";
+  if (name.includes("cycling")) return "s-icon s-icon-sport-cycling";
+  if (name.includes("darts")) return "s-icon s-icon-sport-darts";
+  if (name.includes("snooker")) return "s-icon s-icon-sport-snooker";
+  if (name.includes("handball")) return "s-icon s-icon-sport-handball";
+  if (name.includes("kabaddi")) return "s-icon s-icon-sport-kabaddi";
+  if (name.includes("motorsport") || name.includes("motor"))
+    return "s-icon s-icon-sport-motorsport";
 
   // Default fallback
-  return "🏆";
+  return "s-icon s-icon-sport-trophy";
 };
 
 /**
- * SportsIcon component - renders sports emoji icons
+ * SportsIcon component - renders sports icons using Sidearm CSS classes
  */
 export const SportsIcon = ({
   sportName,
@@ -68,19 +63,13 @@ export const SportsIcon = ({
   size = 18,
   className,
 }: SportsIconProps) => {
-  const emoji = getSportEmoji(sportName, sportId);
+  const iconClass = getSportIconClass(sportName, sportId);
 
   return (
-    <span
-      className={cn(
-        "sports-icon inline-flex items-center justify-center flex-shrink-0",
-        className,
-      )}
+    <i
+      className={cn(iconClass, "inline-block align-middle", className)}
       style={{ fontSize: `${size}px` }}
-      role="img"
       aria-label={sportName}
-    >
-      {emoji}
-    </span>
+    />
   );
 };

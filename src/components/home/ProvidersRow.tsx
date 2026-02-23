@@ -18,17 +18,15 @@ export const ProvidersRow = ({ providers = [], onProviderClick }: ProvidersRowPr
   // Mock providers if none provided
   const mockProviders: Provider[] = [
     { id: "1", name: "Dragon Tiger" },
-    { id: "2", name: "Aviator" },
-    { id: "3", name: "Mines" },
-    { id: "4", name: "Color Game" },
-    { id: "5", name: "Color Prediction" },
-    { id: "6", name: "Chicken Game" },
-    { id: "7", name: "Andar Bahar" },
-    { id: "8", name: "Teenpatti" },
-    { id: "9", name: "Lottery" },
-    { id: "10", name: "Live Poker" },
-    { id: "11", name: "Crash Games" },
-    { id: "12", name: "Scratch Cards" },
+    { id: "2", name: "Color Game" },
+    { id: "3", name: "Color Prediction" },
+    { id: "4", name: "Chicken Game" },
+    { id: "5", name: "Andar Bahar" },
+    { id: "6", name: "Teenpatti" },
+    { id: "7", name: "Lottery" },
+    { id: "8", name: "Live Poker" },
+    { id: "9", name: "Crash Games" },
+    { id: "10", name: "Scratch Cards" },
   ];
 
   const displayProviders = providers.length > 0 ? providers : mockProviders;
