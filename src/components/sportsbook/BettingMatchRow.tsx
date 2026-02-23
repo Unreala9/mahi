@@ -1,17 +1,20 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  Loader2,
-  Radio,
-  Tv,
-  Bookmark,
   ChevronDown,
   ChevronUp,
+  Info,
+  Loader2,
   Lock,
+  Tv,
+  Bookmark,
+  Radio,
 } from "lucide-react";
 import { useMatchDetails } from "@/hooks/api/useDiamond";
 import { useLiveMatchOdds } from "@/hooks/api/useWebSocket";
 import { diamondApi } from "@/services/diamondApi";
 import type { MatchEvent, OddsData } from "@/services/diamondApi";
+import { BetButton } from "./BetButton";
 import { BettingModal } from "./BettingModal";
 
 interface BettingMatchRowProps {
@@ -84,7 +87,7 @@ export function BettingMatchRow({
   };
 
   return (
-    <div className="border-b border-border even:bg-muted/30 hover:bg-muted/50 transition-colors">
+    <div className="border-b border-border betting-row-hover">
       <div
         className="grid grid-cols-1 md:grid-cols-12 items-center cursor-pointer"
         onClick={() => setExpanded(!expanded)}
@@ -92,9 +95,7 @@ export function BettingMatchRow({
         {/* Match Info */}
         <div className="md:col-span-6 px-3 md:px-4 py-2.5 md:border-r border-border">
           <div className="flex items-center gap-2 md:gap-3">
-            {match.is_live && (
-              <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-green-500 animate-pulse" />
-            )}
+            {match.is_live && <span className="live-badge">LIVE</span>}
             <div className="flex-1 min-w-0">
               <div className="text-xs md:text-sm text-foreground mb-0.5 truncate">
                 {match.name}
@@ -142,10 +143,16 @@ export function BettingMatchRow({
                 return (
                   <div key={0} className={columnClass}>
                     <div className="flex gap-0.5 md:gap-1 justify-center items-stretch">
-                      <div className="flex-1 px-1 md:px-2 py-1 md:py-1.5 text-[10px] md:text-xs font-bold bg-muted text-muted-foreground rounded flex items-center justify-center">
+                      <div
+                        className="flex-1 px-1 md:px-2 py-1 md:py-1.5 text-[10px] md:text-xs font-bold bg-muted text-muted-foreground flex items-center justify-center"
+                        style={{ borderRadius: "6px" }}
+                      >
                         -
                       </div>
-                      <div className="flex-1 px-1 md:px-2 py-1 md:py-1.5 text-[10px] md:text-xs font-bold bg-muted text-muted-foreground rounded flex items-center justify-center">
+                      <div
+                        className="flex-1 px-1 md:px-2 py-1 md:py-1.5 text-[10px] md:text-xs font-bold bg-muted text-muted-foreground flex items-center justify-center"
+                        style={{ borderRadius: "6px" }}
+                      >
                         -
                       </div>
                     </div>
@@ -179,17 +186,19 @@ export function BettingMatchRow({
               return (
                 <div key={0} className={columnClass}>
                   <div className="flex gap-1 justify-center items-stretch">
-                    {/* Back (Blue) */}
+                    {/* Back (Purple Gradient) */}
                     <div
                       onClick={(e) =>
                         hasBackOdds &&
                         backOdds.odds > 0 &&
                         handleOddsClick(e, runnerName, "back", backOdds.odds)
                       }
-                      className={`flex-1 px-2 py-1.5 rounded text-xs font-bold cursor-pointer transition-all flex flex-col items-center justify-center ${
+                      className={`flex-1 px-2 py-2 text-xs flex flex-col items-center justify-center ${
                         hasBackOdds && backOdds.odds > 0
-                          ? "bg-sky-300 hover:bg-sky-400 text-black"
-                          : "bg-muted text-muted-foreground"
+                          ? "odds-btn-back"
+                          : backOdds && backOdds.odds === 0
+                            ? "odds-btn-suspended"
+                            : "odds-btn-disabled"
                       }`}
                     >
                       <div className="font-bold leading-tight">
@@ -200,24 +209,26 @@ export function BettingMatchRow({
                           : "-"}
                       </div>
                       {hasBackOdds && backOdds.odds > 0 && backOdds?.size && (
-                        <div className="text-[9px] leading-tight mt-0.5">
+                        <div className="text-[9px] leading-tight mt-0.5 opacity-90">
                           {typeof backOdds.size === "object"
                             ? backOdds.size.size
                             : backOdds.size}
                         </div>
                       )}
                     </div>
-                    {/* Lay (Pink) */}
+                    {/* Lay (Pink Gradient) */}
                     <div
                       onClick={(e) =>
                         hasLayOdds &&
                         layOdds.odds > 0 &&
                         handleOddsClick(e, runnerName, "lay", layOdds.odds)
                       }
-                      className={`flex-1 px-2 py-1.5 rounded text-xs font-bold cursor-pointer transition-all flex flex-col items-center justify-center ${
+                      className={`flex-1 px-2 py-2 text-xs flex flex-col items-center justify-center ${
                         hasLayOdds && layOdds.odds > 0
-                          ? "bg-rose-300 hover:bg-rose-400 text-black"
-                          : "bg-muted text-muted-foreground"
+                          ? "odds-btn-lay"
+                          : layOdds && layOdds.odds === 0
+                            ? "odds-btn-suspended"
+                            : "odds-btn-disabled"
                       }`}
                     >
                       <div className="font-bold leading-tight">
@@ -228,7 +239,7 @@ export function BettingMatchRow({
                           : "-"}
                       </div>
                       {hasLayOdds && layOdds.odds > 0 && layOdds?.size && (
-                        <div className="text-[9px] leading-tight mt-0.5">
+                        <div className="text-[9px] leading-tight mt-0.5 opacity-90">
                           {typeof layOdds.size === "object"
                             ? layOdds.size.size
                             : layOdds.size}
@@ -250,10 +261,16 @@ export function BettingMatchRow({
                 return (
                   <div key={1} className={columnClass}>
                     <div className="flex gap-1 justify-center items-stretch">
-                      <div className="flex-1 px-2 py-1.5 text-xs font-bold bg-muted text-muted-foreground rounded flex items-center justify-center">
+                      <div
+                        className="flex-1 px-2 py-1.5 text-xs font-bold bg-muted text-muted-foreground flex items-center justify-center"
+                        style={{ borderRadius: "6px" }}
+                      >
                         -
                       </div>
-                      <div className="flex-1 px-2 py-1.5 text-xs font-bold bg-muted text-muted-foreground rounded flex items-center justify-center">
+                      <div
+                        className="flex-1 px-2 py-1.5 text-xs font-bold bg-muted text-muted-foreground flex items-center justify-center"
+                        style={{ borderRadius: "6px" }}
+                      >
                         -
                       </div>
                     </div>
@@ -287,17 +304,19 @@ export function BettingMatchRow({
               return (
                 <div key={1} className={columnClass}>
                   <div className="flex gap-1 justify-center items-stretch">
-                    {/* Back (Blue) */}
+                    {/* Back (Purple Gradient) */}
                     <div
                       onClick={(e) =>
                         hasBackOdds &&
                         backOdds.odds > 0 &&
                         handleOddsClick(e, runnerName, "back", backOdds.odds)
                       }
-                      className={`flex-1 px-2 py-1.5 rounded text-xs font-bold cursor-pointer transition-all flex flex-col items-center justify-center ${
+                      className={`flex-1 px-2 py-2 text-xs flex flex-col items-center justify-center ${
                         hasBackOdds && backOdds.odds > 0
-                          ? "bg-sky-300 hover:bg-sky-400 text-black"
-                          : "bg-muted text-muted-foreground"
+                          ? "odds-btn-back"
+                          : backOdds && backOdds.odds === 0
+                            ? "odds-btn-suspended"
+                            : "odds-btn-disabled"
                       }`}
                     >
                       <div className="font-bold leading-tight">
@@ -308,24 +327,26 @@ export function BettingMatchRow({
                           : "-"}
                       </div>
                       {hasBackOdds && backOdds.odds > 0 && backOdds?.size && (
-                        <div className="text-[9px] leading-tight mt-0.5">
+                        <div className="text-[9px] leading-tight mt-0.5 opacity-90">
                           {typeof backOdds.size === "object"
                             ? backOdds.size.size
                             : backOdds.size}
                         </div>
                       )}
                     </div>
-                    {/* Lay (Pink) */}
+                    {/* Lay (Pink Gradient) */}
                     <div
                       onClick={(e) =>
                         hasLayOdds &&
                         layOdds.odds > 0 &&
                         handleOddsClick(e, runnerName, "lay", layOdds.odds)
                       }
-                      className={`flex-1 px-2 py-1.5 rounded text-xs font-bold cursor-pointer transition-all flex flex-col items-center justify-center ${
+                      className={`flex-1 px-2 py-2 text-xs flex flex-col items-center justify-center ${
                         hasLayOdds && layOdds.odds > 0
-                          ? "bg-rose-300 hover:bg-rose-400 text-black"
-                          : "bg-muted text-muted-foreground"
+                          ? "odds-btn-lay"
+                          : layOdds && layOdds.odds === 0
+                            ? "odds-btn-suspended"
+                            : "odds-btn-disabled"
                       }`}
                     >
                       <div className="font-bold leading-tight">
@@ -336,7 +357,7 @@ export function BettingMatchRow({
                           : "-"}
                       </div>
                       {hasLayOdds && layOdds.odds > 0 && layOdds?.size && (
-                        <div className="text-[9px] leading-tight mt-0.5">
+                        <div className="text-[9px] leading-tight mt-0.5 opacity-90">
                           {typeof layOdds.size === "object"
                             ? layOdds.size.size
                             : layOdds.size}
@@ -357,10 +378,16 @@ export function BettingMatchRow({
                 return (
                   <div key={2} className={columnClass}>
                     <div className="flex gap-1 justify-center items-stretch">
-                      <div className="flex-1 px-2 py-1.5 text-xs font-bold bg-muted text-muted-foreground rounded flex items-center justify-center">
+                      <div
+                        className="flex-1 px-2 py-1.5 text-xs font-bold bg-muted text-muted-foreground flex items-center justify-center"
+                        style={{ borderRadius: "6px" }}
+                      >
                         -
                       </div>
-                      <div className="flex-1 px-2 py-1.5 text-xs font-bold bg-muted text-muted-foreground rounded flex items-center justify-center">
+                      <div
+                        className="flex-1 px-2 py-1.5 text-xs font-bold bg-muted text-muted-foreground flex items-center justify-center"
+                        style={{ borderRadius: "6px" }}
+                      >
                         -
                       </div>
                     </div>
@@ -394,17 +421,19 @@ export function BettingMatchRow({
               return (
                 <div key={2} className={columnClass}>
                   <div className="flex gap-1 justify-center items-stretch">
-                    {/* Back (Blue) */}
+                    {/* Back (Purple Gradient) */}
                     <div
                       onClick={(e) =>
                         hasBackOdds &&
                         backOdds.odds > 0 &&
                         handleOddsClick(e, runnerName, "back", backOdds.odds)
                       }
-                      className={`flex-1 px-2 py-1.5 rounded text-xs font-bold cursor-pointer transition-all flex flex-col items-center justify-center ${
+                      className={`flex-1 px-2 py-2 text-xs flex flex-col items-center justify-center ${
                         hasBackOdds && backOdds.odds > 0
-                          ? "bg-sky-300 hover:bg-sky-400 text-black"
-                          : "bg-muted text-muted-foreground"
+                          ? "odds-btn-back"
+                          : backOdds && backOdds.odds === 0
+                            ? "odds-btn-suspended"
+                            : "odds-btn-disabled"
                       }`}
                     >
                       <div className="font-bold leading-tight">
@@ -415,24 +444,26 @@ export function BettingMatchRow({
                           : "-"}
                       </div>
                       {hasBackOdds && backOdds.odds > 0 && backOdds?.size && (
-                        <div className="text-[9px] leading-tight mt-0.5">
+                        <div className="text-[9px] leading-tight mt-0.5 opacity-90">
                           {typeof backOdds.size === "object"
                             ? backOdds.size.size
                             : backOdds.size}
                         </div>
                       )}
                     </div>
-                    {/* Lay (Pink) */}
+                    {/* Lay (Pink Gradient) */}
                     <div
                       onClick={(e) =>
                         hasLayOdds &&
                         layOdds.odds > 0 &&
                         handleOddsClick(e, runnerName, "lay", layOdds.odds)
                       }
-                      className={`flex-1 px-2 py-1.5 rounded text-xs font-bold cursor-pointer transition-all flex flex-col items-center justify-center ${
+                      className={`flex-1 px-2 py-2 text-xs flex flex-col items-center justify-center ${
                         hasLayOdds && layOdds.odds > 0
-                          ? "bg-rose-300 hover:bg-rose-400 text-black"
-                          : "bg-muted text-muted-foreground"
+                          ? "odds-btn-lay"
+                          : layOdds && layOdds.odds === 0
+                            ? "odds-btn-suspended"
+                            : "odds-btn-disabled"
                       }`}
                     >
                       <div className="font-bold leading-tight">
@@ -443,7 +474,7 @@ export function BettingMatchRow({
                           : "-"}
                       </div>
                       {hasLayOdds && layOdds.odds > 0 && layOdds?.size && (
-                        <div className="text-[9px] leading-tight mt-0.5">
+                        <div className="text-[9px] leading-tight mt-0.5 opacity-90">
                           {typeof layOdds.size === "object"
                             ? layOdds.size.size
                             : layOdds.size}

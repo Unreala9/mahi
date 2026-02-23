@@ -33,14 +33,16 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     const fetchAdminData = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (session?.user) {
         const { data: profile } = await supabase
           .from("profiles")
           .select("*")
           .eq("id", session.user.id)
           .single();
-        
+
         setUser(profile);
 
         // Fetch admin wallet balance
@@ -49,7 +51,7 @@ const AdminDashboard = () => {
           .select("*")
           .eq("user_id", session.user.id)
           .single();
-        
+
         setAdminWallet(wallet);
 
         // Get today's date range
@@ -66,14 +68,15 @@ const AdminDashboard = () => {
           .gte("created_at", todayISO);
 
         const { data: withdrawals } = await supabase
-          .from("transactions")
+          .from("withdrawal_requests")
           .select("amount")
-          .eq("type", "withdrawal")
-          .eq("status", "completed")
+          .eq("status", "approved")
           .gte("created_at", todayISO);
 
-        const totalDeposits = deposits?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0;
-        const totalWithdrawals = withdrawals?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0;
+        const totalDeposits =
+          deposits?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0;
+        const totalWithdrawals =
+          withdrawals?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0;
 
         setTransactionStats({
           totalDeposits,
@@ -87,8 +90,12 @@ const AdminDashboard = () => {
           .select("amount, payout, status")
           .gte("created_at", todayISO);
 
-        const totalBetAmount = bets?.reduce((sum, b) => sum + (b.amount || 0), 0) || 0;
-        const totalWinnings = bets?.filter(b => b.status === 'won').reduce((sum, b) => sum + (b.payout || 0), 0) || 0;
+        const totalBetAmount =
+          bets?.reduce((sum, b) => sum + (b.amount || 0), 0) || 0;
+        const totalWinnings =
+          bets
+            ?.filter((b) => b.status === "won")
+            .reduce((sum, b) => sum + (b.payout || 0), 0) || 0;
 
         setBetStats({
           totalBetAmount,
@@ -98,17 +105,17 @@ const AdminDashboard = () => {
         // Fetch user role stats
         const { data: cashiers } = await supabase
           .from("profiles")
-          .select("id", { count: 'exact', head: true })
+          .select("id", { count: "exact", head: true })
           .eq("role", "cashier");
 
         const { data: admins } = await supabase
           .from("profiles")
-          .select("id", { count: 'exact', head: true })
+          .select("id", { count: "exact", head: true })
           .eq("role", "admin");
 
         const { data: newUsersToday } = await supabase
           .from("profiles")
-          .select("id", { count: 'exact', head: true })
+          .select("id", { count: "exact", head: true })
           .gte("created_at", today.toISOString());
 
         setUserRoleStats({
@@ -118,7 +125,7 @@ const AdminDashboard = () => {
         });
       }
     };
-    
+
     fetchAdminData();
   }, []);
 
@@ -132,11 +139,13 @@ const AdminDashboard = () => {
           </h1>
           <p className="text-gray-400">Use the left menu to manage users</p>
         </div>
-        
+
         {user && (
           <div className="flex items-center gap-2 bg-[#1e293b] rounded-lg px-4 py-2 border border-white/5">
             <UserCircle className="w-5 h-5 text-blue-400" />
-            <span className="text-white text-sm font-medium">{user?.full_name || "Super_Admin"}</span>
+            <span className="text-white text-sm font-medium">
+              {user?.full_name || "Super_Admin"}
+            </span>
           </div>
         )}
       </div>
@@ -150,25 +159,30 @@ const AdminDashboard = () => {
             <div className="absolute top-1/2 right-4 -translate-y-1/2 opacity-10">
               <DollarSign className="w-48 h-48 text-white" />
             </div>
-            
+
             <div className="relative z-10">
               <p className="text-blue-100 text-sm mb-3">My Balance</p>
               <p className="text-5xl font-bold text-white mb-8">
-                {adminWallet?.balance?.toLocaleString() || '0'}<span className="text-2xl">.00</span>
+                {adminWallet?.balance?.toLocaleString() || "0"}
+                <span className="text-2xl">.00</span>
               </p>
-              
+
               {/* Stacked stats on left */}
               <div className="space-y-4">
                 <div>
                   <p className="text-blue-100 text-xs mb-1">Income for Today</p>
                   <p className="text-xl font-bold text-white">
-                    {transactionStats.depositsToday.toLocaleString()}<span className="text-sm">.00</span>
+                    {transactionStats.depositsToday.toLocaleString()}
+                    <span className="text-sm">.00</span>
                   </p>
                 </div>
                 <div>
-                  <p className="text-blue-100 text-xs mb-1">Total Balance (All Users)</p>
+                  <p className="text-blue-100 text-xs mb-1">
+                    Total Balance (All Users)
+                  </p>
                   <p className="text-xl font-bold text-white">
-                    {stats?.totalBalance?.toLocaleString() || '0'}<span className="text-sm">.00</span>
+                    {stats?.totalBalance?.toLocaleString() || "0"}
+                    <span className="text-sm">.00</span>
                   </p>
                 </div>
               </div>
@@ -193,29 +207,37 @@ const AdminDashboard = () => {
                   <Users className="w-4 h-4 text-gray-400" />
                   <p className="text-gray-400 text-xs">Total Players</p>
                 </div>
-                <p className="text-3xl font-bold text-white">{stats?.totalUsers || 0}</p>
+                <p className="text-3xl font-bold text-white">
+                  {stats?.totalUsers || 0}
+                </p>
               </div>
-              
+
               <div className="flex-1 bg-[#0f172a] rounded-lg p-4 border border-white/5">
                 <div className="flex items-center gap-2 mb-2">
                   <Users className="w-4 h-4 text-gray-400" />
                   <p className="text-gray-400 text-xs">Total Cashiers</p>
                 </div>
-                <p className="text-3xl font-bold text-white">{userRoleStats.totalCashiers}</p>
+                <p className="text-3xl font-bold text-white">
+                  {userRoleStats.totalCashiers}
+                </p>
               </div>
-              
+
               <div className="flex-1 bg-[#0f172a] rounded-lg p-4 border border-white/5">
                 <div className="flex items-center gap-2 mb-2">
                   <Users className="w-4 h-4 text-gray-400" />
                   <p className="text-gray-400 text-xs">Total Admins</p>
                 </div>
-                <p className="text-3xl font-bold text-white">{userRoleStats.totalAdmins}</p>
+                <p className="text-3xl font-bold text-white">
+                  {userRoleStats.totalAdmins}
+                </p>
               </div>
             </div>
 
             <div className="bg-[#0f172a] rounded-lg p-4 border border-green-500/20 mb-4">
               <p className="text-gray-400 text-xs mb-2">Registered Today</p>
-              <p className="text-3xl font-bold text-green-400">+{userRoleStats.registeredToday}</p>
+              <p className="text-3xl font-bold text-green-400">
+                +{userRoleStats.registeredToday}
+              </p>
             </div>
 
             <button className="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 transition-colors font-medium text-sm">
@@ -233,7 +255,10 @@ const AdminDashboard = () => {
         {/* Deposit/Withdrawal */}
         <div className="bg-[#1e293b] rounded-2xl p-6 border border-white/5">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-white font-semibold text-lg">Deposit/Withdrawal <span className="text-gray-500 text-xs font-normal">(Today)</span></h3>
+            <h3 className="text-white font-semibold text-lg">
+              Deposit/Withdrawal{" "}
+              <span className="text-gray-500 text-xs font-normal">(Today)</span>
+            </h3>
             <button className="text-blue-400 text-xs hover:text-blue-300 transition-colors">
               All transaction →
             </button>
@@ -247,7 +272,9 @@ const AdminDashboard = () => {
                     <TrendingUp className="w-5 h-5 text-green-400" />
                     <p className="text-gray-400 text-sm">Deposits (Today)</p>
                   </div>
-                  <p className="text-3xl font-bold text-green-400">{transactionStats.totalDeposits.toFixed(2)}</p>
+                  <p className="text-3xl font-bold text-green-400">
+                    {transactionStats.totalDeposits.toFixed(2)}
+                  </p>
                 </div>
                 <p className="text-xs text-gray-500">USD</p>
               </div>
@@ -260,7 +287,9 @@ const AdminDashboard = () => {
                     <TrendingDown className="w-5 h-5 text-red-400" />
                     <p className="text-gray-400 text-sm">Withdrawals (Today)</p>
                   </div>
-                  <p className="text-3xl font-bold text-red-400">{transactionStats.totalWithdrawals.toFixed(2)}</p>
+                  <p className="text-3xl font-bold text-red-400">
+                    {transactionStats.totalWithdrawals.toFixed(2)}
+                  </p>
                 </div>
                 <p className="text-xs text-gray-500">USD</p>
               </div>
@@ -273,7 +302,12 @@ const AdminDashboard = () => {
                     <DollarSign className="w-5 h-5 text-blue-400" />
                     <p className="text-gray-400 text-sm">Net (Today)</p>
                   </div>
-                  <p className="text-3xl font-bold text-blue-400">{(transactionStats.totalDeposits - transactionStats.totalWithdrawals).toFixed(2)}</p>
+                  <p className="text-3xl font-bold text-blue-400">
+                    {(
+                      transactionStats.totalDeposits -
+                      transactionStats.totalWithdrawals
+                    ).toFixed(2)}
+                  </p>
                 </div>
                 <p className="text-xs text-gray-500">USD</p>
               </div>
@@ -284,7 +318,10 @@ const AdminDashboard = () => {
         {/* Bets */}
         <div className="bg-[#1e293b] rounded-2xl p-6 border border-white/5">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-white font-semibold text-lg">Bets <span className="text-gray-500 text-xs font-normal">(Today)</span></h3>
+            <h3 className="text-white font-semibold text-lg">
+              Bets{" "}
+              <span className="text-gray-500 text-xs font-normal">(Today)</span>
+            </h3>
             <button className="text-blue-400 text-xs hover:text-blue-300 transition-colors flex items-center gap-1">
               Bet history →
             </button>
@@ -296,9 +333,13 @@ const AdminDashboard = () => {
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <TrendingUp className="w-5 h-5 text-green-400" />
-                    <p className="text-gray-400 text-sm">Total Bet Amount (Today)</p>
+                    <p className="text-gray-400 text-sm">
+                      Total Bet Amount (Today)
+                    </p>
                   </div>
-                  <p className="text-3xl font-bold text-green-400">{betStats.totalBetAmount.toFixed(2)}</p>
+                  <p className="text-3xl font-bold text-green-400">
+                    {betStats.totalBetAmount.toFixed(2)}
+                  </p>
                 </div>
                 <p className="text-xs text-gray-500">USD</p>
               </div>
@@ -309,9 +350,13 @@ const AdminDashboard = () => {
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <TrendingDown className="w-5 h-5 text-red-400" />
-                    <p className="text-gray-400 text-sm">Total Winnings (Today)</p>
+                    <p className="text-gray-400 text-sm">
+                      Total Winnings (Today)
+                    </p>
                   </div>
-                  <p className="text-3xl font-bold text-red-400">{betStats.totalWinnings.toFixed(2)}</p>
+                  <p className="text-3xl font-bold text-red-400">
+                    {betStats.totalWinnings.toFixed(2)}
+                  </p>
                 </div>
                 <p className="text-xs text-gray-500">USD</p>
               </div>
@@ -324,7 +369,11 @@ const AdminDashboard = () => {
                     <Gamepad2 className="w-5 h-5 text-blue-400" />
                     <p className="text-gray-400 text-sm">GGR (Today)</p>
                   </div>
-                  <p className="text-3xl font-bold text-blue-400">{(betStats.totalBetAmount - betStats.totalWinnings).toFixed(2)}</p>
+                  <p className="text-3xl font-bold text-blue-400">
+                    {(betStats.totalBetAmount - betStats.totalWinnings).toFixed(
+                      2,
+                    )}
+                  </p>
                 </div>
                 <p className="text-xs text-gray-500">USD</p>
               </div>
@@ -340,8 +389,18 @@ const AdminDashboard = () => {
             <Users className="w-6 h-6 text-white" />
           </div>
           <div>
-            <p className="text-white font-semibold">{user?.full_name || "Super_Admin"} <span className="text-gray-400 font-normal">({user?.role || "Super Admin"})</span></p>
-            <p className="text-gray-500 text-sm">ID: {user?.id?.substring(0, 8)} • Balance: <span className="text-blue-400">{adminWallet?.balance?.toFixed(2) || '0.00'} USD</span></p>
+            <p className="text-white font-semibold">
+              {user?.full_name || "Super_Admin"}{" "}
+              <span className="text-gray-400 font-normal">
+                ({user?.role || "Super Admin"})
+              </span>
+            </p>
+            <p className="text-gray-500 text-sm">
+              ID: {user?.id?.substring(0, 8)} • Balance:{" "}
+              <span className="text-blue-400">
+                {adminWallet?.balance?.toFixed(2) || "0.00"} USD
+              </span>
+            </p>
           </div>
         </div>
       )}
@@ -350,4 +409,3 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
-

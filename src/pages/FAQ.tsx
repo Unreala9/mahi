@@ -1,4 +1,3 @@
-import { MainLayout } from "@/components/layout/MainLayout";
 import {
   Accordion,
   AccordionContent,
@@ -62,48 +61,46 @@ const FAQ = () => {
   ];
 
   return (
-    <MainLayout>
-      <div className="max-w-3xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="font-display text-4xl font-bold text-foreground mb-4">
-            Frequently Asked <span className="text-primary">Questions</span>
-          </h1>
-          <p className="text-muted-foreground">
-            Find answers to common questions about our platform, games, and
-            services.
-          </p>
-        </div>
-
-        <div className="space-y-8">
-          {faqs.map((category, idx) => (
-            <div
-              key={idx}
-              className="bg-card rounded-2xl p-6 border border-border"
-            >
-              <h2 className="font-display text-xl font-semibold text-foreground mb-4 border-b border-border pb-2">
-                {category.category}
-              </h2>
-              <Accordion type="single" collapsible className="w-full">
-                {category.questions.map((faq, qIdx) => (
-                  <AccordionItem
-                    key={qIdx}
-                    value={`item-${idx}-${qIdx}`}
-                    className="border-border"
-                  >
-                    <AccordionTrigger className="text-left text-foreground hover:text-primary no-underline transition-colors">
-                      {faq.q}
-                    </AccordionTrigger>
-                    <AccordionContent className="text-muted-foreground leading-relaxed">
-                      {faq.a}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </div>
-          ))}
-        </div>
+    <div className="max-w-3xl mx-auto">
+      <div className="text-center mb-12">
+        <h1 className="font-display text-4xl font-bold text-foreground mb-4">
+          Frequently Asked <span className="text-primary">Questions</span>
+        </h1>
+        <p className="text-muted-foreground">
+          Find answers to common questions about our platform, games, and
+          services.
+        </p>
       </div>
-    </MainLayout>
+
+      <div className="space-y-8">
+        {faqs.map((category, idx) => (
+          <div
+            key={idx}
+            className="bg-card rounded-2xl p-6 border border-border"
+          >
+            <h2 className="font-display text-xl font-semibold text-foreground mb-4 border-b border-border pb-2">
+              {category.category}
+            </h2>
+            <Accordion type="single" collapsible className="w-full">
+              {category.questions.map((faq, qIdx) => (
+                <AccordionItem
+                  key={qIdx}
+                  value={`item-${idx}-${qIdx}`}
+                  className="border-border"
+                >
+                  <AccordionTrigger className="text-left text-foreground hover:text-primary no-underline transition-colors">
+                    {faq.q}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground leading-relaxed">
+                    {faq.a}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 };
 

@@ -79,15 +79,15 @@ export default {
         },
       },
       borderRadius: {
-        lg: "0rem",
-        md: "0rem",
-        sm: "0rem",
-        DEFAULT: "0rem",
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["Rajdhani", "sans-serif"],
-        display: ["Rajdhani", "sans-serif"],
-        mono: ["JetBrains Mono", "monospace"],
+        display: ["Syne", "sans-serif"],
+        mono: ["DM Mono", "monospace"],
+        ui: ["Manrope", "sans-serif"],
+        sans: ["DM Mono", "monospace"], // Default to mono for terminal aesthetic
       },
       keyframes: {
         "accordion-down": {

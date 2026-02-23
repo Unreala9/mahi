@@ -4,8 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { loadStripe } from "@stripe/stripe-js";
-import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+// Removed Stripe and PayPal imports - only using Razorpay
 import {
   Wallet as WalletIcon,
   Plus,
@@ -18,14 +17,17 @@ import {
   Download,
   AlertTriangle,
   Info,
+  Terminal,
+  Activity,
+  ArrowUpRight,
+  ArrowDownLeft,
 } from "lucide-react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { cn } from "@/lib/utils";
-import { MainLayout } from "@/components/layout/MainLayout";
+
 import { ChipAmount } from "@/components/ui/CasinoChip";
 
-// Initialize Stripe
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || "");
+// Removed Stripe initialization - only using Razorpay
 
 const Wallet = () => {
   const navigate = useNavigate();
@@ -35,14 +37,27 @@ const Wallet = () => {
   const [walletData, setWalletData] = useState<any>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [depositAmount, setDepositAmount] = useState("");
+  const [transactionId, setTransactionId] = useState("");
+  const [screenshot, setScreenshot] = useState<File | null>(null);
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [upiId, setUpiId] = useState("");
   const [activeTab, setActiveTab] = useState<"deposit" | "withdraw">("deposit");
-  const [selectedGateway, setSelectedGateway] = useState<
-    "stripe" | "razorpay" | "paypal" | "bank_transfer"
-  >("razorpay");
-  const [withdrawStep, setWithdrawStep] = useState<"amount" | "bank">("amount");
-  const [bankDetails, setBankDetails] = useState<any>(null);
+  const [depositMethod, setDepositMethod] = useState<"bank" | "upi" | "qr">(
+    "bank",
+  );
+  const [depositStep, setDepositStep] = useState<number>(1);
+
+  // Dynamic Settings State
+  const [settings, setSettings] = useState({
+    bank: {
+      bankName: "Loading...",
+      accountHolder: "Loading...",
+      accountNumber: "Loading...",
+      ifsc: "Loading...",
+    },
+    upi: { upiId: "Loading..." },
+    qr: { url: "" },
+  });
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -52,6 +67,7 @@ const Wallet = () => {
       } else {
         fetchWalletData(session.user.id);
         fetchTransactions(session.user.id);
+        fetchSystemSettings(); // Fetch dynamic settings
       }
       setLoading(false);
     });
@@ -66,6 +82,23 @@ const Wallet = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  const fetchSystemSettings = async () => {
+    const { data } = await supabase
+      .from("system_settings")
+      .select("*")
+      .in("key", ["bank_details", "upi_details", "qr_code"]);
+
+    if (data) {
+      const newSettings = { ...settings };
+      data.forEach((item) => {
+        if (item.key === "bank_details") newSettings.bank = item.value;
+        if (item.key === "upi_details") newSettings.upi = item.value;
+        if (item.key === "qr_code") newSettings.qr = item.value;
+      });
+      setSettings(newSettings);
+    }
+  };
+
   const fetchWalletData = async (userId: string) => {
     try {
       const { data, error } = await (supabase
@@ -76,14 +109,8 @@ const Wallet = () => {
 
       if (error && error.code !== "PGRST116") {
         console.error("❌ Error fetching wallet:", error);
-        toast({
-          title: "⚠️ Wallet Error",
-          description: "Failed to load wallet data. Please refresh the page.",
-          variant: "destructive",
-        });
         return;
       }
-
       if (data) setWalletData(data);
     } catch (err) {
       console.error("❌ Unexpected error:", err);
@@ -91,15 +118,13 @@ const Wallet = () => {
   };
 
   const fetchTransactions = async (userId: string) => {
-    // Fetch deposit/withdrawal transactions (use `transactions` table)
     const { data: txData } = await (supabase
       .from("transactions")
       .select("*")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
-      .limit(50) as any); // Increased limit to show more history
+      .limit(50) as any);
 
-    // Fetch bet history
     const { data: betData } = await (supabase
       .from("bets")
       .select("*")
@@ -107,11 +132,10 @@ const Wallet = () => {
       .order("created_at", { ascending: false })
       .limit(50) as any);
 
-    // Combine and format all activities
     const allActivities = [
       ...(txData || []).map((tx: any) => ({
         ...tx,
-        activity_type: tx.type, // 'deposit' or 'withdraw'
+        activity_type: tx.type,
         display_amount: tx.amount,
       })),
       ...(betData || []).map((bet: any) => ({
@@ -124,20 +148,34 @@ const Wallet = () => {
       })),
     ];
 
-    // Sort by created_at
     allActivities.sort(
       (a, b) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
     );
-
-    setTransactions(allActivities.slice(0, 50)); // Show top 50 activities
+    setTransactions(allActivities.slice(0, 50));
   };
 
-  const handleDeposit = async () => {
+  const handleManualDeposit = async () => {
     if (!depositAmount || parseFloat(depositAmount) <= 0) {
       toast({
-        title: "Error",
-        description: "Please enter a valid amount",
+        title: "Invalid Amount",
+        description: "Please enter a valid amount.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!transactionId) {
+      toast({
+        title: "Missing Transaction ID",
+        description: "Please enter the bank/UPI transaction ID.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!screenshot) {
+      toast({
+        title: "Missing Screenshot",
+        description: "Please upload the payment screenshot.",
         variant: "destructive",
       });
       return;
@@ -145,226 +183,47 @@ const Wallet = () => {
 
     try {
       setLoading(true);
+      const fileExt = screenshot.name.split(".").pop();
+      const fileName = `${user?.id}/${Date.now()}.${fileExt}`;
 
-      if (selectedGateway === "stripe") {
-        const res = await supabase.functions.invoke("create-payment-intent", {
-          body: JSON.stringify({
-            amount: parseFloat(depositAmount),
-            currency: "INR",
-            provider: "stripe",
-          }),
-          headers: { "Content-Type": "application/json" },
-        });
+      // Upload Screenshot
+      const { error: uploadError, data: uploadData } = await supabase.storage
+        .from("deposit_proofs")
+        .upload(fileName, screenshot);
 
-        if (res.error) {
-          console.error(
-            "[Functions] create-payment-intent (stripe) error:",
-            res.error,
-            res.data,
-          );
-          toast({
-            title: "Payment Error",
-            description: res.error.message || "Failed to create payment intent",
-            variant: "destructive",
-          });
-          return;
-        }
+      if (uploadError) throw uploadError;
 
-        const data = res.data;
-        toast({
-          title: "Initiating Stripe",
-          description: "Redirecting to payment gateway...",
-        });
-      } else if (selectedGateway === "razorpay") {
-        const res = await supabase.functions.invoke("create-payment-intent", {
-          body: JSON.stringify({
-            amount: parseFloat(depositAmount),
-            currency: "INR",
-            provider: "razorpay",
-          }),
-          headers: { "Content-Type": "application/json" },
-        });
+      const screenshotUrl = uploadData?.path; // Or get public URL if needed
 
-        if (res.error) {
-          console.error(
-            "[Functions] create-payment-intent (razorpay) error:",
-            res.error,
-            res.data,
-          );
-          toast({
-            title: "Payment Error",
-            description: res.error.message || "Failed to create payment intent",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        const data = res.data;
-
-        const options = {
-          key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-          amount: data.amount,
-          currency: data.currency,
-          name: "MahiExchange",
-          description: "Wallet Deposit",
-          order_id: data.order_id,
-          handler: function (response: any) {
-            verifyPayment(response, "razorpay");
-          },
-          prefill: {
-            name: user?.user_metadata?.full_name,
-            email: user?.email,
-          },
-          theme: { color: "#d4af37" }, // Gold color
-        };
-
-        if (!(window as any).Razorpay) {
-          await new Promise<void>((resolve, reject) => {
-            const s = document.createElement("script");
-            s.src = "https://checkout.razorpay.com/v1/checkout.js";
-            s.onload = () => resolve();
-            s.onerror = () =>
-              reject(new Error("Failed to load Razorpay script"));
-            document.head.appendChild(s);
-          });
-        }
-
-        const rzp = new (window as any).Razorpay(options);
-        rzp.open();
-      } else if (selectedGateway === "bank_transfer") {
-        toast({
-          title: "Bank Transfer",
-          description:
-            "Please transfer to the account shown and contact support.",
-        });
-      }
-    } catch (err: any) {
-      toast({
-        title: "Error",
-        description: err.message,
-        variant: "destructive",
-      });
-    } finally {
-      if (selectedGateway !== "paypal") setLoading(false);
-    }
-  };
-
-  const verifyPayment = async (response: any, provider: string) => {
-    try {
-      const res = await supabase.functions.invoke("handle-webhook", {
-        body: JSON.stringify({ ...response, provider }),
-        headers: { "Content-Type": "application/json" },
-      });
-      if (res.error) {
-        console.error("[Functions] handle-webhook error:", res.error, res.data);
-        throw res.error;
-      }
-
-      toast({ title: "Success", description: "Deposit successful!" });
-      fetchWalletData(user!.id);
-      fetchTransactions(user!.id);
-      setDepositAmount("");
-    } catch (err: any) {
-      console.error("Payment verification failed:", err);
-      toast({
-        title: "Error",
-        description: err?.message || "Payment verification failed",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const createPayPalOrder = async () => {
-    const res = await supabase.functions.invoke("create-payment-intent", {
-      body: JSON.stringify({
+      // Create Transaction
+      const { error: txError } = await supabase.from("transactions").insert({
+        user_id: user?.id,
+        type: "deposit",
         amount: parseFloat(depositAmount),
-        currency: "INR",
-        provider: "paypal",
-      }),
-      headers: { "Content-Type": "application/json" },
-    });
-
-    if (res.error) {
-      console.error(
-        "[Functions] create-payment-intent (paypal) error:",
-        res.error,
-        res.data,
-      );
-      throw res.error;
-    }
-
-    return res.data.order_id;
-  };
-
-  const onPayPalApprove = async (data: any) => {
-    await verifyPayment(
-      { purchase_units: [{ reference_id: data.orderID }] },
-      "paypal",
-    );
-  };
-
-  const handleWithdrawAmountSubmit = async () => {
-    const amount = parseFloat(withdrawAmount);
-
-    // Validate Amount
-    if (!withdrawAmount || isNaN(amount) || amount <= 0) {
-      toast({
-        title: "⚠️ Invalid Amount",
-        description: "Please enter a valid amount",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Validate UPI ID
-    if (!upiId || upiId.trim() === '') {
-      toast({
-        title: "⚠️ UPI ID Required",
-        description: "Please enter your UPI ID",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Call Secure RPC with UPI details
-    try {
-      setLoading(true);
-
-      // Store bank details in transaction description/metadata
-      const bankInfo = `Bank: ${bankDetails?.bankName || ""} | A/C: ${bankDetails?.accountNumber || ""} | IFSC: ${bankDetails?.ifscCode || ""} | Holder: ${bankDetails?.accountHolderName || ""}`;
-
-      const { data, error } = await supabase.rpc("request_withdrawal", {
-        p_user_id: user?.id,
-        p_amount: amount,
-        p_upi_id: upiId,
+        status: "pending",
+        description: "Manual Deposit",
+        provider: "manual",
+        provider_ref_id: transactionId,
+        screenshot_url: screenshotUrl,
+        payment_details: `Manual Deposit - ${depositMethod.toUpperCase()}`,
       });
 
-      if (error) throw error;
-
-      // Optionally store bank details in transaction description
-      await supabase
-        .from("transactions")
-        .update({
-          description: `Withdrawal Request - ${bankInfo}`,
-        })
-        .eq("id", data.transaction_id);
+      if (txError) throw txError;
 
       toast({
-        title: "Success",
-        description:
-          "Withdrawal request submitted. Admin will process UPI payment within 24 hours.",
+        title: "Deposit Requested",
+        description: "Your deposit request has been submitted for approval.",
       });
 
-      // Reset form
-      setWithdrawAmount("");
-      setUpiId("");
+      setDepositAmount("");
+      setTransactionId("");
+      setScreenshot(null);
       fetchTransactions(user!.id);
-      fetchWalletData(user!.id);
     } catch (err: any) {
+      console.error(err);
       toast({
-        title: "❌ Withdrawal Failed",
-        description:
-          err.message || "Failed to request withdrawal. Please try again.",
+        title: "Error",
+        description: err.message || "Failed to submit deposit request.",
         variant: "destructive",
       });
     } finally {
@@ -372,452 +231,545 @@ const Wallet = () => {
     }
   };
 
-  // Compatibility wrapper: UI calls `handleWithdraw` — ensure it exists
   const handleWithdraw = async () => {
-    await handleWithdrawAmountSubmit();
+    if (!withdrawAmount || !upiId) {
+      toast({
+        title: "Required",
+        description: "Amount and UPI ID required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.rpc("request_withdrawal", {
+        p_amount: parseFloat(withdrawAmount),
+        p_upi_id: upiId,
+        p_user_id: user?.id,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Withdrawal request submitted successfully.",
+      });
+
+      setWithdrawAmount("");
+      setUpiId("");
+      fetchWalletData(user!.id);
+      fetchTransactions(user!.id);
+    } catch (error: any) {
+      console.error("Error requesting withdrawal:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to submit withdrawal request",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <MainLayout>
-      <div className="max-w-7xl mx-auto space-y-4 animate-fade-in">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card p-4 border border-border">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-primary flex items-center justify-center">
-              <WalletIcon className="w-6 h-6 text-black" />
-            </div>
-            <div>
-              <h1 className="font-black text-2xl text-foreground uppercase tracking-tight">
-                Cashier
-              </h1>
-              <p className="text-muted-foreground text-xs uppercase tracking-wider font-bold">
-                Balance Management & History
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              className="border-border hover:bg-muted/50 text-muted-foreground rounded-none uppercase text-xs font-bold tracking-wider h-9"
-            >
-              <History className="w-3 h-3 mr-2" /> History
-            </Button>
-            <Button
-              variant="outline"
-              className="border-border hover:bg-muted/50 text-foreground rounded-none uppercase text-xs font-bold tracking-wider h-9"
-            >
-              <ShieldCheck className="w-3 h-3 mr-2" /> Limits
-            </Button>
-          </div>
+    <div className="max-w-7xl mx-auto space-y-6 p-4 animate-in fade-in duration-500">
+      {/* Header Block */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#1a472a] p-6 border-b border-gray-200 relative overflow-hidden rounded-t-sm shadow-sm">
+        <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+          <Landmark className="w-48 h-48 text-white" />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-1">
-          {/* Main Action Area */}
-          <div className="lg:col-span-8 space-y-1">
-            {/* Balance Card */}
-            <div className="bg-card border border-border p-8 relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-10">
-                <Landmark className="w-32 h-32 text-primary" />
-              </div>
-              <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                <div>
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">
-                    Total Funds
-                  </p>
-                  <h2 className="text-5xl font-black text-primary font-display tracking-tight leading-none">
-                    <ChipAmount
-                      amount={walletData?.balance ?? 0}
-                      size="lg"
-                      className="text-5xl"
-                    />
-                  </h2>
-                  <p className="text-[10px] text-green-500 font-bold uppercase mt-2 flex items-center gap-1">
-                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />{" "}
-                    Active & Verified
-                  </p>
-                </div>
-
-                <div className="flex gap-1 w-full md:w-auto">
-                  {/* Tabs */}
-                  <Button
-                    onClick={() => setActiveTab("deposit")}
-                    className={cn(
-                      "flex-1 md:flex-none w-32 h-12 rounded-none text-sm font-black uppercase tracking-wider border transition-all",
-                      activeTab === "deposit"
-                        ? "bg-primary text-black border-primary"
-                        : "bg-transparent text-muted-foreground border-border hover:border-primary hover:text-foreground",
-                    )}
-                  >
-                    <Plus className="w-4 h-4 mr-2" /> Deposit
-                  </Button>
-                  <Button
-                    onClick={() => setActiveTab("withdraw")}
-                    className={cn(
-                      "flex-1 md:flex-none w-32 h-12 rounded-none text-sm font-black uppercase tracking-wider border transition-all",
-                      activeTab === "withdraw"
-                        ? "bg-foreground text-background border-foreground"
-                        : "bg-transparent text-muted-foreground border-border hover:border-foreground hover:text-foreground",
-                    )}
-                  >
-                    <Minus className="w-4 h-4 mr-2" /> Withdraw
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            {/* Input Area */}
-            <div className="bg-card p-8 border border-border min-h-[400px]">
-              {activeTab === "deposit" ? (
-                <div className="space-y-8 animate-fade-in">
-                  <div>
-                    <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
-                      Enter Deposit Amount
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary text-lg font-bold"></span>
-                      <Input
-                        type="number"
-                        value={depositAmount}
-                        onChange={(e) => setDepositAmount(e.target.value)}
-                        className="h-14 pl-10 text-xl font-bold bg-input/20 border-border rounded-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground/50"
-                        placeholder="0.00"
-                      />
-                    </div>
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {[500, 1000, 2000, 5000].map((amt) => (
-                        <Button
-                          key={amt}
-                          variant="outline"
-                          size="sm"
-                          className="border-border bg-card/50 text-muted-foreground hover:bg-primary hover:text-black rounded-none text-xs font-bold h-7"
-                          onClick={() => setDepositAmount(amt.toString())}
-                        >
-                          + {amt}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-4">
-                      Select Payment Gateway
-                    </label>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                      {[
-                        {
-                          id: "razorpay",
-                          name: "Razorpay",
-                          icon: CreditCard,
-                        },
-                        {
-                          id: "stripe",
-                          name: "Stripe",
-                          icon: CardIcon,
-                        },
-                        {
-                          id: "paypal",
-                          name: "PayPal",
-                          icon: WalletIcon,
-                        },
-                        {
-                          id: "bank_transfer",
-                          name: "Bank Wire",
-                          icon: Landmark,
-                        },
-                      ].map((gateway) => (
-                        <div
-                          key={gateway.id}
-                          onClick={() => setSelectedGateway(gateway.id as any)}
-                          className={cn(
-                            "cursor-pointer p-4 border transition-all duration-300 flex flex-col items-center justify-center gap-2 group relative overflow-hidden",
-                            selectedGateway === gateway.id
-                              ? "bg-primary/5 border-primary"
-                              : "bg-card/20 border-border hover:bg-card/40 hover:border-primary/50",
-                          )}
-                        >
-                          {selectedGateway === gateway.id && (
-                            <div className="absolute top-0 right-0 w-2 h-2 bg-primary" />
-                          )}
-                          <gateway.icon
-                            className={cn(
-                              "w-6 h-6 transition-transform group-hover:scale-110",
-                              selectedGateway === gateway.id
-                                ? "text-primary"
-                                : "text-muted-foreground",
-                            )}
-                          />
-                          <span
-                            className={cn(
-                              "font-bold text-xs uppercase tracking-wider",
-                              selectedGateway === gateway.id
-                                ? "text-foreground"
-                                : "text-muted-foreground",
-                            )}
-                          >
-                            {gateway.name}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {selectedGateway === "paypal" ? (
-                    <div className="bg-white p-4 border border-border">
-                      <PayPalScriptProvider
-                        options={{
-                          clientId:
-                            import.meta.env.VITE_PAYPAL_CLIENT_ID || "sb",
-                        }}
-                      >
-                        <PayPalButtons
-                          style={{ layout: "horizontal" }}
-                          createOrder={createPayPalOrder}
-                          onApprove={onPayPalApprove}
-                        />
-                      </PayPalScriptProvider>
-                    </div>
-                  ) : (
-                    <Button
-                      type="button"
-                      className="w-full h-12 text-sm font-black uppercase tracking-widest bg-primary text-black hover:bg-white transition-all rounded-none shadow-[0_0_20px_rgba(255,255,60,0.2)]"
-                      onClick={handleDeposit}
-                      disabled={loading}
-                    >
-                      {loading
-                        ? "Processing Securely..."
-                        : `Proceed to Secure Pay`}
-                    </Button>
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-6 animate-fade-in">
-                  <div className="bg-yellow-500/10 border border-yellow-500/20 p-4 flex items-start gap-3">
-                    <ShieldCheck className="w-5 h-5 text-yellow-500 mt-0.5" />
-                    <div>
-                      <h4 className="text-sm font-bold text-yellow-500 uppercase">
-                        UPI Withdrawal
-                      </h4>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Admin will send money to your UPI ID within 24 hours.
-                        Make sure your UPI ID is correct.
-                      </p>
-                    </div>
-
-                    <div className="bg-blue-500/10 border border-blue-500/20 p-3 flex items-start gap-3">
-                      <Info className="w-4 h-4 text-blue-500 mt-0.5" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">
-                          <strong className="text-blue-500">Limits:</strong> Min
-                          ₹1,000 | Max ₹10,000 per transaction
-                        </p>
-                      </div>
-                    </div>
-
-                    {walletData?.balance < 1000 && (
-                      <div className="bg-red-500/10 border border-red-500/20 p-3 flex items-start gap-3">
-                        <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5" />
-                        <div>
-                          <p className="text-xs text-red-500">
-                            Insufficient balance. Your current balance is ₹
-                            {walletData?.balance?.toLocaleString() || 0}.
-                            Minimum withdrawal is ₹1,000.
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
-                      Withdrawal Amount
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary text-lg font-bold"></span>
-                      <Input
-                        type="number"
-                        value={withdrawAmount}
-                        onChange={(e) => setWithdrawAmount(e.target.value)}
-                        className="h-14 pl-10 text-xl font-bold bg-input/20 border-border rounded-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground/50"
-                        placeholder="0.00"
-                      />
-                    </div>
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {[1000, 2000, 5000, 10000].map((amt) => (
-                        <Button
-                          key={amt}
-                          variant="outline"
-                          size="sm"
-                          className="border-border bg-card/50 text-muted-foreground hover:bg-primary hover:text-black rounded-none text-xs font-bold h-7"
-                          onClick={() => setWithdrawAmount(amt.toString())}
-                        >
-                          {amt}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
-                      Your UPI ID
-                    </label>
-                    <Input
-                      type="text"
-                      value={upiId}
-                      onChange={(e) => setUpiId(e.target.value)}
-                      className="h-12 text-lg bg-input/20 border-border rounded-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground/50"
-                      placeholder="username@paytm or 9876543210@ybl"
-                    />
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Enter your UPI ID (PhonePe, GPay, Paytm, etc.)
-                    </p>
-                  </div>
-
-                  <Button
-                    type="button"
-                    className="w-full h-12 text-sm font-black uppercase tracking-widest bg-foreground text-background hover:bg-muted transition-all rounded-none"
-                    onClick={handleWithdraw}
-                    disabled={loading}
-                  >
-                    {loading ? "Submitting..." : "Request UPI Payout"}
-                  </Button>
-                </div>
-              )}
-            </div>
+        <div className="flex items-center gap-6 relative z-10">
+          <div className="w-16 h-16 bg-white/10 border border-white/20 flex items-center justify-center relative group rounded-sm backdrop-blur-sm">
+            <Terminal className="w-8 h-8 text-white group-hover:scale-110 transition-transform" />
+            <div className="absolute inset-0 border border-white/30 opacity-0 group-hover:opacity-100 transition-opacity rounded-sm" />
           </div>
-
-          {/* Right Column: Transactions */}
-          <div className="lg:col-span-4 bg-card border border-border h-fit">
-            <div className="p-4 border-b border-border flex items-center justify-between bg-card/10">
-              <h3 className="font-bold text-sm text-foreground uppercase tracking-wider">
-                Recent Activity
-              </h3>
-              <Download className="w-4 h-4 text-muted-foreground hover:text-primary cursor-pointer" />
-            </div>
-            <div className="divide-y divide-border max-h-[600px] overflow-y-auto">
-              {transactions.length > 0 ? (
-                transactions.map((tx) => {
-                  const isDeposit = tx.activity_type === "deposit";
-                  const isWithdraw = tx.activity_type === "withdraw";
-                  const isWin = tx.activity_type === "win";
-                  const isLoss = tx.activity_type === "loss";
-                  const isBet = tx.activity_type === "bet";
-                  const isPending = tx.status === "pending";
-
-                  return (
-                    <div
-                      key={tx.id}
-                      className={cn(
-                        "p-4 transition-colors group",
-                        isPending && isWithdraw
-                          ? "bg-yellow-500/5 border-l-4 border-yellow-500"
-                          : "hover:bg-muted/50",
-                      )}
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            {isDeposit && (
-                              <Plus className="w-4 h-4 text-green-500" />
-                            )}
-                            {isWithdraw && (
-                              <Minus className="w-4 h-4 text-orange-500" />
-                            )}
-                            {isWin && (
-                              <span className="text-green-500">🏆</span>
-                            )}
-                            {(isLoss || isBet) && (
-                              <span className="text-muted-foreground">🎲</span>
-                            )}
-                            <span className="font-bold text-xs text-foreground uppercase tracking-wide">
-                              {isDeposit && "Deposit"}
-                              {isWithdraw && "Withdrawal"}
-                              {isWin && "Bet Won"}
-                              {isLoss && "Bet Lost"}
-                              {isBet && "Bet Placed"}
-                            </span>
-                          </div>
-                          {tx.description && (
-                            <p className="text-[10px] text-muted-foreground truncate">
-                              {tx.description}
-                            </p>
-                          )}
-                          <div className="text-[10px] text-muted-foreground mt-1 flex items-center gap-2">
-                            <span className="opacity-50">
-                              {new Date(tx.created_at).toLocaleString()}
-                            </span>
-                            {(isDeposit || isWithdraw) &&
-                              tx.gateway_provider && (
-                                <>
-                                  <span>•</span>
-                                  <span className="font-medium uppercase">
-                                    via {tx.gateway_provider}
-                                  </span>
-                                </>
-                              )}
-                          </div>
-                          {isPending && isWithdraw && (
-                            <div className="mt-2 bg-yellow-500/10 border border-yellow-500/20 rounded px-2 py-1 text-[10px] text-yellow-600 flex items-center gap-1">
-                              <History className="w-3 h-3" />
-                              <span>
-                                Pending admin approval - Processing within 24
-                                hours
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex flex-col items-end gap-1">
-                          <span
-                            className={cn(
-                              "font-black font-mono text-sm whitespace-nowrap",
-                              isDeposit || isWin
-                                ? "text-green-500"
-                                : isWithdraw || isLoss || isBet
-                                  ? "text-red-500"
-                                  : "text-foreground",
-                            )}
-                          >
-                            {isDeposit || isWin ? "+" : "-"}{" "}
-                            <ChipAmount
-                              amount={tx.display_amount || tx.amount}
-                              size="sm"
-                            />
-                          </span>
-                          {tx.status && (
-                            <span
-                              className={cn(
-                                "px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider border",
-                                tx.status === "completed" || tx.status === "won"
-                                  ? "bg-green-500/10 text-green-500 border-green-500/20"
-                                  : tx.status === "pending"
-                                    ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
-                                    : "bg-red-500/10 text-red-500 border-red-500/20",
-                              )}
-                            >
-                              {tx.status}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="p-8 text-center text-muted-foreground text-xs uppercase tracking-wider">
-                  No transactions found.
-                </div>
-              )}
-            </div>
-            <div className="p-3 border-t border-border bg-card/5 text-center">
-              <Button
-                variant="link"
-                className="text-primary text-xs uppercase font-bold tracking-widest h-auto p-0"
-              >
-                View All History
-              </Button>
+          <div>
+            <h1 className="font-black text-3xl text-white uppercase tracking-[0.2em] font-display drop-shadow-sm">
+              Cashier<span className="text-[#f28729]">.SYS</span>
+            </h1>
+            <div className="flex items-center gap-3 text-xs text-white/70 font-mono mt-1">
+              <span className="flex items-center gap-1">
+                <ShieldCheck className="w-3 h-3 text-green-400" />{" "}
+                SECURE_CONNECTION
+              </span>
+              <span className="w-1 h-1 bg-white/40 rounded-full" />
+              <span>ID: {user?.id?.slice(0, 8).toUpperCase() || "DEMO"}</span>
             </div>
           </div>
         </div>
       </div>
-    </MainLayout>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left Column: Actions */}
+        <div className="lg:col-span-8 space-y-6">
+          {/* Balance Display */}
+          <div className="bg-white border border-gray-200 p-8 relative overflow-hidden group shadow-sm rounded-b-sm">
+            <div className="absolute top-0 left-0 w-1 h-full bg-[#1a472a]" />
+
+            <div className="flex flex-col md:flex-row justify-between items-end gap-6 relative z-10">
+              <div>
+                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-2">
+                  Available Balance
+                </p>
+                <h2 className="text-6xl font-black text-gray-900 font-mono tracking-tighter leading-none flex items-baseline gap-2">
+                  <span className="text-2xl text-gray-500">₹</span>
+                  <ChipAmount
+                    amount={walletData?.balance ?? 0}
+                    size="lg"
+                    className="text-6xl text-gray-900 shadow-none font-black"
+                  />
+                </h2>
+              </div>
+
+              <div className="flex gap-px bg-gray-100 border border-gray-200 p-1 rounded-sm shadow-inner">
+                <Button
+                  onClick={() => {
+                    setActiveTab("deposit");
+                    setDepositStep(1);
+                  }}
+                  className={cn(
+                    "h-12 w-32 rounded-sm text-xs font-bold uppercase tracking-widest transition-all",
+                    activeTab === "deposit"
+                      ? "bg-[#1a472a] text-white hover:bg-[#1a472a]/90 shadow-sm"
+                      : "bg-transparent text-gray-500 hover:text-gray-900",
+                  )}
+                >
+                  <ArrowDownLeft className="w-4 h-4 mr-2" /> Deposit
+                </Button>
+                <div className="w-px bg-gray-300" />
+                <Button
+                  onClick={() => setActiveTab("withdraw")}
+                  className={cn(
+                    "h-12 w-32 rounded-sm text-xs font-bold uppercase tracking-widest transition-all",
+                    activeTab === "withdraw"
+                      ? "bg-[#1a472a] text-white hover:bg-[#1a472a]/90 shadow-sm"
+                      : "bg-transparent text-gray-500 hover:text-gray-900",
+                  )}
+                >
+                  <ArrowUpRight className="w-4 h-4 mr-2" /> Withdraw
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Transaction Form */}
+          <div className="bg-white border border-gray-200 p-8 min-h-[400px] relative shadow-sm rounded-sm">
+            {/* Grid Texture */}
+            <div className="absolute inset-0 bg-gray-50 bg-[size:20px_20px] pointer-events-none opacity-50" />
+
+            {activeTab === "deposit" ? (
+              <div className="relative z-10 space-y-8 animate-in slide-in-from-left duration-300">
+                {/* STEP 1: AMOUNT INPUT */}
+                {!depositStep || depositStep === 1 ? (
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">
+                        Enter Amount to Deposit
+                      </label>
+                      <div className="relative group">
+                        <span className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-500 text-xl font-light">
+                          ₹
+                        </span>
+                        <Input
+                          type="number"
+                          value={depositAmount}
+                          onChange={(e) => setDepositAmount(e.target.value)}
+                          className="h-20 pl-12 text-5xl font-black bg-gray-50 border-gray-200 rounded-sm focus:border-[#1a472a] focus:ring-0 text-gray-900 placeholder:text-gray-400 font-mono shadow-inner"
+                          placeholder="0"
+                          autoFocus
+                        />
+                      </div>
+                      {/* Quick Amount Chips */}
+                      <div className="flex gap-2 flex-wrap mt-2">
+                        {[500, 1000, 5000, 10000, 50000].map((amt) => (
+                          <button
+                            key={amt}
+                            onClick={() => setDepositAmount(amt.toString())}
+                            className="px-3 py-1 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-full text-xs text-gray-600 font-mono transition-colors"
+                          >
+                            +₹{amt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <Button
+                      className="w-full h-16 bg-[#1a472a] hover:bg-[#1a472a]/90 text-white font-black uppercase tracking-[0.2em] text-sm rounded-sm transition-all shadow-md"
+                      onClick={() => {
+                        if (!depositAmount || parseFloat(depositAmount) <= 0) {
+                          toast({
+                            description: "Please enter a valid amount",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+                        setDepositStep(2);
+                      }}
+                    >
+                      Make Payment <ArrowDownLeft className="ml-2 w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  /* STEP 2: PAYMENT METHOD & PROOF */
+                  <div className="space-y-6 animate-in slide-in-from-right duration-300">
+                    {/* Header with Back Button */}
+                    <div className="flex items-center justify-between border-b border-gray-200 pb-4">
+                      <div>
+                        <p className="text-[10px] text-gray-500 uppercase tracking-widest">
+                          Depositing
+                        </p>
+                        <h2 className="text-2xl font-black text-gray-900 font-mono">
+                          ₹{depositAmount}
+                        </h2>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-gray-500 hover:text-gray-900"
+                        onClick={() => setDepositStep(1)}
+                      >
+                        Change Amount
+                      </Button>
+                    </div>
+
+                    {/* Payment Method Selector */}
+                    <div className="grid grid-cols-3 gap-2">
+                      <button
+                        onClick={() => setDepositMethod("bank")}
+                        className={cn(
+                          "p-3 text-xs font-bold uppercase tracking-wider border rounded-sm transition-all shadow-sm",
+                          depositMethod === "bank"
+                            ? "bg-[#1a472a] text-white border-[#1a472a]"
+                            : "bg-white text-gray-600 border-gray-200 hover:border-gray-400 hover:bg-gray-50",
+                        )}
+                      >
+                        Bank Transfer
+                      </button>
+                      <button
+                        onClick={() => setDepositMethod("upi")}
+                        className={cn(
+                          "p-3 text-xs font-bold uppercase tracking-wider border rounded-sm transition-all shadow-sm",
+                          depositMethod === "upi"
+                            ? "bg-[#1a472a] text-white border-[#1a472a]"
+                            : "bg-white text-gray-600 border-gray-200 hover:border-gray-400 hover:bg-gray-50",
+                        )}
+                      >
+                        UPI Apps
+                      </button>
+                      <button
+                        onClick={() => setDepositMethod("qr")}
+                        className={cn(
+                          "p-3 text-xs font-bold uppercase tracking-wider border rounded-sm transition-all shadow-sm",
+                          depositMethod === "qr"
+                            ? "bg-[#1a472a] text-white border-[#1a472a]"
+                            : "bg-white text-gray-600 border-gray-200 hover:border-gray-400 hover:bg-gray-50",
+                        )}
+                      >
+                        QR Code
+                      </button>
+                    </div>
+
+                    {/* DYNAMIC PAYMENT DETAILS SECTION */}
+                    {/* Bank Details */}
+                    {depositMethod === "bank" && (
+                      <div className="bg-gray-50 p-6 border border-gray-200 rounded-sm space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="flex items-center gap-3 mb-4">
+                          <Landmark className="w-5 h-5 text-[#1a472a]" />
+                          <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
+                            Bank Transfer Details
+                          </h3>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm font-mono text-gray-500">
+                          <div>
+                            <p className="text-[10px] text-gray-600 uppercase">
+                              Bank Name
+                            </p>
+                            <p className="text-gray-900 font-bold">
+                              {settings.bank.bankName}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-gray-600 uppercase">
+                              Account Holder
+                            </p>
+                            <p className="text-gray-900 font-bold">
+                              {settings.bank.accountHolder}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-gray-600 uppercase">
+                              Account Number
+                            </p>
+                            <p className="text-gray-900 font-bold select-all">
+                              {settings.bank.accountNumber}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-gray-600 uppercase">
+                              IFSC Code
+                            </p>
+                            <p className="text-gray-900 font-bold select-all">
+                              {settings.bank.ifsc}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* UPI Details */}
+                    {depositMethod === "upi" && (
+                      <div className="bg-gray-50 p-6 border border-gray-200 rounded-sm space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="flex items-center gap-3 mb-4">
+                          <CreditCard className="w-5 h-5 text-[#1a472a]" />
+                          <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
+                            UPI Payment
+                          </h3>
+                        </div>
+                        <div className="space-y-4">
+                          <div>
+                            <p className="text-[10px] text-gray-600 uppercase mb-1">
+                              Official UPI ID
+                            </p>
+                            <div className="flex items-center gap-2 bg-white p-3 border border-gray-200 rounded-sm shadow-inner">
+                              <span className="text-gray-900 font-bold font-mono text-lg select-all">
+                                {settings.upi.upiId}
+                              </span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="ml-auto h-8 text-xs text-[#1a472a] hover:text-[#1a472a]/80"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(
+                                    settings.upi.upiId,
+                                  );
+                                  toast({ description: "UPI ID Copied" });
+                                }}
+                              >
+                                COPY
+                              </Button>
+                            </div>
+                          </div>
+                          <p className="text-xs text-gray-500">
+                            Open any UPI app (GPay, PhonePe, Paytm) and pay to
+                            the VPA above.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* QR Code Details */}
+                    {depositMethod === "qr" && (
+                      <div className="bg-gray-50 p-6 border border-gray-200 rounded-sm space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-5 h-5 bg-[#1a472a] rounded-sm flex items-center justify-center">
+                            <div className="w-3 h-3 bg-white" />
+                          </div>
+                          <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
+                            Scan QR Code
+                          </h3>
+                        </div>
+
+                        <div className="flex flex-col md:flex-row gap-6 items-center">
+                          <div className="w-48 h-48 bg-white p-2 shrink-0 border border-gray-200 shadow-sm rounded-sm">
+                            {settings.qr.url ? (
+                              <img
+                                src={settings.qr.url}
+                                alt="Pay via QR"
+                                className="w-full h-full object-contain"
+                              />
+                            ) : (
+                              <div className="w-full h-full border-2 border-dashed border-gray-300 flex items-center justify-center bg-white">
+                                <p className="text-center text-xs font-bold text-gray-400 uppercase">
+                                  No QR Configured
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                          <div className="space-y-4 text-sm text-gray-600">
+                            <p>
+                              <strong className="text-gray-900">Step 1:</strong>{" "}
+                              Open your payment app.
+                            </p>
+                            <p>
+                              <strong className="text-gray-900">Step 2:</strong>{" "}
+                              Scan QR code.
+                            </p>
+                            <p>
+                              <strong className="text-gray-900">Step 3:</strong>{" "}
+                              Pay exactly{" "}
+                              <span className="text-gray-900 font-bold">
+                                ₹{depositAmount}
+                              </span>
+                              .
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Transaction Proof Form */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-200">
+                      <div>
+                        <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">
+                          Transaction ID / UTR
+                        </label>
+                        <Input
+                          value={transactionId}
+                          onChange={(e) => setTransactionId(e.target.value)}
+                          className="bg-white border-gray-200 text-gray-900 font-mono shadow-inner rounded-sm focus:border-[#1a472a]"
+                          placeholder="e.g. 302041234567"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">
+                          Upload Screenshot
+                        </label>
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) =>
+                            setScreenshot(e.target.files?.[0] || null)
+                          }
+                          className="bg-white border-gray-200 text-gray-900 font-mono file:text-[#1a472a] file:bg-transparent file:border-0 hover:file:underline rounded-sm shadow-inner cursor-pointer"
+                        />
+                      </div>
+                    </div>
+
+                    <Button
+                      className="w-full h-16 bg-[#1a472a] hover:bg-[#1a472a]/90 text-white font-black uppercase tracking-[0.2em] text-sm rounded-sm transition-all shadow-md"
+                      onClick={handleManualDeposit}
+                      disabled={loading}
+                    >
+                      {loading ? "Submitting Proof..." : "Submit Payment Proof"}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Withdrawal Section (unchanged block start) */
+              <div className="relative z-10 space-y-8 animate-in slide-in-from-right duration-300">
+                <div className="p-4 bg-orange-50 border-l-2 border-[#f28729]">
+                  <h4 className="flex items-center gap-2 text-xs font-bold text-[#f28729] uppercase tracking-wider mb-2">
+                    <Info className="w-4 h-4" /> Withdrawal Protocol
+                  </h4>
+                  <p className="text-[10px] text-gray-600 font-mono leading-relaxed">
+                    Requests are processed within 24 hours via IMPS/UPI. Ensure
+                    beneficiary details match KYC records.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">
+                    Withdrawal Amount
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-500 text-xl font-light">
+                      ₹
+                    </span>
+                    <Input
+                      type="number"
+                      value={withdrawAmount}
+                      onChange={(e) => setWithdrawAmount(e.target.value)}
+                      className="h-20 pl-12 text-5xl font-black bg-gray-50 border-gray-200 rounded-sm focus:border-[#1a472a] focus:ring-0 text-gray-900 placeholder:text-gray-400 font-mono shadow-inner"
+                      placeholder="0"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">
+                    Beneficiary UPI ID
+                  </label>
+                  <Input
+                    value={upiId}
+                    onChange={(e) => setUpiId(e.target.value)}
+                    className="h-14 bg-gray-50 border-gray-200 rounded-sm focus:border-[#1a472a] text-gray-900 font-mono tracking-wide shadow-inner"
+                    placeholder="username@upi"
+                  />
+                </div>
+
+                <Button
+                  className="w-full h-16 bg-[#1a472a] hover:bg-[#1a472a]/90 text-white font-black uppercase tracking-[0.2em] text-sm rounded-sm transition-all shadow-md"
+                  onClick={handleWithdraw}
+                  disabled={loading}
+                >
+                  {loading ? "Verifying..." : "Confirm Withdrawal"}
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Column: History */}
+        <div className="lg:col-span-4 bg-white border border-gray-200 flex flex-col h-[800px] shadow-sm rounded-sm">
+          <div className="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between rounded-t-sm">
+            <h3 className="text-xs font-bold text-gray-900 uppercase tracking-widest flex items-center gap-2">
+              <Activity className="w-4 h-4 text-[#1a472a]" /> Ledger
+            </h3>
+            <Download className="w-4 h-4 text-gray-500 hover:text-gray-900 cursor-pointer transition-colors" />
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-2 space-y-1 scrollbar-hide">
+            {transactions.map((tx, i) => {
+              const isWin = tx.activity_type === "win";
+              const isDeposit = tx.activity_type === "deposit";
+              const isPositive = isWin || isDeposit;
+
+              return (
+                <div
+                  key={i}
+                  className="p-3 bg-white hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-all group rounded-sm"
+                >
+                  <div className="flex justify-between items-start mb-1">
+                    <span
+                      className={`text-[10px] font-bold uppercase tracking-wider ${isPositive ? "text-green-600" : "text-red-600"}`}
+                    >
+                      {tx.activity_type}
+                    </span>
+                    <span className="text-[10px] text-gray-500 font-mono">
+                      {new Date(tx.created_at).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-600 font-mono truncate max-w-[150px]">
+                      {tx.description || "System Transaction"}
+                    </span>
+                    <div className="flex flex-col items-end">
+                      <span
+                        className={`font-mono font-bold text-sm ${isPositive ? "text-gray-900" : "text-gray-500"}`}
+                      >
+                        {isPositive ? "+" : "-"}{" "}
+                        <ChipAmount amount={tx.display_amount} size="sm" className="text-gray-900" />
+                      </span>
+                      <span className={`text-[9px] uppercase tracking-wider font-bold ${
+                        tx.status === 'completed' ? 'text-green-600' :
+                        tx.status === 'pending' ? 'text-orange-500' :
+                        tx.status === 'cancelled' ? 'text-red-600' : 'text-gray-400'
+                      }`}>
+                        {tx.status}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+            {transactions.length === 0 && (
+              <div className="h-full flex flex-col items-center justify-center text-gray-400 space-y-4">
+                <History className="w-8 h-8 opacity-20" />
+                <p className="text-[10px] uppercase tracking-widest font-bold">
+                  No Records Found
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

@@ -165,7 +165,7 @@ BEGIN
     -- Credit user wallet if there's a payout
     IF v_payout > 0 THEN
       -- Update wallet balance atomically
-      UPDATE user_wallets
+      UPDATE wallets
       SET balance = balance + v_payout
       WHERE user_id = v_bet_record.user_id;
 
@@ -224,7 +224,7 @@ CREATE INDEX IF NOT EXISTS idx_markets_status ON markets(status);
 CREATE INDEX IF NOT EXISTS idx_selections_market_id ON selections(market_id);
 
 -- Add constraint to prevent negative wallet balances
-ALTER TABLE user_wallets
+ALTER TABLE wallets
 ADD CONSTRAINT check_positive_balance
 CHECK (balance >= 0);
 

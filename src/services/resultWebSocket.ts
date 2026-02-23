@@ -52,7 +52,9 @@ class ResultWebSocketService {
 
     // Start polling for results
     this.pollingInterval = setInterval(() => {
-      this.checkForResults();
+      if (this.isRunning) {
+        this.checkForResults();
+      }
     }, this.pollInterval);
 
     // Initial check
@@ -116,40 +118,26 @@ class ResultWebSocketService {
   private async checkCasinoResults() {
     const casinoGameTypes = [
       // Teen Patti Variants
-      "teen20",
-      "teen1",
-      "teen3",
-      "teen6",
-      "teen8",
-      "teen9",
-      "teen32",
-      "teen33",
-      "teen41",
-      "teen42",
-      "teen120",
-      "teenpatti",
-      "teen",
-      "t20",
+      "dt20",
+      "dt202",
+      "dt6",
       "teenmuf",
       "teenmuf2",
-      "muflismax",
-      "patti2",
-      "trio",
-      "queen",
+      "teen9",
+      "teen8",
+      "teen3",
+      // NOTE: teen20 is NOT a valid API game type
+      // Games that were thought to use teen20 actually use their own types:
+      // dolidana, bollywood, mogambo each use their own API type
       "poison",
       "poison20",
       "mogambo",
-      "teenpatti1day",
-      "vippatti1day",
 
       // Dragon Tiger Variants
       "dt20",
       "dt6",
-      "dt1",
       "dt202",
       "dtl20",
-      "dtlavanced",
-      "dtl20pro",
 
       // Poker Variants
       "poker",
@@ -161,38 +149,43 @@ class ResultWebSocketService {
       "baccarat2",
       "btable",
       "btable2",
-      "baccarat29",
 
       // Roulette Variants
       "ourroullete",
-      "uniqueroulette",
-      "goldenroulette",
-      "goldrroulette",
+      "roulette11",
+      "roulette12",
+      "roulette13",
+      "miniroulette",
 
       // Andar Bahar Variants
       "ab20",
       "abj",
+      "ab2",
 
       // Lucky 7 Variants
       "lucky7",
       "lucky7eu",
       "lucky7eu2",
-      "lucky7g",
+      "lucky5",
+      "lucky7b",
 
       // 32 Cards Variants
       "card32",
       "card32eu",
+      "card32b",
+      "card32c",
 
       // 3 Card Judgement
       "3cardj",
+      "3cardb",
 
       // Casino War
       "war",
 
       // Joker Games
       "joker20",
-      "joker120",
       "joker1",
+      "jokeroneday",
 
       // Number/Lottery Games
       "kbc",
@@ -202,8 +195,8 @@ class ResultWebSocketService {
       "worli",
       "worli2",
       "worli3",
-      "matkamarket",
       "matka",
+      "instantworli",
 
       // Dice Games
       "sicbo",
@@ -216,7 +209,6 @@ class ResultWebSocketService {
       "cricketv3",
       "cricketline",
       "cricketline2",
-      "cricketladder",
       "superover3",
       "superover2",
       "ballbyball",
@@ -225,25 +217,18 @@ class ResultWebSocketService {
       "race20",
       "race17",
       "race2",
-      "raceadvanced",
-      "race-pro",
       "trap",
       "trap20",
-      "thetrap",
       "aaa",
       "aaa2",
 
       // Football/Soccer
       "goal",
-      "footballlive",
-      "soccerpro",
 
       // Festival/Themed Games
       "dolidana",
-      "dolidana2",
       "bollywood",
-
-      // Other Games
+      "bollywood2",
       "dum10",
     ];
 
@@ -346,50 +331,6 @@ class ResultWebSocketService {
               "Match Odds",
           };
 
-          const result = await diamondApi.getResult(resultData);
-
-          if (result?.data?.winner || result?.data?.result) {
-            const resultKey = `sports_${eventId}_${result.data.winner || result.data.result}`;
-
-            // Check if we've already processed this result
-            if (!this.checkedResults.has(resultKey)) {
-              console.log(
-                `[ResultWS] New sports result for event ${eventId}:`,
-                result.data,
-              );
-
-              this.checkedResults.add(resultKey);
-
-              // Notify subscribers
-              this.notifySubscribers({
-                type: "sports",
-                eventId,
-                winner: result.data.winner || result.data.result,
-                result: result.data,
-                timestamp: Date.now(),
-              });
-
-              // Trigger settlement
-              try {
-                const winner = result.data.winner || result.data.result;
-                const winnerId =
-                  typeof winner === "number"
-                    ? winner
-                    : parseInt(winner?.toString() || "0");
-                const settled = await settleSportsBets(eventId, winnerId);
-                if (settled.length > 0) {
-                  console.log(
-                    `[ResultWS] Auto-settled ${settled.length} sports bets for event ${eventId}`,
-                  );
-                }
-              } catch (err) {
-                console.error(
-                  `[ResultWS] Settlement error for event ${eventId}:`,
-                  err,
-                );
-              }
-            }
-          }
         } catch (error) {
           // Silent fail for individual events
         }

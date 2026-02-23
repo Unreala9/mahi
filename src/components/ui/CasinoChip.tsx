@@ -20,7 +20,7 @@ export const CasinoChip = ({
 
   return (
     <img
-      src="/chip.png"
+      src="/images/chip.png"
       alt="Casino Chip"
       className={cn(
         "inline-block object-contain align-middle",
@@ -56,8 +56,8 @@ export const ChipAmount = ({
     lg: "lg" as const,
   };
 
-  const formattedAmount = typeof amount === "number" 
-    ? amount.toLocaleString() 
+  const formattedAmount = typeof amount === "number"
+    ? amount.toLocaleString()
     : amount;
 
   return (

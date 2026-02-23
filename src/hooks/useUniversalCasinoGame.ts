@@ -74,10 +74,27 @@ export function useUniversalCasinoGame({
   const [gameData, setGameData] = useState<CasinoGameData | null>(null);
   const [result, setResult] = useState<CasinoResult | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [placedBets, setPlacedBets] = useState<Map<string, PlacedBet>>(
     new Map(),
   );
+
+  // Set timeout for loading - if no data after 10 seconds, stop loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!gameData && isLoading) {
+        setIsLoading(false);
+        setError("Game data could not be loaded. The game might be offline.");
+      }
+    }, 10000);
+
+    if (gameData) {
+      setIsLoading(false);
+    }
+
+    return () => clearTimeout(timer);
+  }, [gameData, isLoading]);
 
   // Fetch live game data with odds
   const fetchGameData = useCallback(async () => {
@@ -250,6 +267,7 @@ export function useUniversalCasinoGame({
     gameData,
     result,
     isConnected,
+    isLoading,
     error,
 
     // Markets

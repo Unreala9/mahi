@@ -1,65 +1,150 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { MainLayout } from "@/components/layout/MainLayout";
-import { GameCard } from "@/components/casino/GameCard";
-import { CASINO_CATEGORIES } from "@/data/casinoCategories";
-import type { CasinoCategoryId } from "@/data/casinoCategories";
 import { fetchCasinoGames } from "@/services/casino";
 import type { CasinoGame } from "@/types/casino";
 import { Button } from "@/components/ui/button";
 import { hasCustomPage } from "@/data/gameRouteMapping";
+import {
+  Loader2,
+  Zap,
+  Flame,
+  Plane,
+  Bomb,
+  Palette,
+  Spade,
+  Club,
+  Gamepad2,
+  Gift,
+  Dices,
+  Trophy,
+  LayoutGrid,
+  Cpu,
+  Layers,
+  Target,
+  Swords,
+  Landmark,
+  Search,
+} from "lucide-react";
+import { CasinoHero } from "@/components/casino/CasinoHero";
+import { CasinoToolbar } from "@/components/casino/CasinoToolbar";
+import { CasinoGameCard } from "@/components/casino/CasinoGameCard";
+
+// Using the same categories but structured for the toolbar
+const MICRO_CATEGORIES = [
+  {
+    id: "dragon-tiger",
+    name: "Dragon Tiger",
+    icon: <Flame className="w-5 h-5 text-orange-500" />,
+  },
+  {
+    id: "aviator",
+    name: "Aviator",
+    icon: <Plane className="w-5 h-5 text-red-500" />,
+  },
+  {
+    id: "mines",
+    name: "Mines",
+    icon: <Bomb className="w-5 h-5 text-yellow-500" />,
+  },
+  {
+    id: "color-game",
+    name: "Color Game",
+    icon: <Palette className="w-5 h-5 text-purple-500" />,
+  },
+  {
+    id: "teenpatti",
+    name: "Teenpatti",
+    icon: <Spade className="w-5 h-5 text-green-500" />,
+  },
+  {
+    id: "32-cards",
+    name: "32 Cards",
+    icon: <LayoutGrid className="w-5 h-5 text-blue-500" />,
+  },
+  {
+    id: "andar-bahar",
+    name: "Andar Bahar",
+    icon: <Layers className="w-5 h-5 text-indigo-500" />,
+  },
+  {
+    id: "lucky-7",
+    name: "Lucky 7",
+    icon: <Dices className="w-5 h-5 text-pink-500" />,
+  },
+  {
+    id: "poker",
+    name: "Live Poker",
+    icon: <Club className="w-5 h-5 text-emerald-500" />,
+  },
+  {
+    id: "3-card",
+    name: "3 Card Judgement",
+    icon: <Gamepad2 className="w-5 h-5 text-cyan-500" />,
+  },
+  {
+    id: "roulette",
+    name: "Roulette",
+    icon: <Target className="w-5 h-5 text-red-400" />,
+  },
+  {
+    id: "casino-war",
+    name: "Casino War",
+    icon: <Swords className="w-5 h-5 text-gray-400" />,
+  },
+  {
+    id: "baccarat",
+    name: "Baccarat",
+    icon: <Landmark className="w-5 h-5 text-amber-500" />,
+  },
+  {
+    id: "matka",
+    name: "Matka",
+    icon: <Dices className="w-5 h-5 text-orange-400" />,
+  },
+  {
+    id: "cricket",
+    name: "Cricket",
+    icon: <Trophy className="w-5 h-5 text-blue-400" />,
+  },
+  {
+    id: "slots",
+    name: "Slots",
+    icon: <Cpu className="w-5 h-5 text-purple-400" />,
+  },
+  {
+    id: "virtual",
+    name: "Virtual",
+    icon: <Gamepad2 className="w-5 h-5 text-teal-400" />,
+  },
+  {
+    id: "others",
+    name: "Others",
+    icon: <Gift className="w-5 h-5 text-rose-400" />,
+  },
+];
 
 export default function Casino() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [activeCategory, setActiveCategory] = useState("all");
-  const [tagFilter, setTagFilter] = useState<string | null>(null);
-  // Keep the UI clean: show only important categories and tags
-  const CATEGORY_WHITELIST: CasinoCategoryId[] = [
-    "all",
-    "teenpatti",
-    "baccarat",
-    "andar-bahar",
-    "dragon-tiger",
-    "matka",
-    "others",
-  ];
-  const DISPLAYED_CATEGORIES = CASINO_CATEGORIES.filter((c) =>
-    CATEGORY_WHITELIST.includes(c.id as CasinoCategoryId),
-  );
-  const TAGS: Array<{ id: string; label: string }> = [
-    { id: "vip", label: "VIP" },
-    { id: "premium", label: "Premium" },
-    { id: "virtual", label: "Virtual" },
-    { id: "tembo", label: "Tembo" },
-  ];
 
+  const [activeMicro, setActiveMicro] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [visibleCount, setVisibleCount] = useState(30);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
+  // Parse URL params
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const cat = params.get("cat");
-    const tag = params.get("tag");
-    if (cat && CATEGORY_WHITELIST.includes(cat as CasinoCategoryId)) {
-      setActiveCategory(cat);
+    if (cat) {
+      if (MICRO_CATEGORIES.some((c) => c.id === cat)) {
+        setActiveMicro(cat);
+      }
     }
-    setTagFilter(tag ? tag.toLowerCase() : null);
   }, [location.search]);
 
-  const handleSetTag = (tag: string | null) => {
-    const params = new URLSearchParams(location.search);
-    if (tag) {
-      params.set("tag", tag);
-    } else {
-      params.delete("tag");
-    }
-    // preserve selected category in URL too
-    if (!params.get("cat")) {
-      params.set("cat", activeCategory);
-    }
-    navigate({ pathname: "/casino", search: params.toString() });
-  };
-
-  // Fetch casino games
+  // Fetch games
   const {
     data: apiGames,
     isLoading,
@@ -70,47 +155,40 @@ export default function Casino() {
     staleTime: 10 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
     retry: 1,
-    retryDelay: 500,
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
   });
 
-  // Categorize games
+  // Categorize games logic
   const gamesByCategory = useMemo(() => {
     if (!apiGames) return {} as Record<string, CasinoGame[]>;
 
-    const categorized: Record<string, CasinoGame[]> = {
-      all: [...apiGames],
-      roulette: [],
-      teenpatti: [],
-      poker: [],
-      baccarat: [],
-      "dragon-tiger": [],
-      "32-cards": [],
-      "andar-bahar": [],
-      "lucky-7": [],
-      "3-card": [],
-      "casino-war": [],
-      matka: [],
-      cricket: [],
-      others: [],
-    };
+    const categorized: Record<string, CasinoGame[]> = {};
+
+    // Initialize all buckets
+    MICRO_CATEGORIES.forEach((c) => (categorized[c.id] = []));
+    categorized["all"] = [...apiGames];
 
     apiGames.forEach((game) => {
       const name = game.gname.toLowerCase();
+      const provider = (game.provider as any)?.toString()?.toLowerCase() || "";
 
-      if (name.includes("roulette")) categorized.roulette.push(game);
-      else if (name.includes("teen") || name.includes("teenpatti"))
-        categorized.teenpatti.push(game);
-      else if (name.includes("poker")) categorized.poker.push(game);
-      else if (name.includes("baccarat")) categorized.baccarat.push(game);
-      else if (
+      // Auto-categorization
+      if (
         name.includes("dragon") ||
         name.includes("tiger") ||
         name.includes("dt")
       )
         categorized["dragon-tiger"].push(game);
-      else if (name.includes("32") || name.includes("card32"))
+      else if (name.includes("aviator")) categorized["aviator"].push(game);
+      else if (name.includes("mines")) categorized["mines"].push(game);
+      else if (name.includes("color") || name.includes("colour"))
+        categorized["color-game"].push(game);
+      else if (
+        name.includes("teen") &&
+        (name.includes("patti") || name.includes("pati"))
+      )
+        categorized["teenpatti"].push(game);
+      else if (name.includes("32 cards") || name.includes("32cards"))
         categorized["32-cards"].push(game);
       else if (
         name.includes("andar") ||
@@ -118,74 +196,47 @@ export default function Casino() {
         name.includes("ab")
       )
         categorized["andar-bahar"].push(game);
-      else if (name.includes("lucky") && name.includes("7"))
+      else if (name.includes("lucky 7") || name.includes("lucky7"))
         categorized["lucky-7"].push(game);
-      else if (name.includes("3") && name.includes("card"))
+      else if (name.includes("poker")) categorized["poker"].push(game);
+      else if (name.includes("3 card") || name.includes("three card"))
         categorized["3-card"].push(game);
+      else if (name.includes("roulette")) categorized["roulette"].push(game);
       else if (name.includes("war")) categorized["casino-war"].push(game);
+      else if (name.includes("baccarat")) categorized["baccarat"].push(game);
       else if (name.includes("matka") || name.includes("worli"))
-        categorized.matka.push(game);
-      else if (name.includes("cricket")) categorized.cricket.push(game);
-      else categorized.others.push(game);
+        categorized["matka"].push(game);
+      else if (name.includes("cricket")) categorized["cricket"].push(game);
+      else if (name.includes("slot") || provider.includes("slot"))
+        categorized["slots"].push(game);
+      else if (name.includes("virtual") || provider.includes("virtual"))
+        categorized["virtual"].push(game);
+      else categorized["others"].push(game);
     });
 
     return categorized;
   }, [apiGames]);
 
+  // Filtering
   const filteredGames = useMemo(() => {
-    const base = gamesByCategory[activeCategory] || [];
-    if (!tagFilter) return base;
-    const tag = tagFilter.toLowerCase();
-    return base.filter((game) => {
-      const name = game.gname?.toLowerCase() || "";
-      const provider =
-        (game.provider as any)?.toString()?.toLowerCase?.() || "";
-      const id = game.gmid?.toLowerCase() || "";
-      // generic contains check
-      if (name.includes(tag) || provider.includes(tag) || id.includes(tag))
-        return true;
-      // friendly synonyms mapping
-      if (tag === "vip") return name.includes("v vip") || name.includes("vip ");
-      if (tag === "premium") return name.includes("premium");
-      if (tag === "virtual") return name.includes("virtual");
-      if (tag === "tembo") return name.includes("tembo");
-      if (tag === "slot") return name.includes("slot");
-      if (tag === "fantasy") return name.includes("fantasy");
-      return false;
-    });
-  }, [gamesByCategory, activeCategory, tagFilter]);
+    let games = activeMicro
+      ? gamesByCategory[activeMicro] || []
+      : gamesByCategory["all"];
 
-  // Determine which tag chips should be visible based on available games in current category
-  const availableTags = useMemo(() => {
-    const base = gamesByCategory[activeCategory] || [];
-    const matchesTag = (tag: string, game: CasinoGame) => {
-      const name = game.gname?.toLowerCase() || "";
-      const provider =
-        (game.provider as any)?.toString()?.toLowerCase?.() || "";
-      const id = game.gmid?.toLowerCase() || "";
-      if (name.includes(tag) || provider.includes(tag) || id.includes(tag))
-        return true;
-      if (tag === "vip") return name.includes("v vip") || name.includes("vip ");
-      if (tag === "premium") return name.includes("premium");
-      if (tag === "virtual") return name.includes("virtual");
-      if (tag === "tembo") return name.includes("tembo");
-      if (tag === "slot") return name.includes("slot");
-      if (tag === "fantasy") return name.includes("fantasy");
-      return false;
-    };
-    return TAGS.filter((t) => base.some((g) => matchesTag(t.id, g)));
-  }, [gamesByCategory, activeCategory]);
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      games = games.filter(
+        (g) =>
+          g.gname.toLowerCase().includes(q) ||
+          (g.provider as any)?.toString()?.toLowerCase().includes(q),
+      );
+    }
 
-  const [visibleCount, setVisibleCount] = useState(30);
-
-  // Reset visibleCount when category or tag changes
-  useEffect(() => {
-    setVisibleCount(30);
-  }, [activeCategory, tagFilter]);
+    return games || [];
+  }, [gamesByCategory, activeMicro, searchQuery]);
 
   const handlePlay = (game: CasinoGame) => {
     const gameId = game.gmid.toLowerCase();
-    // Check if game has a custom page, otherwise use generic casino game page
     if (hasCustomPage(gameId)) {
       navigate(`/casino/${gameId}`);
     } else {
@@ -193,107 +244,83 @@ export default function Casino() {
     }
   };
 
+  // Reset visible count on filter change
+  useEffect(() => {
+    setVisibleCount(30);
+  }, [activeMicro, searchQuery]);
+
   if (isLoading) {
     return (
-      <MainLayout>
-        <div className="flex items-center justify-center h-96">
-          <div className="h-12 w-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+      <div className="flex items-center justify-center h-[60vh] bg-[#f0f2f5]">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-10 w-10 text-[#1a472a] animate-spin" />
+          <p className="font-mono text-xs text-[#1a472a] animate-pulse">
+            Initializing Casino Protocol...
+          </p>
         </div>
-      </MainLayout>
-    );
-  }
-
-  if (isError) {
-    return (
-      <MainLayout>
-        <div className="text-center py-12">
-          <p className="text-destructive mb-4">Failed to load casino games</p>
-          <Button onClick={() => window.location.reload()}>Retry</Button>
-        </div>
-      </MainLayout>
+      </div>
     );
   }
 
   return (
-    <MainLayout>
-      <div className="w-full mx-auto">
-        {/* Unified Filters: Categories + Tags in one row */}
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          {DISPLAYED_CATEGORIES.map((category) => (
-            <button
-              key={category.id}
-              onClick={() => setActiveCategory(category.id)}
-              className={`px-3 py-1.5 text-xs whitespace-nowrap border transition-colors ${
-                activeCategory === category.id
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-background text-foreground border-border hover:bg-muted"
-              }`}
-            >
-              <span className="font-semibold">{category.name}</span>
-              <span className="ml-2 text-[10px] text-muted-foreground">
-                {gamesByCategory[category.id]?.length || 0}
-              </span>
-            </button>
-          ))}
+    <div className="min-h-screen bg-[#f0f2f5] text-gray-900 -mt-4 -mx-4 pb-20 md:p-6 p-0 overflow-x-hidden">
+      {/* 1. Hero Section */}
+      <CasinoHero />
 
-          {/* Divider */}
-          <span className="hidden sm:inline-block w-px h-5 bg-border mx-1" />
+      <div className="px-4 md:px-0">
+        {/* 2. Toolbar (Sticky) */}
+        <CasinoToolbar
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          activeCategory={activeMicro}
+          setActiveCategory={setActiveMicro}
+          categories={MICRO_CATEGORIES}
+          totalGames={filteredGames.length}
+        />
 
-          {/* Tag pills */}
-          {availableTags.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => handleSetTag(t.id)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
-                tagFilter === t.id
-                  ? "bg-blue-600 text-white border-blue-600"
-                  : "bg-muted text-foreground border-border hover:bg-muted/80"
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-          {tagFilter && (
-            <button
-              onClick={() => handleSetTag(null)}
-              className="px-3 py-1.5 rounded-full text-xs font-semibold border bg-transparent hover:bg-muted"
-            >
-              Clear
-            </button>
-          )}
-        </div>
-
-        {/* Games Grid */}
+        {/* 3. Games Grid */}
         {filteredGames.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-muted-foreground">No games in this category</p>
+          <div className="flex flex-col items-center justify-center py-32 text-gray-500 font-mono border border-dashed border-gray-300 rounded-lg bg-white shadow-sm">
+            <Zap className="w-12 h-12 opacity-50 mb-4 animate-pulse text-[#f28729]" />
+            <p className="tracking-widest uppercase text-sm font-bold">
+              No Active Protocols Found
+            </p>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2">
-              {filteredGames.slice(0, visibleCount).map((game) => (
-                <GameCard
+            <div className="grid gap-3 grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7">
+              {filteredGames.slice(0, visibleCount).map((game, index) => (
+                <div
                   key={game.gmid}
-                  game={game}
-                  onClick={() => handlePlay(game)}
-                />
+                  className="animate-fade-in-up"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <CasinoGameCard
+                    game={game}
+                    onClick={handlePlay}
+                    priority={index < 8}
+                  />
+                </div>
               ))}
             </div>
 
             {filteredGames.length > visibleCount && (
-              <div className="flex justify-center mt-8 pb-8">
+              <div className="flex justify-center mt-12 mb-8">
                 <Button
                   variant="outline"
-                  onClick={() => setVisibleCount((prev) => prev + 30)}
-                  className="min-w-[200px] border-primary/20 hover:bg-primary/10"
+                  onClick={() => setVisibleCount((c) => c + 30)}
+                  className="bg-white border-gray-300 text-[#1a472a] hover:bg-gray-50 hover:text-[#1a472a] rounded-full px-8 h-12 font-bold uppercase tracking-widest text-xs transition-all animate-pulse shadow-sm"
                 >
-                  Load More Games ({filteredGames.length - visibleCount} left)
+                  <span className="relative z-10 flex items-center gap-2">
+                    <Loader2 className="w-4 h-4" />
+                    Load More
+                  </span>
                 </Button>
               </div>
             )}
           </>
         )}
       </div>
-    </MainLayout>
+    </div>
   );
 }

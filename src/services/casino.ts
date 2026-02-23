@@ -1,4 +1,5 @@
 import { CasinoResponse, CasinoGame } from "@/types/casino";
+import { mapGameId } from "@/data/gameRouteMapping";
 
 const API_HOST = import.meta.env.VITE_DIAMOND_API_HOST || "/api/diamond";
 const API_PROTOCOL = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "";
@@ -6,11 +7,28 @@ const API_KEY =
   import.meta.env.VITE_DIAMOND_API_KEY || "mahi4449839dbabkadbakwq1qqd";
 
 // Build base URL properly
-const BASE_API_URL = API_HOST.startsWith("/")
-  ? API_HOST
-  : API_PROTOCOL
-    ? `${API_PROTOCOL}://${API_HOST}`
-    : `http://${API_HOST}`;
+// Build base URL properly
+let BASE_API_URL = API_HOST;
+if (!API_HOST.startsWith("/")) {
+  if (API_HOST.startsWith("http://") || API_HOST.startsWith("https://")) {
+    BASE_API_URL = API_HOST;
+  } else {
+    BASE_API_URL = API_PROTOCOL
+      ? `${API_PROTOCOL}://${API_HOST}`
+      : `http://${API_HOST}`;
+  }
+}
+
+// In development, force using the proxy if API_HOST looks like the direct IP to avoid CORS/Mixed Content
+// unless the user explicitly checked "http" in protocol.
+if (import.meta.env.DEV && BASE_API_URL.includes("130.250.191.174")) {
+  console.log(
+    "[Casino] Detected direct IP in Dev. Switching to Proxy path /api/diamond to avoid CORS.",
+  );
+  BASE_API_URL = "/api/diamond";
+}
+
+console.log("[Casino] Using Base URL:", BASE_API_URL);
 
 const DEFAULT_API = `${BASE_API_URL}/casino/tableid?key=${API_KEY}`;
 const API_URL = import.meta.env.VITE_CASINO_API_URL || DEFAULT_API;
@@ -35,10 +53,17 @@ export async function fetchCasinoGames(): Promise<CasinoGame[]> {
     clearTimeout(timeoutId);
 
     if (!res.ok) {
+      if (res.status === 401) throw new Error("API returned 401");
       if (import.meta.env.DEV) {
         console.warn("[Casino] API returned:", res.status);
       }
       throw new Error(`API returned ${res.status}`);
+    }
+
+    const contentType = res.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      console.warn(`[Casino] Received non-JSON response from game data API`);
+      throw new Error("Invalid API response (not JSON)");
     }
 
     const json = (await res.json()) as CasinoResponse;
@@ -143,7 +168,14 @@ export function inferCategory(game: CasinoGame): string {
 // Fetch live game data with odds
 export async function fetchCasinoGameData(type: string): Promise<any> {
   try {
-    const url = `${BASE_API_URL}/casino/data?type=${type}&key=${API_KEY}`;
+    const mappedType = mapGameId(type);
+    const url = `${BASE_API_URL}/casino/data?type=${mappedType}&key=${API_KEY}`;
+
+    // Debug log to verify URL and Proxy usage
+    if (import.meta.env.DEV) {
+      console.log(`[Casino] Fetching Game Data from: ${url}`);
+    }
+
     const res = await fetch(url, {
       headers: { Accept: "*/*" },
     });
@@ -152,7 +184,27 @@ export async function fetchCasinoGameData(type: string): Promise<any> {
       throw new Error(`API returned ${res.status}`);
     }
 
-    return await res.json();
+    // Check if response is JSON
+    const contentType = res.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      const text = await res.text();
+      console.error(
+        `[Casino] Non-JSON response for ${type}:`,
+        text.substring(0, 200),
+      );
+      throw new Error(
+        `Expected JSON but received ${contentType || "unknown content type"}`,
+      );
+    }
+
+    const data = await res.json();
+
+    // Validate response structure
+    if (!data || typeof data !== "object") {
+      throw new Error("Invalid response format");
+    }
+
+    return data;
   } catch (error) {
     console.error(`[Casino] Failed to fetch game data for ${type}:`, error);
     throw error;
@@ -162,7 +214,8 @@ export async function fetchCasinoGameData(type: string): Promise<any> {
 // Fetch last round result
 export async function fetchCasinoResult(type: string): Promise<any> {
   try {
-    const url = `${BASE_API_URL}/casino/result?type=${type}&key=${API_KEY}`;
+    const mappedType = mapGameId(type);
+    const url = `${BASE_API_URL}/casino/result?type=${mappedType}&key=${API_KEY}`;
     const res = await fetch(url, {
       headers: { Accept: "*/*" },
     });
@@ -171,20 +224,46 @@ export async function fetchCasinoResult(type: string): Promise<any> {
       throw new Error(`API returned ${res.status}`);
     }
 
-    return await res.json();
+    // Check if response is JSON
+    const contentType = res.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      const text = await res.text();
+      console.error(
+        `[Casino] Non-JSON response for ${type}:`,
+        text.substring(0, 200),
+      );
+      throw new Error(
+        `Expected JSON but received ${contentType || "unknown content type"}`,
+      );
+    }
+
+    const data = await res.json();
+
+    // Validate response structure
+    if (!data || typeof data !== "object") {
+      throw new Error("Invalid response format");
+    }
+
+    return data;
   } catch (error) {
     console.error(`[Casino] Failed to fetch result for ${type}:`, error);
     throw error;
   }
 }
 
-// Fetch detailed result for a specific match
+/**
+ * Fetch casino result for a specific round
+ */
 export async function fetchCasinoDetailResult(
   type: string,
-  mid: string,
+  roundId: string,
 ): Promise<any> {
   try {
-    const url = `${BASE_API_URL}/casino/detail_result?type=${type}&mid=${mid}&key=${API_KEY}`;
+    const mappedType = mapGameId(type);
+    const url = `${BASE_API_URL}/casino/detail_result?type=${mappedType}&mid=${roundId}&key=${API_KEY}`;
+
+    console.log(`[Casino] Fetching detail result: ${url}`);
+
     const res = await fetch(url, {
       headers: { Accept: "*/*" },
     });
@@ -193,9 +272,32 @@ export async function fetchCasinoDetailResult(
       throw new Error(`API returned ${res.status}`);
     }
 
-    return await res.json();
+    const contentType = res.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      const text = await res.text();
+      console.error(
+        `[Casino] Non-JSON response for detail result:`,
+        text.substring(0, 200),
+      );
+      throw new Error(
+        `Expected JSON but received ${contentType || "unknown content type"}`,
+      );
+    }
+
+    const data = await res.json();
+
+    console.log(`[Casino] Detail result response:`, data);
+
+    if (!data || typeof data !== "object") {
+      throw new Error("Invalid response format");
+    }
+
+    return data;
   } catch (error) {
-    console.error(`[Casino] Failed to fetch detail result for ${type}:`, error);
+    console.error(
+      `[Casino] Failed to fetch detail result for ${type}, round ${roundId}:`,
+      error,
+    );
     throw error;
   }
 }

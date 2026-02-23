@@ -10,6 +10,14 @@ const BASE_URL = API_HOST.startsWith("/")
 export const CASINO_IMG_BASE_URL = "/game-image";
 const API_KEY =
   import.meta.env.VITE_DIAMOND_API_KEY || "mahi4449839dbabkadbakwq1qqd";
+
+// Results API Configuration
+const RESULTS_API_URL =
+  import.meta.env.VITE_RESULTS_API_URL ||
+  "https://dia-results.cricketid.xyz/api";
+const RESULTS_API_KEY = import.meta.env.VITE_RESULTS_API_KEY || "knqkdkqndkqn";
+const RESULTS_CLIENT_REF =
+  import.meta.env.VITE_RESULTS_CLIENT_REF || "mahi_client";
 // Tunables for performance
 const CONCURRENCY = Number(import.meta.env.VITE_DIAMOND_CONCURRENCY ?? 8);
 const CACHE_TTL_MS = Number(import.meta.env.VITE_DIAMOND_CACHE_TTL ?? 5000);
@@ -43,7 +51,7 @@ async function mapWithConcurrency<T, R>(
   }
 
   const workers = Array.from({ length: Math.max(1, limit) }, worker);
-  await Promise.all(workers.map((w) => w()));
+  await Promise.all(workers);
   return results;
 }
 
@@ -51,6 +59,9 @@ export interface SportId {
   sid: number;
   name: string;
   icon?: string;
+  oid?: number; // Order ID for sorting
+  tab?: boolean; // Visibility in tab/sidebar
+  active?: boolean;
 }
 
 export interface MatchEvent {
@@ -170,14 +181,15 @@ export const diamondApi = {
       return [];
     }
 
-    // Some APIs may not provide 'active'; include all by default
-    return (Array.isArray(data.data) ? data.data : [])
-      .filter((sport: any) => sport.active !== false)
-      .map((sport: any) => ({
-        sid: Number(sport.eid),
-        name: sport.ename || sport.name || String(sport.eid),
-        icon: getSportIcon(Number(sport.eid)),
-      }));
+    // Map all fields required for UI sorting/filtering
+    return (Array.isArray(data.data) ? data.data : []).map((sport: any) => ({
+      sid: Number(sport.eid),
+      name: sport.ename || sport.name || String(sport.eid),
+      icon: getSportIcon(Number(sport.eid)),
+      oid: sport.oid,
+      tab: sport.tab,
+      active: sport.active,
+    }));
   },
 
   // Get all matches for all sports (tree endpoint)
@@ -209,7 +221,13 @@ export const diamondApi = {
                   sid: sportId,
                   sname: sportName,
                   name: match.name || match.ename,
-                  is_live: match.iplay || false,
+                  is_live:
+                    match.is_live === 1 ||
+                    match.is_live === true ||
+                    match.inplay === 1 ||
+                    match.iplay === true ||
+                    match.iplay === 1 ||
+                    false,
                   start_date: match.stime,
                   cname: competitionName,
                   srno: match.srno || 0,
@@ -229,7 +247,13 @@ export const diamondApi = {
           sid: match.etid,
           sname: match.cname || "Virtual",
           name: match.ename,
-          is_live: match.iplay || false,
+          is_live:
+            match.is_live === 1 ||
+            match.is_live === true ||
+            match.inplay === 1 ||
+            match.iplay === true ||
+            match.iplay === 1 ||
+            false,
           start_date: match.stime,
           cname: match.cname,
           srno: 0,
@@ -264,7 +288,13 @@ export const diamondApi = {
           sid: match.etid,
           sname: match.cname,
           name: match.ename,
-          is_live: match.iplay || false,
+          is_live:
+            match.is_live === 1 ||
+            match.is_live === true ||
+            match.inplay === 1 ||
+            match.iplay === true ||
+            match.iplay === 1 ||
+            false,
           start_date: match.stime,
           cname: match.cname,
           srno: 0,
@@ -280,7 +310,13 @@ export const diamondApi = {
           sid: match.etid,
           sname: match.cname,
           name: match.ename,
-          is_live: match.iplay || false,
+          is_live:
+            match.is_live === 1 ||
+            match.is_live === true ||
+            match.inplay === 1 ||
+            match.iplay === true ||
+            match.iplay === 1 ||
+            false,
           start_date: match.stime,
           cname: match.cname,
           srno: 0,
@@ -334,7 +370,13 @@ export const diamondApi = {
       gmid: Number(raw.gmid) || gmid,
       sid: Number(raw.sid || raw.etid) || sid,
       name,
-      is_live: Boolean(raw.is_live || raw.iplay),
+      is_live:
+        Boolean(
+          raw.is_live || raw.iplay || raw.inplay || raw.is_live === 1 || false,
+        ) ||
+        raw.inplay ||
+        raw.is_live === 1 ||
+        false,
       start_date: raw.start_date || raw.stime || "",
       gtv: Number(raw.gtv) || undefined,
       teams,
@@ -509,41 +551,182 @@ export const diamondApi = {
     return data?.data || null;
   },
 
-  // Bet placement
-  placeBet: async (betData: {
+  /**
+   * Register a placed bet with the provider (MANDATORY after bet placement)
+   * This MUST be called immediately after a bet is placed
+   * Uses the new /bet-incoming endpoint
+   */
+  registerPlacedBet: async (betData: {
     event_id: number;
     event_name: string;
     market_id: number;
     market_name: string;
     market_type: string;
-  }): Promise<any> => {
-    const data = await diamondApi._fetch("/placed_bets", {
-      method: "POST",
-      body: JSON.stringify(betData),
-    });
-    return data;
+    sport_id?: number;
+  }): Promise<{ success: boolean; error?: string }> => {
+    console.log("[Diamond API] Registering placed bet:", betData);
+
+    // Validate event_id and market_id (remove any whitespace)
+    const cleanEventId = String(betData.event_id).trim();
+    const cleanMarketId = String(betData.market_id).trim();
+
+    if (!cleanEventId || !cleanMarketId) {
+      console.error("[Diamond API] Invalid event_id or market_id");
+      return { success: false, error: "Invalid event_id or market_id" };
+    }
+
+    try {
+      const url = `${RESULTS_API_URL}/bet-incoming`;
+      console.log("[Diamond API] Sending request to:", url);
+
+      const response = await fetch(url, {
+        method: "POST",
+        mode: "cors",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          event_id: Number(cleanEventId),
+          event_name: betData.event_name,
+          market_id: Number(cleanMarketId),
+          market_name: betData.market_name,
+          market_type: betData.market_type.toUpperCase(),
+          client_ref: RESULTS_CLIENT_REF,
+          api_key: RESULTS_API_KEY,
+          sport_id: betData.sport_id?.toString() || "4",
+        }),
+      });
+
+      console.log("[Diamond API] Response status:", response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(
+          "[Diamond API] Failed to register bet:",
+          response.status,
+          errorText,
+        );
+        return {
+          success: false,
+          error: `Failed to register bet: ${response.status} - ${errorText}`,
+        };
+      }
+
+      const data = await response.json();
+      console.log("[Diamond API] Bet registration response:", data);
+      return { success: true };
+    } catch (error) {
+      const err = error as Error;
+      console.error("[Diamond API] Error registering bet:", err);
+      return {
+        success: false,
+        error: `Network error: ${err.message || "Unable to connect to results API"}`,
+      };
+    }
   },
 
-  // Get result
-  getResult: async (resultData: {
+  /**
+   * Fetch results for all markets of a specific event
+   * Returns results only for markets registered via registerPlacedBet
+   */
+  getPlacedBetsResults: async (eventId: number): Promise<any[]> => {
+    // Clean event_id (critical - no whitespace allowed)
+    const cleanEventId = String(eventId).trim();
+
+    if (!cleanEventId) {
+      console.error("[Diamond API] Invalid event_id for results");
+      return [];
+    }
+
+    console.log(`[Diamond API] Fetching results for event: ${cleanEventId}`);
+
+    const data = await diamondApi._fetch(
+      `/get_placed_bets?event_id=${cleanEventId}`,
+    );
+
+    if (!data) {
+      console.warn(`[Diamond API] No results data for event ${cleanEventId}`);
+      return [];
+    }
+
+    console.log(`[Diamond API] Results response:`, data);
+
+    // Return the data array (should contain market results with market_id and result)
+    return Array.isArray(data?.data) ? data.data : [];
+  },
+
+  /**
+   * Fetch result for a specific market
+   * This is used to get the result of a single market after it's been settled
+   * Uses the new /get-result endpoint
+   *
+   * @param request - Result request with event_id, event_name, market_id, market_name, market_type
+   * @returns Result data or null if not available
+   */
+  getMarketResult: async (request: {
     event_id: number;
     event_name: string;
     market_id: number;
     market_name: string;
+    market_type?: string;
   }): Promise<any> => {
-    const data = await diamondApi._fetch("/get-result", {
-      method: "POST",
-      body: JSON.stringify(resultData),
-    });
-    return data;
+    console.log("[Diamond API] Fetching market result:", request);
+
+    try {
+      const url = `${RESULTS_API_URL}/get-result`;
+      console.log("[Diamond API] Fetching result from:", url);
+
+      const response = await fetch(url, {
+        method: "POST",
+        mode: "cors",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          event_id: request.event_id,
+          event_name: request.event_name,
+          market_id: request.market_id,
+          market_name: request.market_name,
+          market_type: request.market_type?.toUpperCase() || "MATCH_ODDS",
+          client_ref: RESULTS_CLIENT_REF,
+        }),
+      });
+
+      console.log("[Diamond API] Response status:", response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.warn(
+          "[Diamond API] Failed to fetch result:",
+          response.status,
+          errorText,
+        );
+        return null;
+      }
+
+      const data = await response.json();
+      console.log("[Diamond API] Market result response:", data);
+      return data;
+    } catch (error) {
+      const err = error as Error;
+      console.error("[Diamond API] Error fetching market result:", err);
+      return null;
+    }
   },
 
-  // Get all placed bets results
-  getPlacedBetsResults: async (eventId: number): Promise<any> => {
-    const data = await diamondApi._fetch(
-      `/get_placed_bets?event_id=${eventId}`,
-    );
-    return data?.data || [];
+  /**
+   * Alias for getMarketResult - for backward compatibility
+   */
+  getResult: async (request: {
+    event_id: number;
+    event_name: string;
+    market_id: number;
+    market_name: string;
+    market_type?: string;
+  }): Promise<any> => {
+    return diamondApi.getMarketResult(request);
   },
 
   // Bulk fetch: odds for matches in a sport (limited by `max`)

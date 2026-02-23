@@ -34,46 +34,33 @@ export default defineConfig(({ mode }) => ({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/diamond/, ""),
         secure: false,
-        timeout: 5000, // 5 second timeout to fail fast
+        timeout: 30000, // 30 second timeout for slow backend
         configure: (proxy, options) => {
-          proxy.on("error", (err, req, res) => {
-            console.warn(
-              "⚠️ Diamond API proxy error (API may be down):",
-              err.code,
-            );
+          proxy.on("error", (err: any, req, res) => {
+            console.error("⚠️ Diamond API proxy error:", err.code, req.url);
+            if (!res.headersSent) {
+              res.writeHead(500, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ success: false, error: "Proxy error" }));
+            }
           });
           proxy.on("proxyReq", (proxyReq, req, res) => {
-            // Silent proxy - don't log every request
+            console.log(`[Proxy] → ${req.url}`);
+          });
+          proxy.on("proxyRes", (proxyRes, req, res) => {
+            console.log(`[Proxy] ✅ ${req.url} → ${proxyRes.statusCode}`);
           });
         },
       },
-      "/casino": {
-        target: "http://130.250.191.174:3009",
+      // Proxy for Results API to avoid CORS issues
+      "/api/results": {
+        target: "https://dia-results.cricketid.xyz/api",
         changeOrigin: true,
-        secure: false,
-        timeout: 5000,
+        rewrite: (path) => path.replace(/^\/api\/results/, ""),
+        secure: true,
+        timeout: 10000,
         configure: (proxy, options) => {
-          proxy.on("error", (err, req, res) => {
-            console.warn("⚠️ Casino API timeout (using fallback data)");
-            // Return empty response to prevent errors
-            if (!res.headersSent) {
-              res.writeHead(200, { "Content-Type": "application/json" });
-              res.end(JSON.stringify({ error: "API unavailable", data: [] }));
-            }
-          });
-        },
-      },
-      "/casinoDetail": {
-        target: "http://130.250.191.174:3009",
-        changeOrigin: true,
-        secure: false,
-        timeout: 5000,
-        configure: (proxy, options) => {
-          proxy.on("error", (err, req, res) => {
-            if (!res.headersSent) {
-              res.writeHead(200, { "Content-Type": "application/json" });
-              res.end(JSON.stringify({ error: "API unavailable", data: {} }));
-            }
+          proxy.on("error", (err: any, req, res) => {
+            console.warn("⚠️ Results API proxy error:", err.code);
           });
         },
       },

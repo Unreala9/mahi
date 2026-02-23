@@ -186,10 +186,42 @@ serve(async (req) => {
         transaction = newTransaction;
 
         // RPC to add balance atomically
-        await supabaseClient.rpc("increment_balance", {
-          user_id: bet.user_id,
-          amount: payout,
-        });
+        const { data: walletUpdate, error: walletError } =
+          await supabaseClient.rpc("increment_balance", {
+            user_id: bet.user_id,
+            amount: payout,
+          });
+
+        if (walletError) {
+          console.error(
+            "[BetSettlement] Failed to credit wallet:",
+            walletError,
+          );
+          throw new Error(`Failed to credit wallet: ${walletError.message}`);
+        }
+
+        console.log(
+          `[BetSettlement] ✅ Credited ${payout} to user ${bet.user_id}. New balance: ${walletUpdate?.new_balance || "unknown"}`,
+        );
+      } else if (finalStatus === "lost") {
+        // Record the loss in wallet statistics (balance was already deducted at bet placement)
+        // This only updates total_lost tracking, does NOT deduct from current balance
+        const { data: lossUpdate, error: lossError } = await supabaseClient.rpc(
+          "record_loss",
+          {
+            user_id: bet.user_id,
+            amount: bet.stake,
+          },
+        );
+
+        if (lossError) {
+          console.error("[BetSettlement] Failed to record loss:", lossError);
+          // Don't throw error, loss recording is for statistics only
+        } else {
+          console.log(
+            `[BetSettlement] 📉 Recorded loss of ${bet.stake} for user ${bet.user_id}. Total lost: ${lossUpdate?.total_lost || "unknown"}`,
+          );
+        }
       }
 
       // Step 5: Partnership Distribution (Basic Log Only for now)
