@@ -84,7 +84,16 @@ END $$;
 DO $$ BEGIN
     CREATE TYPE transaction_type AS ENUM ('deposit', 'withdraw', 'bet_place', 'bet_win', 'bet_refund', 'bet_void_refund', 'adjustment', 'bonus');
 EXCEPTION
-    WHEN duplicate_object THEN null;
+    WHEN duplicate_object THEN 
+        -- Ensure all values exist in case the type was created in an older migration
+        ALTER TYPE transaction_type ADD VALUE IF NOT EXISTS 'deposit';
+        ALTER TYPE transaction_type ADD VALUE IF NOT EXISTS 'withdraw';
+        ALTER TYPE transaction_type ADD VALUE IF NOT EXISTS 'bet_place';
+        ALTER TYPE transaction_type ADD VALUE IF NOT EXISTS 'bet_win';
+        ALTER TYPE transaction_type ADD VALUE IF NOT EXISTS 'bet_refund';
+        ALTER TYPE transaction_type ADD VALUE IF NOT EXISTS 'bet_void_refund';
+        ALTER TYPE transaction_type ADD VALUE IF NOT EXISTS 'adjustment';
+        ALTER TYPE transaction_type ADD VALUE IF NOT EXISTS 'bonus';
 END $$;
 
 DO $$ BEGIN
@@ -293,31 +302,50 @@ CREATE TABLE IF NOT EXISTS public.audit_logs (
 -- PROFILES
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "allow_everything_profiles" ON public.profiles FOR ALL USING (true);
-CREATE POLICY "allow_signup_insert" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
-CREATE POLICY "users_update_own_profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
+-- Deny all by default, then allow specific actions
+DROP POLICY IF EXISTS "users_view_own_profile" ON public.profiles;
+DROP POLICY IF EXISTS "users_update_own_profile" ON public.profiles;
+DROP POLICY IF EXISTS "admin_can_view_all_profiles" ON public.profiles;
+DROP POLICY IF EXISTS "admin_can_update_all_profiles" ON public.profiles;
+DROP POLICY IF EXISTS "allow_everything_profiles" ON public.profiles;
+DROP POLICY IF EXISTS "allow_signup_insert" ON public.profiles;
+
 CREATE POLICY "users_view_own_profile" ON public.profiles FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "users_update_own_profile" ON public.profiles FOR UPDATE USING (auth.uid() = id) WITH CHECK (role = role); -- Prevent role changes
+CREATE POLICY "admin_can_view_all_profiles" ON public.profiles FOR SELECT USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+CREATE POLICY "admin_can_update_all_profiles" ON public.profiles FOR UPDATE USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
 
 -- WALLETS
 ALTER TABLE public.wallets ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "admin_can_view_all_wallets" ON public.wallets;
+DROP POLICY IF EXISTS "users_view_own_wallet" ON public.wallets;
+DROP POLICY IF EXISTS "service_role_manage_wallets" ON public.wallets;
+DROP POLICY IF EXISTS "allow_wallet_creation" ON public.wallets;
+DROP POLICY IF EXISTS "users_update_own_wallet" ON public.wallets;
+
 CREATE POLICY "admin_can_view_all_wallets" ON public.wallets FOR SELECT USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
-CREATE POLICY "allow_wallet_creation" ON public.wallets FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "users_view_own_wallet" ON public.wallets FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "users_update_own_wallet" ON public.wallets FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "service_role_manage_wallets" ON public.wallets FOR ALL USING (auth.jwt() ->> 'role' = 'service_role');
 
 
 -- TRANSACTIONS
 ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "admin_can_view_all_transactions" ON public.transactions;
+DROP POLICY IF EXISTS "users_view_own_transactions" ON public.transactions;
+DROP POLICY IF EXISTS "admin_can_update_transactions" ON public.transactions;
+DROP POLICY IF EXISTS "users_insert_own_transactions" ON public.transactions;
+
 CREATE POLICY "admin_can_view_all_transactions" ON public.transactions FOR SELECT USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
-CREATE POLICY "admin_can_update_transactions" ON public.transactions FOR UPDATE USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
 CREATE POLICY "users_view_own_transactions" ON public.transactions FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "users_insert_own_transactions" ON public.transactions FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- BETS
 ALTER TABLE public.bets ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "admin_can_view_all_bets" ON public.bets;
+DROP POLICY IF EXISTS "users_view_own_bets" ON public.bets;
+DROP POLICY IF EXISTS "service_role_manage_bets" ON public.bets;
 
 CREATE POLICY "admin_can_view_all_bets" ON public.bets FOR SELECT USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
 CREATE POLICY "users_view_own_bets" ON public.bets FOR SELECT USING (auth.uid() = user_id);
@@ -326,12 +354,18 @@ CREATE POLICY "service_role_manage_bets" ON public.bets FOR ALL USING (auth.jwt(
 -- CASINO BETS
 ALTER TABLE public.casino_bets ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "users_view_own_casino_bets" ON public.casino_bets;
+DROP POLICY IF EXISTS "service_role_manage_casino_bets" ON public.casino_bets;
+DROP POLICY IF EXISTS "users_insert_own_casino_bets" ON public.casino_bets;
+
 CREATE POLICY "users_view_own_casino_bets" ON public.casino_bets FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "users_insert_own_casino_bets" ON public.casino_bets FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "service_role_manage_casino_bets" ON public.casino_bets FOR ALL USING (auth.jwt() ->> 'role' = 'service_role');
 
 -- CASINO RESULTS
 ALTER TABLE public.casino_results ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "anyone_can_view_casino_results" ON public.casino_results;
+DROP POLICY IF EXISTS "service_role_manage_casino_results" ON public.casino_results;
 
 CREATE POLICY "anyone_can_view_casino_results" ON public.casino_results FOR SELECT USING (true);
 CREATE POLICY "service_role_manage_casino_results" ON public.casino_results FOR ALL USING (auth.jwt() ->> 'role' = 'service_role');
@@ -339,11 +373,16 @@ CREATE POLICY "service_role_manage_casino_results" ON public.casino_results FOR 
 -- AUDIT LOGS
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "admins_view_audit_logs" ON public.audit_logs;
+
 CREATE POLICY "admins_view_audit_logs" ON public.audit_logs FOR SELECT USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
 
 
 -- GAMES
 ALTER TABLE public.games ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "anyone_view_active_games" ON public.games;
+DROP POLICY IF EXISTS "admins_manage_games" ON public.games;
+
 CREATE POLICY "anyone_view_active_games" ON public.games FOR SELECT USING (status = 'active');
 CREATE POLICY "admins_manage_games" ON public.games FOR ALL USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
 
@@ -399,9 +438,16 @@ BEGIN
 END;
 $$;
 
+DROP TRIGGER IF EXISTS update_games_updated_at ON public.games;
 CREATE TRIGGER update_games_updated_at BEFORE UPDATE ON public.games FOR EACH ROW EXECUTE PROCEDURE public.update_updated_at();
+
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON public.profiles;
 CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON public.profiles FOR EACH ROW EXECUTE PROCEDURE public.update_updated_at();
+
+DROP TRIGGER IF EXISTS update_wallets_updated_at ON public.wallets;
 CREATE TRIGGER update_wallets_updated_at BEFORE UPDATE ON public.wallets FOR EACH ROW EXECUTE PROCEDURE public.update_updated_at();
+
+DROP TRIGGER IF EXISTS update_transactions_updated_at ON public.transactions;
 CREATE TRIGGER update_transactions_updated_at BEFORE UPDATE ON public.transactions FOR EACH ROW EXECUTE PROCEDURE public.update_updated_at();
 
 
@@ -497,8 +543,15 @@ BEGIN
      v_payout := 0;
      -- Simple match logic (can be expanded)
      IF p_settlement_mode = 'normal' THEN
-        IF v_bet.selection_name = p_result_code OR v_bet.selection = p_result_code THEN
-           v_payout := v_bet.stake * v_bet.odds;
+        -- Check if bet won
+        -- BACK wins if selection matches result
+        -- LAY wins if selection DOES NOT match result
+        IF (v_bet.bet_type = 'BACK' AND (v_bet.selection_name = p_result_code OR v_bet.selection = p_result_code)) OR
+           (v_bet.bet_type = 'LAY' AND (v_bet.selection_name != p_result_code AND v_bet.selection != p_result_code)) THEN
+           
+           -- Use stored potential_payout if available, otherwise calculate
+           v_payout := COALESCE(v_bet.potential_payout, v_bet.stake * v_bet.odds);
+           
            UPDATE public.bets SET status = 'won', payout = v_payout, settled_at = NOW() WHERE id = v_bet.id;
            UPDATE public.wallets SET balance = balance + v_payout, total_won = total_won + v_payout WHERE user_id = v_bet.user_id;
 
@@ -506,7 +559,9 @@ BEGIN
            VALUES (v_bet.user_id, 'bet_win', v_payout, 'completed', 'Won bet ' || v_bet.id, v_bet.id::text);
         ELSE
            UPDATE public.bets SET status = 'lost', payout = 0, settled_at = NOW() WHERE id = v_bet.id;
-           UPDATE public.wallets SET total_lost = total_lost + v_bet.stake WHERE user_id = v_bet.user_id;
+           
+           -- Correctly record loss based on exposure
+           UPDATE public.wallets SET total_lost = total_lost + v_bet.exposure, updated_at = NOW() WHERE user_id = v_bet.user_id;
         END IF;
      END IF;
 
@@ -540,10 +595,12 @@ AS $$
   ORDER BY created_at DESC;
 $$;
 
--- Function: deduct_balance
 CREATE OR REPLACE FUNCTION public.deduct_balance(
   p_user_id uuid,
-  p_amount numeric
+  p_amount numeric,
+  p_type text DEFAULT 'bet_place',
+  p_description text DEFAULT 'Bet placed',
+  p_reference_id text DEFAULT NULL
 )
 RETURNS jsonb
 LANGUAGE plpgsql
@@ -551,7 +608,10 @@ SECURITY DEFINER
 AS $$
 DECLARE
   v_balance numeric;
+  v_tx_id uuid;
+  v_type transaction_type;
 BEGIN
+  v_type := p_type::transaction_type;
   -- Lock wallet
   SELECT balance INTO v_balance FROM public.wallets WHERE user_id = p_user_id FOR UPDATE;
 
@@ -565,12 +625,52 @@ BEGIN
       updated_at = NOW()
   WHERE user_id = p_user_id;
 
-  RETURN jsonb_build_object('success', true, 'new_balance', v_balance - p_amount);
+  -- Create transaction record
+  INSERT INTO public.transactions (user_id, type, amount, status, description, reference_id)
+  VALUES (p_user_id, v_type, p_amount, 'completed', p_description, p_reference_id)
+  RETURNING id INTO v_tx_id;
+
+  RETURN jsonb_build_object(
+    'success', true, 
+    'new_balance', v_balance - p_amount,
+    'transaction_id', v_tx_id
+  );
 END;
 $$;
 
--- Function: increment_balance
 CREATE OR REPLACE FUNCTION public.increment_balance(
+  p_user_id uuid,
+  p_amount numeric,
+  p_type text DEFAULT 'bet_win',
+  p_description text DEFAULT 'Bet win',
+  p_reference_id text DEFAULT NULL
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_tx_id uuid;
+  v_type transaction_type;
+BEGIN
+  v_type := p_type::transaction_type;
+  UPDATE public.wallets
+  SET balance = balance + p_amount,
+      total_won = total_won + p_amount,
+      updated_at = NOW()
+  WHERE user_id = p_user_id;
+
+  -- Create transaction record
+  INSERT INTO public.transactions (user_id, type, amount, status, description, reference_id)
+  VALUES (p_user_id, v_type, p_amount, 'completed', p_description, p_reference_id)
+  RETURNING id INTO v_tx_id;
+
+  RETURN jsonb_build_object('success', true, 'transaction_id', v_tx_id);
+END;
+$$;
+
+-- Function: record_loss
+CREATE OR REPLACE FUNCTION public.record_loss(
   p_user_id uuid,
   p_amount numeric
 )
@@ -580,8 +680,7 @@ SECURITY DEFINER
 AS $$
 BEGIN
   UPDATE public.wallets
-  SET balance = balance + p_amount,
-      total_won = total_won + p_amount,
+  SET total_lost = total_lost + p_amount,
       updated_at = NOW()
   WHERE user_id = p_user_id;
 

@@ -159,49 +159,31 @@ serve(async (req) => {
       let profitLossAmount = 0; // Net P/L for partnership
 
       if (payout > 0) {
-        // Calculate Net Profit/Loss for user
-        // If Won: P/L = Payout - Exposure (Logic varies, simpler: P/L = Profit)
-        // Back Win: Profit = (Odds-1)*Stake.
-        // Lay Win: Profit = Stake.
-
-        const { data: newTransaction, error: txError } = await supabaseClient
-          .from("transactions")
-          .insert({
-            user_id: bet.user_id,
-            type: finalStatus === "void" ? "bonus" : "win",
-            amount: payout,
-            status: "completed",
-            provider: "internal",
-            provider_ref_id: bet.provider_bet_id,
-            description:
-              finalStatus === "void"
-                ? `Refund for voided bet ${bet.provider_bet_id}`
-                : `Win from bet ${bet.provider_bet_id}`,
-          })
-          .select()
-          .single();
-
-        if (txError)
-          throw new Error(`Failed to credit wallet: ${txError.message}`);
-        transaction = newTransaction;
-
-        // RPC to add balance atomically
+        // RPC to add balance atomically and create transaction record
         const { data: walletUpdate, error: walletError } =
           await supabaseClient.rpc("increment_balance", {
-            user_id: bet.user_id,
-            amount: payout,
+            p_user_id: bet.user_id,
+            p_amount: payout,
+            p_type: finalStatus === "void" ? "bet_void_refund" : "bet_win",
+            p_description:
+              finalStatus === "void"
+                ? `Refund for voided bet ${bet.provider_bet_id}`
+                : `Win payout for bet ${bet.provider_bet_id}`,
+            p_reference_id: bet.id,
           });
 
-        if (walletError) {
+        if (walletError || !walletUpdate?.success) {
           console.error(
             "[BetSettlement] Failed to credit wallet:",
-            walletError,
+            walletError || walletUpdate,
           );
-          throw new Error(`Failed to credit wallet: ${walletError.message}`);
+          throw new Error(
+            `Failed to credit wallet: ${walletError?.message || "Internal error"}`,
+          );
         }
 
         console.log(
-          `[BetSettlement] ✅ Credited ${payout} to user ${bet.user_id}. New balance: ${walletUpdate?.new_balance || "unknown"}`,
+          `[BetSettlement] ✅ Credited ${payout} to user ${bet.user_id}.`,
         );
       } else if (finalStatus === "lost") {
         // Record the loss in wallet statistics (balance was already deducted at bet placement)
@@ -209,8 +191,8 @@ serve(async (req) => {
         const { data: lossUpdate, error: lossError } = await supabaseClient.rpc(
           "record_loss",
           {
-            user_id: bet.user_id,
-            amount: bet.stake,
+            p_user_id: bet.user_id,
+            p_amount: bet.exposure || bet.stake, // Use exposure as it's what was deducted
           },
         );
 

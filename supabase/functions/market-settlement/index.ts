@@ -270,8 +270,10 @@ serve(async (req) => {
     // ACTION: auto-settle - Auto-settle using Diamond API
     // ===============================================
     if (action === "auto-settle" && req.method === "POST") {
-      const DIAMOND_API_BASE = "http://130.250.191.174:3009";
-      const DIAMOND_API_KEY = "mahi4449839dbabkadbakwq1qqd";
+      const DIAMOND_API_BASE =
+        Deno.env.get("DIAMOND_API_HOST") || "http://130.250.191.174:3009";
+      const DIAMOND_API_KEY =
+        Deno.env.get("DIAMOND_API_KEY") || "mahi4449839dbabkadbakwq1qqd";
 
       console.log("[AutoSettle] Starting auto-settlement from Diamond API...");
 

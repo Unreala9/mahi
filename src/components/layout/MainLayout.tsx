@@ -14,13 +14,7 @@ export const MainLayout = () => {
   const [session, setSession] = useState<any>(null);
 
   useEffect(() => {
-    // Check active session or local demo session
-    const isDemo = localStorage.getItem("demo_session");
-    if (isDemo === "true") {
-      setSession({ user: { email: "demo@mahiexchange.com", id: "demo-123" } });
-      setLoading(false);
-      return;
-    }
+    // Check active session
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -37,8 +31,6 @@ export const MainLayout = () => {
   }, []);
 
   const handleLogout = async () => {
-    localStorage.removeItem("demo_session");
-    localStorage.removeItem("demo_email");
     await supabase.auth.signOut();
     setSession(null);
     // Optional: Redirect to auth page or refresh state
