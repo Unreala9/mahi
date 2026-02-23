@@ -11,6 +11,8 @@ import { settlementMonitor } from "@/services/autoSettlementService";
 import { resultWebSocket } from "@/services/resultWebSocket";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Sportsbook from "./pages/Sportsbook";
 import CasinoLive from "./pages/CasinoLive";
 import Casino from "./pages/Casino";
@@ -37,12 +39,17 @@ import AdminTransactions from "./pages/admin/AdminTransactions";
 import AdminBets from "./pages/admin/AdminBets";
 import AdminGames from "./pages/admin/AdminGames";
 import AdminAuditLogs from "./pages/admin/AdminAuditLogs";
+import AdminSettings from "./pages/admin/AdminSettings";
 import AdminWithdrawals from "./pages/admin/AdminWithdrawals";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
-import TestSettlement from "./pages/TestSettlement";
-import TestBetting from "./pages/TestBetting";
+
 import InPlay from "./pages/InPlay";
+import { ResultFetchingTest } from "./components/ResultFetchingTest";
+import { ResultFetchingTestSimple } from "./components/ResultFetchingTestSimple";
+import { ResultFetchingDebug } from "./components/ResultFetchingDebug";
+import { CasinoResultTest } from "./components/CasinoResultTest";
+import TestSportsResults from "./pages/TestSportsResults";
 
 const queryClient = new QueryClient();
 
@@ -81,6 +88,9 @@ const App = () => {
   }, []);
 
   // Initialize result WebSocket for real-time settlements
+  // TEMPORARILY DISABLED: Most game types not supported by backend, causing 401 errors
+  // TODO: Re-enable when backend supports proper game type list
+  /*
   useEffect(() => {
     console.log("[App] Starting result WebSocket...");
     resultWebSocket.start();
@@ -90,6 +100,7 @@ const App = () => {
       resultWebSocket.stop();
     };
   }, []);
+  */
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -99,10 +110,21 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
             <Route path="/api-test" element={<ApiTest />} />
-            <Route path="/test-settlement" element={<TestSettlement />} />
-            <Route path="/test-betting" element={<TestBetting />} />
+            <Route path="/result-test" element={<ResultFetchingTest />} />
+            <Route
+              path="/result-test-simple"
+              element={<ResultFetchingTestSimple />}
+            />
+            <Route path="/result-debug" element={<ResultFetchingDebug />} />
+            <Route path="/casino-result-test" element={<CasinoResultTest />} />
+            <Route
+              path="/test-sports-results"
+              element={<TestSportsResults />}
+            />
 
             {/* Main App Layout Routes */}
             <Route element={<MainLayout />}>
@@ -224,6 +246,7 @@ const App = () => {
               <Route path="withdrawals" element={<AdminWithdrawals />} />
               <Route path="bets" element={<AdminBets />} />
               <Route path="games" element={<AdminGames />} />
+              <Route path="settings" element={<AdminSettings />} />
               <Route path="audit-logs" element={<AdminAuditLogs />} />
             </Route>
 

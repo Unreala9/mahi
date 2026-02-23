@@ -121,13 +121,11 @@ class ResultWebSocketService {
       "dt20",
       "dt202",
       "dt6",
-      "dt1day",
       "teenmuf",
       "teenmuf2",
       "teen9",
       "teen8",
       "teen3",
-      "teent",
       // NOTE: teen20 is NOT a valid API game type
       // Games that were thought to use teen20 actually use their own types:
       // dolidana, bollywood, mogambo each use their own API type
@@ -333,56 +331,6 @@ class ResultWebSocketService {
               "Match Odds",
           };
 
-          // Note: diamondApi.getResult method doesn't exist or is not used for this flow.
-          // Results are already being fetched via getPlacedBetsResults.
-          // const result = await diamondApi.getResult(resultData);
-
-          // The following block depends on 'result' from diamondApi.getResult.
-          // Since diamondApi.getResult is commented out, this block is also commented out.
-          /*
-          if (result?.data?.winner || result?.data?.result) {
-            const resultKey = `sports_${eventId}_${result.data.winner || result.data.result}`;
-
-            // Check if we've already processed this result
-            if (!this.checkedResults.has(resultKey)) {
-              console.log(
-                `[ResultWS] New sports result for event ${eventId}:`,
-                result.data,
-              );
-
-              this.checkedResults.add(resultKey);
-
-              // Notify subscribers
-              this.notifySubscribers({
-                type: "sports",
-                eventId,
-                winner: result.data.winner || result.data.result,
-                result: result.data,
-                timestamp: Date.now(),
-              });
-
-              // Trigger settlement
-              try {
-                const winner = result.data.winner || result.data.result;
-                const winnerId =
-                  typeof winner === "number"
-                    ? winner
-                    : parseInt(winner?.toString() || "0");
-                const settled = await settleSportsBets(eventId, winnerId);
-                if (settled.length > 0) {
-                  console.log(
-                    `[ResultWS] Auto-settled ${settled.length} sports bets for event ${eventId}`,
-                  );
-                }
-              } catch (err) {
-                console.error(
-                  `[ResultWS] Settlement error for event ${eventId}:`,
-                  err,
-                );
-              }
-            }
-          }
-          */
         } catch (error) {
           // Silent fail for individual events
         }

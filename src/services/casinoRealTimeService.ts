@@ -5,8 +5,7 @@
  * - Score WebSocket
  */
 
-const API_HOST =
-  import.meta.env.VITE_DIAMOND_API_HOST || "130.250.191.174:3009";
+const API_HOST = import.meta.env.VITE_DIAMOND_API_HOST || "/api/diamond";
 const API_PROTOCOL = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "http";
 const WS_PROTOCOL = API_PROTOCOL === "https" ? "wss" : "ws";
 const BASE_URL = `${API_PROTOCOL}://${API_HOST}`;

@@ -164,7 +164,7 @@ export class BetSettlementService {
         `
         *,
         selections!inner(code),
-        user_wallets!inner(user_id),
+        wallets!inner(user_id),
         transactions(amount, type, created_at)
       `,
       )

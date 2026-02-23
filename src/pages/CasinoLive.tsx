@@ -1,8 +1,8 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
-import { fetchCasinoGames } from "@/services/casino";
+import { fetchCasinoGames, getImageCandidates } from "@/services/casino";
 import { LiveCasinoGrid } from "@/components/casino/LiveCasinoGrid";
 import { CASINO_CATEGORIES } from "@/data/casinoCategories";
 import {
@@ -11,9 +11,25 @@ import {
   Video,
   Radio,
   Terminal,
+  Search,
+  X,
+  LayoutGrid,
+  Target,
+  Spade,
+  Club,
+  Landmark,
+  Flame,
+  Layers,
+  Dices,
+  GamepadIcon as Gamepad2,
+  Swords,
+  Trophy,
+  Gift,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import type { CasinoGame } from "@/types/casino";
+import { CasinoToolbar } from "@/components/casino/CasinoToolbar";
 
 // Helper for rendering image with fallback (Inlined for simplicity in this page)
 const GameCard = ({
@@ -23,23 +39,52 @@ const GameCard = ({
   game: CasinoGame;
   onClick: (g: CasinoGame) => void;
 }) => {
-  // Simplified for live grid consistency matching Casino.tsx
-  // In a real app, I'd export the CasinoGameCard from Casino.tsx or a shared component
-  // For now, I will use a similar structure
+  const [imgSrc, setImgSrc] = useState<string>("");
+  const [imgIndex, setImgIndex] = useState(0);
+  const [hasError, setHasError] = useState(false);
+
+  // Construct candidates including the specific CDN URL that uses gmid
+  const candidates = useMemo(() => {
+    const list = [
+      `https://diamond-api.b-cdn.net/game-image/${game.gmid}/${game.imgpath}`,
+      ...getImageCandidates(game.imgpath),
+    ];
+    return list;
+  }, [game.gmid, game.imgpath]);
+
+  useEffect(() => {
+    if (candidates && candidates.length > 0) {
+      setImgSrc(candidates[0]);
+      setImgIndex(0);
+      setHasError(false);
+    }
+  }, [candidates]);
+
+  const handleError = () => {
+    const nextIndex = imgIndex + 1;
+    if (nextIndex < candidates.length) {
+      setImgSrc(candidates[nextIndex]);
+      setImgIndex(nextIndex);
+    } else {
+      setHasError(true);
+    }
+  };
+
   return (
     <div
-      className="group relative aspect-[3/4] bg-[#0a1120] border border-white/5 hover:border-primary/50 transition-all cursor-pointer overflow-hidden"
+      className="group relative aspect-[3/4] bg-white border border-gray-200 hover:border-[#1a472a] hover:shadow-lg transition-all cursor-pointer overflow-hidden rounded-sm"
       onClick={() => onClick(game)}
     >
       {/* Tech corners */}
-      <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/20 z-10" />
-      <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/20 z-10" />
+      <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-gray-300 z-10" />
+      <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-gray-300 z-10" />
 
       <img
-        src={`https://diamond-api.b-cdn.net/game-image/${game.gmid}/${game.imgpath}`}
+        src={hasError ? "/placeholder-game.jpg" : imgSrc}
+        alt={game.gname}
         className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity"
         loading="lazy"
-        onError={(e) => (e.currentTarget.src = "/placeholder-game.jpg")}
+        onError={handleError}
       />
 
       <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/90 to-transparent">
@@ -60,6 +105,7 @@ const GameCard = ({
 export default function CasinoLive() {
   const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Fetch casino games
@@ -125,109 +171,91 @@ export default function CasinoLive() {
     return categorized;
   }, [liveGames]);
 
-  const filteredGames = gamesByCategory[activeCategory] || [];
+  // Apply search filter
+  const filteredGames = useMemo(() => {
+    let games = gamesByCategory[activeCategory] || [];
+
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      games = games.filter(
+        (g) =>
+          g.gname.toLowerCase().includes(q) ||
+          (g.provider as any)?.toString()?.toLowerCase().includes(q),
+      );
+    }
+
+    return games;
+  }, [gamesByCategory, activeCategory, searchQuery]);
+
   const [visibleCount, setVisibleCount] = useState(24);
 
-  const scrollTabs = (direction: "left" | "right") => {
-    if (scrollContainerRef.current) {
-      const scrollAmount = 300;
-      scrollContainerRef.current.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth",
-      });
-    }
-  };
+  // Map categories with icons for the toolbar
+  const toolbarCategories = useMemo(() => {
+    const iconMap: Record<string, React.ReactNode> = {
+      all: <LayoutGrid className="w-5 h-5 text-primary" />,
+      roulette: <Target className="w-5 h-5 text-red-400" />,
+      teenpatti: <Spade className="w-5 h-5 text-green-500" />,
+      poker: <Club className="w-5 h-5 text-emerald-500" />,
+      baccarat: <Landmark className="w-5 h-5 text-amber-500" />,
+      "dragon-tiger": <Flame className="w-5 h-5 text-orange-500" />,
+      "32-cards": <LayoutGrid className="w-5 h-5 text-blue-500" />,
+      "andar-bahar": <Layers className="w-5 h-5 text-indigo-500" />,
+      "lucky-7": <Dices className="w-5 h-5 text-pink-500" />,
+      "3-card": <Gamepad2 className="w-5 h-5 text-cyan-500" />,
+      "casino-war": <Swords className="w-5 h-5 text-gray-400" />,
+      matka: <Dices className="w-5 h-5 text-orange-400" />,
+      cricket: <Trophy className="w-5 h-5 text-blue-400" />,
+      others: <Gift className="w-5 h-5 text-rose-400" />,
+    };
+
+    return CASINO_CATEGORIES.map((cat) => ({
+      id: cat.id,
+      name: cat.name,
+      icon: iconMap[cat.id] || <Gamepad2 className="w-5 h-5" />,
+    }));
+  }, []);
 
   const handlePlay = (game: CasinoGame) => {
     navigate(`/casino/${game.gmid}`);
   };
 
   return (
-    <div className="min-h-screen bg-[#050b14] text-white -m-4 p-6">
+    <div className="min-h-screen bg-[#f0f2f5] text-gray-900 -m-4 p-6">
       {/* Page Header */}
       <div className="flex items-center gap-4 mb-8">
-        <div className="w-12 h-12 bg-[#0a1120] border border-white/10 flex items-center justify-center relative">
+        <div className="w-12 h-12 bg-white border border-gray-200 flex items-center justify-center relative shadow-sm rounded-sm">
           <Video className="w-5 h-5 text-red-500" />
           <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
         </div>
         <div>
-          <h1 className="text-2xl font-black uppercase tracking-[0.2em] font-display text-white">
-            Live<span className="text-red-500">Stream</span>
+          <h1 className="text-2xl font-black uppercase tracking-[0.2em] font-display text-gray-900">
+            Live<span className="text-red-600">Stream</span>
           </h1>
-          <p className="text-[10px] text-gray-500 font-mono uppercase tracking-widest flex items-center gap-2">
+          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest flex items-center gap-2">
             <Radio className="w-3 h-3 text-red-500" />
             Real-time Dealer Feed
           </p>
         </div>
       </div>
 
-      {/* Navigation Tabs - Terminal Style */}
-      <div className="relative mb-8 bg-[#0a1120] border-y border-white/5 p-2">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="flex-shrink-0 h-10 w-10 text-gray-400 hover:text-white hover:bg-white/5 rounded-none"
-            onClick={() => scrollTabs("left")}
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-
-          <div
-            ref={scrollContainerRef}
-            className="flex-1 overflow-x-auto scrollbar-hide scroll-smooth flex gap-1"
-          >
-            {CASINO_CATEGORIES.map((category) => {
-              const isActive = activeCategory === category.id;
-              const count = gamesByCategory[category.id]?.length || 0;
-
-              return (
-                <button
-                  key={category.id}
-                  onClick={() => {
-                    setActiveCategory(category.id);
-                    setVisibleCount(24);
-                  }}
-                  className={`
-                      flex items-center gap-2 px-4 py-2 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap transition-all border
-                      ${
-                        isActive
-                          ? "bg-red-500 text-black border-red-500"
-                          : "bg-transparent text-gray-500 border-transparent hover:border-white/10 hover:text-white"
-                      }
-                    `}
-                >
-                  {category.name}
-                  <span
-                    className={`px-1.5 py-0.5 text-[9px] font-mono ${isActive ? "bg-black/20 text-black" : "bg-white/5 text-gray-600"}`}
-                  >
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            className="flex-shrink-0 h-10 w-10 text-gray-400 hover:text-white hover:bg-white/5 rounded-none"
-            onClick={() => scrollTabs("right")}
-          >
-            <ChevronRight className="h-5 w-5" />
-          </Button>
-        </div>
-      </div>
+      <CasinoToolbar
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        activeCategory={activeCategory}
+        setActiveCategory={(c) => setActiveCategory(c || "all")}
+        categories={toolbarCategories}
+        totalGames={filteredGames.length}
+      />
 
       {/* Games Grid */}
       {isLoading ? (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {[...Array(12)].map((_, i) => (
-            <div key={i} className="aspect-[3/4] bg-[#0a1120] animate-pulse" />
+            <div key={i} className="aspect-[3/4] bg-gray-200 animate-pulse rounded-sm" />
           ))}
         </div>
       ) : filteredGames.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 text-gray-600 font-mono border border-dashed border-white/5 bg-[#0a1120]/50">
+        <div className="flex flex-col items-center justify-center py-24 text-gray-500 font-bold border border-dashed border-gray-300 bg-white rounded-md shadow-sm">
           <Terminal className="w-12 h-12 opacity-30 mb-4" />
           <p className="uppercase tracking-widest text-xs">
             No Signal Detected
@@ -246,7 +274,7 @@ export default function CasinoLive() {
               <Button
                 variant="outline"
                 onClick={() => setVisibleCount((c) => c + 24)}
-                className="bg-[#0a1120] border-red-500/30 text-red-500 hover:bg-red-500 hover:text-black rounded-none h-12 min-w-[200px] font-bold uppercase tracking-widest text-xs transition-all"
+                className="bg-white border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700 rounded-sm h-12 min-w-[200px] font-bold uppercase tracking-widest text-xs transition-all shadow-sm"
               >
                 Load More Streams
               </Button>
