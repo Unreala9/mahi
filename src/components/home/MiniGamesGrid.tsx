@@ -3,34 +3,49 @@ import { Link } from "react-router-dom";
 export const MiniGamesGrid = () => {
   const games = [
     {
-      img: "/images/imgi_84_aviator.c945eef2.gif",
+      img: "/images/imgi_8_Marble race.gif",
+      alt: "Marble Race",
+      name: "Marble Race",
+      link: "/casino",
+    },
+    {
+      img: "/images/imgi_9_Aviator.gif",
       alt: "Aviator",
       name: "Aviator",
       link: "/casino",
     },
     {
-      img: "/images/imgi_87_color-pridiction.79d759ce.gif",
-      alt: "Color Prediction",
-      name: "Color Prediction",
+      img: "/images/imgi_10_Colour.gif",
+      alt: "Colour",
+      name: "Colour",
       link: "/casino",
     },
     {
-      img: "/images/imgi_85_mines.51d0b312.gif",
+      img: "/images/imgi_11_Mines.gif",
       alt: "Mines",
       name: "Mines",
       link: "/casino",
     },
     {
-      img: "/images/imgi_86_fungames.2c3754ec.gif",
-      alt: "Fun Games",
-      name: "Fun Games",
+      img: "/images/imgi_12_Luckky lace.gif",
+      alt: "Luckky lace",
+      name: "Luckky lace",
+      link: "/casino",
+    },
+    {
+      img: "/images/imgi_13_Prediction.gif",
+      alt: "Prediction",
+      name: "Prediction",
       link: "/casino",
     },
   ];
 
+  // Double the items for a seamless continuous marquee
+  const loopedItems = [...games, ...games];
+
   return (
-    <div className="w-full mt-8 px-4 md:px-0">
-      <div className="flex items-center justify-between mb-4">
+    <div className="w-full pb-2 px-0 md:px-0 relative">
+      <div className="flex items-center justify-between py-2 px-4 md:px-0">
         <h2 className="text-xl md:text-2xl font-black italic uppercase text-[#0066cc]">
           TRENDING <span className="text-[#f28729]">MINI GAMES</span>
         </h2>
@@ -42,31 +57,40 @@ export const MiniGamesGrid = () => {
         </Link>
       </div>
 
-      <div className="grid  grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-        {games.map((game, idx) => (
-          <Link
-            key={idx}
-            to={game.link}
-            className="group relative overflow-hidden rounded-md shadow-sm border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-white"
-          >
-            <div className="aspect-rectangle p-2">
-              <img
-                src={game.img}
-                alt={game.alt}
-                className="w-full h-full object-contain rounded"
-              />
-            </div>
+      <style>{`
+        @keyframes mini-scroll {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(calc(-50% - 0.375rem)); }
+        }
+        .animate-mini-scroll {
+          animation: mini-scroll 20s linear infinite;
+        }
+        .scroll-container:hover .animate-mini-scroll {
+          animation-play-state: paused;
+        }
+      `}</style>
 
-            <div className="py-2 px-3 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
-              <span className="text-xs font-bold text-gray-800 uppercase tracking-tight">
-                {game.name}
-              </span>
-              <span className="text-[9px] bg-[#0066cc] text-white px-1.5 py-0.5 rounded font-bold">
-                HOT
-              </span>
-            </div>
-          </Link>
-        ))}
+      <div className="overflow-hidden scroll-container px-4 md:px-0 relative">
+        <div className="flex gap-3 w-max animate-mini-scroll ">
+          {loopedItems.map((game, idx) => (
+            <Link
+              key={idx}
+              to={game.link}
+              className="group relative overflow-hidden rounded-md shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-white flex-shrink-0 w-[210px] md:w-[250px]"
+            >
+              <div className="aspect-rectangle  flex items-center justify-center">
+                <img
+                  src={game.img}
+                  alt={game.alt}
+                  className="w-full h-full object-contain rounded"
+                />
+              </div>
+
+
+            </Link>
+          ))}
+        </div>
+
       </div>
     </div>
   );

@@ -125,7 +125,6 @@ export const MainHeader = ({
   const navItems = [
     { label: "IN-PLAY", to: "/in-play" },
     { label: "SPORTSBOOK", to: "/sports" },
-    { label: "MY BETS", to: "/bets" },
     { label: "LIVE CASINO", to: "/casino-live" },
     { label: "CASINO GAMES", to: "/casino" },
   ];

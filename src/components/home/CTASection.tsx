@@ -4,7 +4,7 @@ import { Gamepad2, ArrowRight, Trophy } from "lucide-react";
 
 const CTASection = () => {
   return (
-    <section className="py-12  bg-[#f0f2f5] relative overflow-hidden">
+    <section className="py-4 bg-[#f0f2f5] relative overflow-hidden">
       <div className="container mx-auto px-4 z-10 relative">
         <div className="max-w-[1200px] mx-auto">
           {/* Main Card */}
