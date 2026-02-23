@@ -3,14 +3,13 @@
  * Manages real-time odds and betting data for sports markets
  */
 
-const API_HOST =
-  import.meta.env.VITE_DIAMOND_API_HOST || "/api/diamond";
-const HTTP_API_HOST =
-  import.meta.env.VITE_DIAMOND_API_HOST?.startsWith("/")
-    ? `${window.location.origin}${import.meta.env.VITE_DIAMOND_API_HOST}`
-    : import.meta.env.VITE_DIAMOND_API_HOST || `${window.location.origin}/api/diamond`;
+const API_HOST = import.meta.env.VITE_DIAMOND_API_HOST || "/api/diamond";
+const HTTP_API_HOST = import.meta.env.VITE_DIAMOND_API_HOST?.startsWith("/")
+  ? `${window.location.origin}${import.meta.env.VITE_DIAMOND_API_HOST}`
+  : import.meta.env.VITE_DIAMOND_API_HOST ||
+    `${window.location.origin}/api/diamond`;
 const API_PROTOCOL = import.meta.env.VITE_DIAMOND_API_PROTOCOL || "ws";
-const API_KEY = import.meta.env.VITE_DIAMOND_API_KEY || "YOUR_SECRET_TOKEN";
+const API_KEY = import.meta.env.VITE_DIAMOND_API_KEY;
 
 // Build WebSocket URL
 const WS_URL = `${API_PROTOCOL}://${API_HOST}/ws?key=${API_KEY}`;
@@ -46,11 +45,11 @@ export interface OddsUpdate {
 
 export interface BettingMessage {
   type:
-  | "odds_update"
-  | "bet_placed"
-  | "bet_matched"
-  | "market_status"
-  | "error";
+    | "odds_update"
+    | "bet_placed"
+    | "bet_matched"
+    | "market_status"
+    | "error";
   data: OddsUpdate | PlacedBet | { message?: string; status?: string };
   timestamp: number;
 }

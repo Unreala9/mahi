@@ -120,6 +120,14 @@ serve(async (req) => {
         });
       }
 
+      // [HARDENING] Pre-placement time check
+      // Ideally we would fetch the match status from Diamond API here
+      // to ensure the market is not CLOSED or SUSPENDED.
+      // For now, let's add a placeholder comment for the next step of integration.
+      console.log(
+        `[BetPlacement] Placement request at ${new Date().toISOString()}`,
+      );
+
       // Use parsed values
       betData.stake = stake;
       betData.odds = odds;
@@ -168,21 +176,13 @@ serve(async (req) => {
         });
       }
 
-      const potentialPayout =
-        betData.betType === "BACK"
-          ? betData.stake * betData.odds
-          : betData.stake * (betData.odds - 1);
-          balance,
-          required: exposure,
-          userId: user.id,
-        });
-      }
+      const potentialPayout = betData.stake * betData.odds;
 
       const providerBetId = `${betData.gameType.toLowerCase()}_${Date.now()}_${Math.random()
         .toString(36)
         .slice(2, 11)}`;
 
-      const betInsert = await admin
+      const { data: bet, error: betError } = await admin
         .from("bets")
         .insert({
           user_id: user.id,
@@ -199,79 +199,64 @@ serve(async (req) => {
           status: "pending",
           bet_type: betData.betType,
           potential_payout: potentialPayout,
-          // New Fields
           exposure: exposure,
-          bet_on: betData.marketName.toLowerCase().includes("fancy") ? "fancy" :
-            betData.marketName.toLowerCase().includes("bookmaker") ? "bookmaker" : "odds",
-          rate: 100, // Default to 100 for now, can be passed from frontend later
-          // API Event Tracking for Auto-Settlement
+          bet_on: betData.marketName.toLowerCase().includes("fancy")
+            ? "fancy"
+            : betData.marketName.toLowerCase().includes("bookmaker")
+              ? "bookmaker"
+              : "odds",
+          rate: 100,
           api_event_id: betData.eventId || betData.gameId,
-          api_market_type: betData.marketName.toLowerCase().includes("fancy") ? "fancy" :
-            betData.marketName.toLowerCase().includes("bookmaker") ? "bookmaker" : "match_odds",
+          api_market_type: betData.marketName.toLowerCase().includes("fancy")
+            ? "fancy"
+            : betData.marketName.toLowerCase().includes("bookmaker")
+              ? "bookmaker"
+              : "match_odds",
         })
         .select()
         .single();
 
-      if (betInsert.error) {
+      if (betError || !bet) {
         return json(500, {
           success: false,
           error: "Failed to create bet",
-          details: betInsert.error.message,
-          hint: betInsert.error.hint ?? null,
-          code: betInsert.error.code ?? null,
+          details: betError?.message,
         });
       }
 
-      const bet = betInsert.data;
-
-      const txInsert = await admin
-        .from("transactions")
-        .insert({
-          user_id: user.id,
-          type: "bet",
-          amount: betData.stake,
-          status: "completed",
-          provider_ref_id: providerBetId, // mapping reference to provider_ref_id due to schema
-          description: `${betData.betType} bet on ${betData.selection} @ ${betData.odds} in ${betData.gameName}`,
-        })
-        .select()
-        .single();
-
-      if (txInsert.error) {
-        await admin.from("bets").delete().eq("id", bet.id);
-
-        return json(500, {
-          success: false,
-          error: "Transaction failed",
-          details: txInsert.error.message,
-          hint: txInsert.error.hint ?? null,
-          code: txInsert.error.code ?? null,
-        });
-      }
-
-      // ✅ Explicitly update wallet balance using ATOMIC RPC
-      const { data: walletData, error: updateError } = await admin
-        .rpc("deduct_balance", {
+      // Deduct balance and create transaction record in one atomic step
+      const { data: walletData, error: updateError } = await admin.rpc(
+        "deduct_balance",
+        {
           p_user_id: user.id,
-          p_amount: exposure, // Use calculated exposure (Liability for LAY, Stake for BACK)
-        });
+          p_amount: exposure,
+          p_type: "bet_place",
+          p_description: `${betData.betType} bet on ${betData.selection} @ ${betData.odds} in ${betData.gameName}`,
+          p_reference_id: bet.id,
+        },
+      );
 
       if (updateError || !walletData?.success) {
-        console.error("Failed to update wallet balance (RPC):", updateError || walletData);
+        console.error(
+          "Failed to update wallet balance (RPC):",
+          updateError || walletData,
+        );
         // Rollback bet if money couldn't be deducted
         await admin.from("bets").delete().eq("id", bet.id);
-        await admin.from("transactions").delete().eq("id", txInsert.data.id);
 
         return json(400, {
           success: false,
           error: walletData?.message || "Deduction failed",
-          details: updateError?.message || walletData?.message || "Insufficient balance or wallet not found",
-          balance: walletData?.old_balance ?? balance,
+          details:
+            updateError?.message ||
+            walletData?.message ||
+            "Insufficient balance or wallet not found",
+          balance: balance, // From previous fetch
           required: exposure,
         });
       }
 
-      const newBalance = walletData?.new_balance ?? (balance - betData.stake);
+      const newBalance = walletData?.new_balance ?? balance - betData.stake;
 
       return json(200, {
         success: true,
