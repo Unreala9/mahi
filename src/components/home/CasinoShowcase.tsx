@@ -84,8 +84,8 @@ export const CasinoShowcase = () => {
 
   if (isLoading) {
     return (
-      <div className="mb-20">
-        <div className="flex items-center gap-4 mb-8">
+      <div className="">
+        <div className="flex items-center gap-4 mb-2">
           <div className="h-8 w-1.5 bg-[#1a472a] animate-pulse" />
           <div className="h-8 w-48 bg-gray-200 animate-pulse rounded" />
         </div>
@@ -102,11 +102,11 @@ export const CasinoShowcase = () => {
   }
 
   return (
-    <div className="mb-20 relative z-10 animate-fade-in-up">
+    <div className="mb-0 relative z-10 animate-fade-in-up">
       {/* Header Section */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between py-2">
         <div className="flex items-center gap-4">
-          <div className="h-8 w-1.5 bg-[#1a472a]"></div>
+          <div className="h-2 w-1.5 bg-[#1a472a]"></div>
           <h2 className="text-2xl md:text-3xl font-display font-black text-gray-900 uppercase tracking-widest italic">
             LIVE <span className="text-[#1a472a]">CASINO</span>
           </h2>
@@ -126,7 +126,7 @@ export const CasinoShowcase = () => {
 
       {/* Horizontal Scroll Container with visible overflow for reflections */}
       <div className="relative -mx-4 px-4 md:mx-0 md:px-0">
-        <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-8 pt-2">
+        <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2 pt-2">
           {showcaseGames.map((game) => (
             <ReflectiveGameCard
               key={game.gmid}

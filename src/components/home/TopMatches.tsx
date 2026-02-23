@@ -31,7 +31,7 @@ export const TopMatches = () => {
 
   if (isLoading) {
     return (
-      <div className="mb-8">
+      <div className="mb-2">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl md:text-2xl font-bold text-[#1a472a] italic">
             TOP MATCHES
@@ -51,7 +51,7 @@ export const TopMatches = () => {
 
   if (displayMatches.length === 0) {
     return (
-      <div className="mb-8">
+      <div className="mb-2">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl md:text-2xl font-bold text-[#1a472a] italic">
             TOP MATCHES
@@ -71,7 +71,7 @@ export const TopMatches = () => {
   }
 
   return (
-    <div className="mb-8 animate-fade-in-up delay-200">
+    <div className="mb-2 animate-fade-in-up delay-200">
       {/* Section Header */}
       <div className="flex items-center justify-between mb-6 border-b border-gray-200 pb-2">
         <div className="flex items-center gap-3">
@@ -79,17 +79,11 @@ export const TopMatches = () => {
           <h2 className="text-2xl font-display font-black text-gray-800 uppercase tracking-wider">
             {liveMatches.length > 0 ? (
               <>
-                LIVE{" "}
-                <span className="text-red-600">
-                  MATCHES
-                </span>
+                LIVE <span className="text-red-600">MATCHES</span>
               </>
             ) : (
               <>
-                TOP{" "}
-                <span className="text-[#1a472a]">
-                  MATCHES
-                </span>
+                TOP <span className="text-[#1a472a]">MATCHES</span>
               </>
             )}
           </h2>

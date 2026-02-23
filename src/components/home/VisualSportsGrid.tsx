@@ -54,8 +54,8 @@ export const VisualSportsGrid = () => {
   ];
 
   return (
-    <div className="w-full mt-8 px-0">
-      <div className="flex items-center justify-between mb-4">
+    <div className="w-full mt-2 px-0">
+      <div className="flex items-center justify-between py-2">
         <h2 className="text-xl md:text-2xl font-black italic uppercase text-[#1a472a]">
           SPORTS & <span className="text-[#f28729]">VIRTUALS</span>
         </h2>

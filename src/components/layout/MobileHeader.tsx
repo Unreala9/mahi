@@ -110,15 +110,18 @@ export const MobileHeader = ({
   return (
     <div className="md:hidden bg-[#1a472a] sticky top-0 z-40 w-full shadow-sm">
       {/* Top Bar: Hamburger, Logo, Balance, User */}
-      <div className="flex items-center justify-between px-3 py-2.5">
+      <div className="flex items-center justify-between px-3 py-1.5">
         {/* Left: Menu & Logo */}
         <div className="flex items-center gap-2">
           <button onClick={onToggleSidebar} className="text-white p-1">
             <Menu size={24} />
           </button>
 
-          <div className="text-lg font-bold font-display text-white tracking-tight flex items-center" onClick={() => navigate("/")}>
-              <img src="./images/logo1.png" alt="Logo" className="h-24 w-auto" />
+          <div
+            className="text-lg font-bold font-display text-white tracking-tight flex items-center"
+            onClick={() => navigate("/")}
+          >
+            <img src="./images/logo1.png" alt="Logo" className="h-8 w-auto" />
           </div>
         </div>
 
@@ -154,13 +157,17 @@ export const MobileHeader = ({
                   className="w-56 bg-white border border-gray-200 text-gray-800 rounded shadow-lg p-0 z-50"
                 >
                   <div className="p-3 border-b border-gray-100 bg-gray-50 flex items-center gap-2 rounded-t">
-                     <div className="w-8 h-8 rounded-full bg-green-100 text-green-800 flex items-center justify-center font-bold">
-                       {userLabel.charAt(0).toUpperCase()}
-                     </div>
-                     <div className="flex flex-col overflow-hidden">
-                       <span className="text-xs font-semibold text-gray-900 truncate">{session?.user?.email || "Demo User"}</span>
-                       <span className="text-[10px] text-gray-500">ID: {session?.user?.id?.substring(0,8) || "demo"}</span>
-                     </div>
+                    <div className="w-8 h-8 rounded-full bg-green-100 text-green-800 flex items-center justify-center font-bold">
+                      {userLabel.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex flex-col overflow-hidden">
+                      <span className="text-xs font-semibold text-gray-900 truncate">
+                        {session?.user?.email || "Demo User"}
+                      </span>
+                      <span className="text-[10px] text-gray-500">
+                        ID: {session?.user?.id?.substring(0, 8) || "demo"}
+                      </span>
+                    </div>
                   </div>
                   <div className="p-1">
                     <DropdownMenuItem
@@ -226,7 +233,8 @@ export const MobileHeader = ({
       {/* Marquee Ticker */}
       <div className="bg-gradient-to-r from-[#00b4db] to-[#0083b0] py-1 px-4 overflow-hidden h-6 flex items-center">
         <div className="whitespace-nowrap animate-marquee text-[10px] font-medium text-white tracking-wide">
-          Welcome to Rana365 - The Next Generation Sports Betting & Casino Exchange! Bet on your favorite sports and play live casino games here.
+          Welcome to Rana365 - The Next Generation Sports Betting & Casino
+          Exchange! Bet on your favorite sports and play live casino games here.
         </div>
       </div>
     </div>
