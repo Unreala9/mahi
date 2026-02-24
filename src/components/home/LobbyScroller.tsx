@@ -95,7 +95,7 @@ export const LobbyScroller = () => {
       {/* Promotional Banner */}
       <div
         className="relative w-full rounded-xl overflow-hidden mt-2 cursor-pointer group shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
-        onClick={() => navigate('/promotions')}
+        onClick={() => navigate('/wallet')}
       >
         <img
           src="/images/imgi_181_promotionBanner-DsJ3B3xu.webp"
@@ -109,7 +109,7 @@ export const LobbyScroller = () => {
               <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest drop-shadow-sm">Special Offers</span>
             </div>
             <h3 className="text-2xl md:text-4xl font-black text-white italic tracking-tight drop-shadow-lg uppercase">
-              Promotions
+              <a href="/wallet">Promotions</a>
             </h3>
           </div>
         </div>
